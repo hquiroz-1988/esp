@@ -2,3 +2,4 @@
 *.d
 *.a
 hello_world/build/
+*.mk
