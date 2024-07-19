@@ -1,5 +1,5 @@
 
-# Busmaster UDS & ISOTP Implementation
+# ESP8266 Projects with RTOS SDK
 
 
 # Table of contents
@@ -8,12 +8,8 @@
     1. [ESP8266 RTOS SDK](#bullet2.1)
     2. [Issues Compiling](#bullet2.2)
         1. [Python Version](#bullet2.2.1)
-        2. [Xtensa Compiler](#bullet2.2.2)
-    <!-- 3. [Make](#bullet2-subBullet3) -->
-<!-- 3. [Roadblock ](#bullet3)
-    1. [Block Diagram](#bullet3-subBullet1)
-    2. [ISOTP State Machine](#bullet3-subBullet2)
-    3. [UDS State Machine](#bullet3-subBullet3) -->
+        2. [Python Requirements](#bullet2.2.2)
+        3. [Xtensa Compiler](#bullet2.2.3)
 
 ## Introduction <a name="bullet1"></a>
 This repo contains projects created on the ESP8266 with RTOS.
