@@ -3,3 +3,4 @@
 *.a
 hello_world/build/
 *.mk
+testTasks/build/

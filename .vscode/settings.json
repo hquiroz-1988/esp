@@ -1,6 +1,9 @@
 {
     "files.associations": {
         "*.tcc": "c",
-        "portable.h": "c"
+        "portable.h": "c",
+        "gpio.h": "c",
+        "mpu_wrappers.h": "c",
+        "esp_heap_caps.h": "c"
     }
 }
