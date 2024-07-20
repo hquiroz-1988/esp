@@ -4,3 +4,5 @@
 hello_world/build/
 *.mk
 testTasks/build/
+testTasks/sdkconfig
+testTasks/sdkconfig.old
