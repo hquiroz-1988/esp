@@ -13,8 +13,8 @@ class Hla(HighLevelAnalyzer):
 
     # An optional list of types this analyzer produces, providing a way to customize the way frames are displayed in Logic 2.
     result_types = {
-        'mytype': {
-            'format': 'Output type: {{type}}, Input type: {{data.input_type}}'
+        'v1frame': {
+            'format': '{{data.description}}'
         }
     }
 
@@ -25,7 +25,7 @@ class Hla(HighLevelAnalyzer):
         Settings can be accessed using the same name used above.
         '''
 
-        print("Settings:", self.my_string_setting,
+        print("Settings errr:", self.my_string_setting,
               self.my_number_setting, self.my_choices_setting)
 
     def decode(self, frame: AnalyzerFrame):
@@ -34,6 +34,7 @@ class Hla(HighLevelAnalyzer):
 
         The type and data values in `frame` will depend on the input analyzer.
         '''
+        print("helloo")
 
         # Return the data frame itself
         return AnalyzerFrame('mytype', frame.start_time, frame.end_time, {
