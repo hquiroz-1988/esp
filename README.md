@@ -31,6 +31,12 @@ While compiling within the mingw32 environment ensure that the correct python an
 
 ![alt text](docs/whichPythonScreenshot.png)
 
+#### Python Version <a name="bullet2.2.1"></a>
+
+While compiling within the mingw32 environment ensure that the correct python and pip versions will be invoked. The invoked versions should be within the ```mingw32/bin``` folder.
+
+![alt text](docs/whichPythonScreenshot.png)
+
 
 #### Xtensa Compiler <a name="bullet2.2.2"></a>
 
