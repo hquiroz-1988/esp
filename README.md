@@ -27,7 +27,7 @@ The [hello_world](/hello_world) project is the one provided in the ESP8266 [exam
 
 
 #### Test Tasks <a name="bullet1.1.2"></a>
-The [testTasks](/testTasks) project implements a method of tracking cuurrently executing tasking using an SMDBus like protocol on 2 gpio pins.
+The [testTasks](/testTasks) project implements a method of tracking cuurrently executing tasking using an SMDBus like protocol on GPIO pins 0 & 2.
 
 #### Solar Panel <a name="bullet1.1.3"></a>
 The [solar_panel](/solar_panel/) project simply measures power output of a 1w solar panel.
