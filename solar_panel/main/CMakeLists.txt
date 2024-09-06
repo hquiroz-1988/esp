@@ -1,3 +1,3 @@
-set(COMPONENT_SRCS "adc_example_main.c")
+set(COMPONENT_SRCS "main.c")
 
 register_component()

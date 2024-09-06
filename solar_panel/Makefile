@@ -3,7 +3,7 @@
 # project subdirectory.
 #
 
-PROJECT_NAME := adc_example
+PROJECT_NAME := solar_panel
 
 include $(IDF_PATH)/make/project.mk
 
