@@ -14,8 +14,9 @@
 #include "freertos/task.h"
 #include "driver/adc.h"
 #include "esp_log.h"
+#include "i2c_task.h"
 
-static const char *TAG = "adc example";
+static const char *TAG = "solar panel";
 
 static void adc_task()
 {
@@ -52,4 +53,9 @@ void app_main()
 
     // 2. Create a adc task to read adc value
     xTaskCreate(adc_task, "adc_task", 1024, NULL, 5, NULL);
+
+    /*  create i2c task */
+    xTaskCreate(i2c_task, "i2c_task", 1024, NULL, 5, NULL);
+
+
 }
