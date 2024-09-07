@@ -61,14 +61,6 @@ void i2c_task(void)
         /* while i2c data exists send out data  */
         ESP_LOGI(TAG, "manage i2c\r\n");
 
-        // ESP_LOGI(TAG, "adc read fast:\r\n");
-
-        // if (ESP_OK == adc_read_fast(adc_data, 100)) {
-        //     for (x = 0; x < 100; x++) {
-        //         printf("%d\n", adc_data[x]);
-        //     }
-        // }
-
         vTaskDelay(1000 / portTICK_RATE_MS);
     }
 }
