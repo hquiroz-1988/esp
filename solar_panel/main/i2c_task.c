@@ -61,6 +61,9 @@ void i2c_task(void)
         /* while i2c data exists send out data  */
         ESP_LOGI(TAG, "manage i2c\r\n");
 
+        /* design i2c task, this might have multiple channels*/
+
+
         vTaskDelay(1000 / portTICK_RATE_MS);
     }
 }
