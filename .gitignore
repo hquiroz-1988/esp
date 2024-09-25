@@ -7,3 +7,7 @@ testTasks/build/
 testTasks/sdkconfig
 testTasks/sdkconfig.old
 solar_panel/build/
+*.pdf
+i2c/build/
+i2c/sdkconfig
+i2c/sdkconfig.old
