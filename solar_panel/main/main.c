@@ -28,11 +28,10 @@ void app_main()
     /* initialize task */
     float voltageValue;
 
+    init_i2cHandler();
     init_BusVoltage();
     
 
-    /*  create i2c task */
-    xTaskCreate(i2c_task, "i2c_task", 1024, NULL, 5, NULL);
 
     while (1) 
     {

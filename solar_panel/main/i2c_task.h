@@ -34,7 +34,13 @@ extern "C" {
  * GLOBAL FUNCTION PROTOTYPES
  ************************************/
 
-void i2c_task(void);
+/** @brief  Initializes i2c handler module including
+ *  task and variables
+ *
+ *  @param void 
+ *  @return void 
+ */
+void init_i2cHandler(void);
 
 
 #ifdef __cplusplus

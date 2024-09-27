@@ -43,6 +43,15 @@ static const char *TAG = "solar panel";
  * STATIC FUNCTION PROTOTYPES
  ************************************/
 
+/** @brief  I2C task that runs periodically
+ * 
+ * Will pop queue values 
+ * 
+ *  @param void 
+ *  @return void 
+ */
+void i2c_Task(void);
+
 /************************************
  * STATIC FUNCTIONS
  ************************************/
@@ -50,11 +59,18 @@ static const char *TAG = "solar panel";
 /************************************
  * GLOBAL FUNCTIONS
  ************************************/
+void init_i2cHandler(void)
+{
+    /*  create i2c task */
+    xTaskCreate(i2c_Task, "i2c_task", 1024, NULL, 5, NULL);
 
-void i2c_task(void)
+    /* create or initialize i2c object queue */
+    
+}
+
+void i2c_Task(void)
 {
     /* initialize i2c task */
-
     
     while (1) 
     {
