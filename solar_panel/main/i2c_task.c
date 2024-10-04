@@ -13,10 +13,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
 #include "i2c_task.h"
+#include "i2c_handler.h"
 
 /************************************
  * EXTERN VARIABLES
@@ -34,6 +34,7 @@ static const char *TAG = "solar panel";
 /************************************
  * STATIC VARIABLES
  ************************************/
+i2c_handler_t cmdObj;
 
 /************************************
  * GLOBAL VARIABLES
