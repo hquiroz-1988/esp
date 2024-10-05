@@ -25,9 +25,10 @@
 /************************************
  * PRIVATE MACROS AND DEFINES
  ************************************/
-#define QUEUE_LENGTH    (10u)
-#define ITEM_SIZE       (sizeof(i2c_handler_t *))
-#define QUEUE_TIMEOUT   (2000)
+#define QUEUE_LENGTH                (10u)
+#define ITEM_SIZE                   (sizeof(i2c_handler_t *))
+#define QUEUE_TIMEOUT               (2000)
+#define I2C_CHANNEL_NUM              I2C_NUM_0        /*!< I2C port number for master dev */
 
 /************************************
  * PRIVATE TYPEDEFS
@@ -87,6 +88,7 @@ void init_i2cHandler(void)
     
 }
 
+
 void i2c_Task(void)
 {
     /*  create queue handle */
@@ -98,17 +100,22 @@ void i2c_Task(void)
                                         queueStorage,
                                         &i2cCmdQueue );
 
-    /* i2c object pointer to receive queueu value   */
+    /* i2c object pointer to receive queue value   */
     i2c_handler_t * i2cObjPtr = NULL;
 
     /* queue receive return value */
     BaseType_t retVal = pdFALSE;
+
+    /* esp error type   */
+    esp_err_t errRet = ESP_FAIL;
 
     /* while i2c data exists send out data  */
     ESP_LOGI(TAG, "init i2c task\r\n");
 
     while (1) 
     {
+        //!TODO: check for queue null pointers  
+
 
         /* receive command from queue, this should block until receive or timeout   */
         retVal = xQueueReceive( queueHandle,
@@ -118,10 +125,26 @@ void i2c_Task(void)
         /* if received data, process data*/
         if(pdPASS == retVal)
         {
-            /* objptr now has pointer to i2c obj perform i2c cmd*/
 
+            if( i2cObjPtr != NULL && 
+                i2cObjPtr->cmd != NULL &&
+                i2cObjPtr->taskHdl != NULL)
+            {
+                /* objptr now has pointer begin i2c command */
+                errRet = i2c_master_cmd_begin(I2C_CHANNEL_NUM, i2cObjPtr->cmd, 1000 / portTICK_RATE_MS);
 
-            /* once queue element is addressed , notify sending task    */
+                if(errRet == ESP_FAIL)
+                {
+                    //!TODO: throw error for i2c channel failure      
+                }
+
+                /* once queue element is addressed , notify sending task    */
+                xTaskNotifyGive(i2cObjPtr->taskHdl);
+            }
+            else
+            {
+                //!TODO: throw error for invlid i2c command object  
+            }
         }
         else
         {
