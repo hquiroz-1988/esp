@@ -55,6 +55,9 @@ static StaticQueue_t i2cCmdQueue;
 */
 static uint8_t queueStorage[QUEUE_LENGTH*ITEM_SIZE];
 
+/*  create queue handle */
+static QueueHandle_t queueHandle;
+
 /************************************
  * GLOBAL VARIABLES
  ************************************/
@@ -84,22 +87,17 @@ void init_i2cHandler(void)
     /*  create i2c task */
     xTaskCreate(i2c_Task, "i2c_task", 1024, NULL, 5, NULL);
 
-    /* create or initialize i2c object queue */
-    
-}
-
-
-void i2c_Task(void)
-{
-    /*  create queue handle */
-    QueueHandle_t queueHandle;
-
     /* queue to queue pointers to i2c command objects   */
     queueHandle = xQueueCreateStatic(   QUEUE_LENGTH, 
                                         ITEM_SIZE,
                                         queueStorage,
                                         &i2cCmdQueue );
+}
 
+
+void i2c_Task(void)
+{
+    
     /* i2c object pointer to receive queue value   */
     i2c_handler_t * i2cObjPtr = NULL;
 
