@@ -27,9 +27,15 @@ extern "C" {
 /************************************
  * TYPEDEFS
  ************************************/
+
+/*  
+    i2c_handler_t carries an i2c command along with a TaskHandle_t
+    the Task handle shall be used to notify the task that the i2c
+    command is complete 
+*/
 typedef struct
 {
-    xSemaphoreHandle smphrHdl;
+    TaskHandle_t taskHdl;
     i2c_cmd_handle_t cmd;
 }i2c_handler_t;
 
