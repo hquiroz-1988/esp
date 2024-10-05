@@ -135,7 +135,8 @@ void i2c_Task(void)
 
                 if(errRet == ESP_FAIL)
                 {
-                    //!TODO: throw error for i2c channel failure      
+                    /* throw error   */
+                    ESP_LOGI(TAG, "i2c command failed\r\n");
                 }
 
                 /* once queue element is addressed , notify sending task    */
@@ -143,7 +144,8 @@ void i2c_Task(void)
             }
             else
             {
-                //!TODO: throw error for invlid i2c command object  
+                /* throw error   */
+                ESP_LOGI(TAG, "i2c object pointer invalid\r\n");
             }
         }
         else
