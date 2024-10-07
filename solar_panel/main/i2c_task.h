@@ -17,6 +17,8 @@ extern "C" {
 /************************************
  * INCLUDES
  ************************************/
+#include "i2c_handler.h"
+#include "freertos/queue.h"
 
 /************************************
  * MACROS AND DEFINES
@@ -29,6 +31,8 @@ extern "C" {
 /************************************
  * EXPORTED VARIABLES
  ************************************/
+/*  create queue handle */
+extern QueueHandle_t i2cQueueHdl;
 
 /************************************
  * GLOBAL FUNCTION PROTOTYPES
