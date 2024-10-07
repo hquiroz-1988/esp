@@ -16,7 +16,6 @@
 #include "freertos/task.h"
 #include "esp_log.h"
 #include "i2c_task.h"
-#include "i2c_handler.h"
 
 /************************************
  * EXTERN VARIABLES
@@ -56,7 +55,7 @@ static StaticQueue_t i2cCmdQueue;
 static uint8_t queueStorage[QUEUE_LENGTH*ITEM_SIZE];
 
 /*  create queue handle */
-static QueueHandle_t queueHandle;
+QueueHandle_t i2cQueueHdl;
 
 /************************************
  * GLOBAL VARIABLES
@@ -88,7 +87,7 @@ void init_i2cHandler(void)
     xTaskCreate(i2c_Task, "i2c_task", 1024, NULL, 5, NULL);
 
     /* queue to queue pointers to i2c command objects   */
-    queueHandle = xQueueCreateStatic(   QUEUE_LENGTH, 
+    i2cQueueHdl = xQueueCreateStatic(   QUEUE_LENGTH, 
                                         ITEM_SIZE,
                                         queueStorage,
                                         &i2cCmdQueue );
@@ -116,7 +115,7 @@ void i2c_Task(void)
 
 
         /* receive command from queue, this should block until receive or timeout   */
-        retVal = xQueueReceive( queueHandle,
+        retVal = xQueueReceive( i2cQueueHdl,
                                 &i2cObjPtr,
                                 QUEUE_TIMEOUT);
 
