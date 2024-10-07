@@ -23,6 +23,15 @@
 #define TEST_I2C_TASK
 // #undef  TEST_I2C_TASK
 
+
+#ifdef TEST_I2C_TASK
+#define WRITE_BIT                           I2C_MASTER_WRITE /*!< I2C master write */
+#define READ_BIT                            I2C_MASTER_READ  /*!< I2C master read */
+#define ACK_CHECK_EN                        0x1              /*!< I2C master will check ack from slave*/
+#define ACK_CHECK_DIS                       0x0              /*!< I2C master will not check ack from slave */
+#endif
+
+
 static const char *TAG = "solar panel";
 
 
@@ -45,17 +54,43 @@ void app_main()
         voltageValue = get_filtered_voltage();
 
         /* print voltage and current */
-        ESP_LOGI(TAG, "Voltage: %f, Current: %f\r\n", voltageValue, currentValue);
+        // ESP_LOGI(TAG, "Voltage: %f, Current: %f\r\n", voltageValue, currentValue);
 
         /* add test for i2c task here */
         #ifdef TEST_I2C_TASK
         int ret;
-        i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-        i2c_master_start(cmd);
-        // i2c_master_write_byte(cmd, MPU6050_SENSOR_ADDR << 1 | WRITE_BIT, ACK_CHECK_EN);
-        i2c_master_stop(cmd);
-        ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, 1000 / portTICK_RATE_MS);
-        i2c_cmd_link_delete(cmd);
+        /* create i2c object pointer    */
+        i2c_handler_t i2cObjPtr;
+        i2cObjPtr.cmd = i2c_cmd_link_create();
+        i2cObjPtr.cmd = xTaskGetCurrentTaskHandle();
+
+        i2c_master_start(i2cObjPtr.cmd);
+        i2c_master_write_byte(i2cObjPtr.cmd, 0xA5, ACK_CHECK_DIS);
+        i2c_master_stop(i2cObjPtr.cmd);
+        /* send to queue*/
+        if( i2cQueueHdl != NULL )
+        {
+            /* Send an unsigned long. Wait for 10 ticks for space to become
+            available if necessary. */
+            if( xQueueSendToBack( i2cQueueHdl,
+                                ( void * ) &i2cObjPtr,
+                                ( TickType_t ) 10 ) != pdPASS )
+            {
+                /* Failed to post the message, even after 10 ticks. */
+                ESP_LOGI(TAG, "failed to send command\r\n");
+            }
+            else
+            {
+                ESP_LOGI(TAG, "sent command\r\n");
+                ulTaskNotifyTake(pdTRUE, ( TickType_t ) 1000);
+                ESP_LOGI(TAG, "command complete\r\n");
+            }
+        }
+        else 
+        {
+            ESP_LOGI(TAG, "queue hdl null\r\n");
+        }
+        i2c_cmd_link_delete(i2cObjPtr.cmd);
         #endif
 
         vTaskDelay(1000 / portTICK_RATE_MS);
