@@ -32,9 +32,7 @@
 #endif
 
 
-static const char *TAG = "solar panel";
-
-
+static const char *TAG = "main";
 
 
 void app_main()
@@ -42,36 +40,48 @@ void app_main()
 
     /* initialize task */
     float voltageValue;
+    errType_t errRet;
 
     init_i2cHandler();
     init_BusVoltage();
     
-
-
     while (1) 
     {
-        /* get filtered voltage and current */
-        voltageValue = get_filtered_voltage();
+        // /* get filtered voltage and current */
+        // errRet = get_filtered_voltage(&voltageValue);
 
-        /* print voltage and current */
-        // ESP_LOGI(TAG, "Voltage: %f, Current: %f\r\n", voltageValue, currentValue);
+        // if(ERR_NONE == errRet)
+        // {
+        //     /* print voltage and current */
+        //     ESP_LOGI(TAG, "Voltage: %f, Current: %f\r\n", voltageValue, currentValue);
+        // }
+        // else
+        // {
+        //     /* print err */
+        //     ESP_LOGI(TAG, "Err Value: %i\r\n", errRet);
+        // }
+        
 
         /* add test for i2c task here */
         #ifdef TEST_I2C_TASK
-        int ret;
+        // int ret;
         /* create i2c object pointer    */
-        i2c_handler_t i2cObjPtr;
-        i2cObjPtr.cmd = i2c_cmd_link_create();
-        i2cObjPtr.cmd = xTaskGetCurrentTaskHandle();
+        i2c_handler_t i2cObj;
+        i2c_handler_t * i2cObjPtr = &i2cObj;
+        i2cObj.cmd = i2c_cmd_link_create();
+        i2cObj.taskHdl = xTaskGetCurrentTaskHandle();
 
-        i2c_master_start(i2cObjPtr.cmd);
-        i2c_master_write_byte(i2cObjPtr.cmd, 0xA5, ACK_CHECK_DIS);
-        i2c_master_stop(i2cObjPtr.cmd);
+        i2c_master_start(i2cObj.cmd);
+        i2c_master_write_byte(i2cObj.cmd, 0xAA, ACK_CHECK_DIS);
+        i2c_master_stop(i2cObj.cmd);
         /* send to queue*/
         if( i2cQueueHdl != NULL )
         {
-            /* Send an unsigned long. Wait for 10 ticks for space to become
-            available if necessary. */
+            /* 
+                Send an unsigned long. Wait for 10 ticks for space to become
+                available if necessary.
+            */
+            ESP_LOGI(TAG, "i2cObjPtr = %i\r\n", (uint32_t)i2cObjPtr);
             if( xQueueSendToBack( i2cQueueHdl,
                                 ( void * ) &i2cObjPtr,
                                 ( TickType_t ) 10 ) != pdPASS )
@@ -90,7 +100,7 @@ void app_main()
         {
             ESP_LOGI(TAG, "queue hdl null\r\n");
         }
-        i2c_cmd_link_delete(i2cObjPtr.cmd);
+        i2c_cmd_link_delete(i2cObj.cmd);
         #endif
 
         vTaskDelay(1000 / portTICK_RATE_MS);
