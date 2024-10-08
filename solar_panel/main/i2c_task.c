@@ -13,8 +13,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/queue.h"
 #include "esp_log.h"
+#include "esp_err.h"
 #include "i2c_task.h"
 
 /************************************
@@ -28,6 +31,8 @@
 #define ITEM_SIZE                   (sizeof(i2c_handler_t *))
 #define QUEUE_TIMEOUT               (2000)
 #define I2C_CHANNEL_NUM              I2C_NUM_0        /*!< I2C port number for master dev */
+#define I2C_EXAMPLE_MASTER_SCL_IO           5                /*!< gpio number for I2C master clock */
+#define I2C_EXAMPLE_MASTER_SDA_IO           4               /*!< gpio number for I2C master data  */
 
 /************************************
  * PRIVATE TYPEDEFS
@@ -36,23 +41,7 @@
 /************************************
  * STATIC VARIABLES
  ************************************/
-static const char *TAG = "solar panel";
-
-/*
-    cmddObj holds a task handle of the task that sent the command
-    and the i2c command descriptor
-*/
-static i2c_handler_t cmdObj;
-
-/*
-    The variable used to hold the queue's data structure
-*/
-static StaticQueue_t i2cCmdQueue;
-
-/*
-    Queue Storage Variable
-*/
-static uint8_t queueStorage[QUEUE_LENGTH*ITEM_SIZE];
+static const char *TAG = "i2c task";
 
 /*  create queue handle */
 QueueHandle_t i2cQueueHdl;
@@ -62,6 +51,7 @@ QueueHandle_t i2cQueueHdl;
  ************************************/
 
 /************************************
+ * 
  * STATIC FUNCTION PROTOTYPES
  ************************************/
 
@@ -72,29 +62,47 @@ QueueHandle_t i2cQueueHdl;
  *  @param void 
  *  @return void 
  */
-void i2c_Task(void);
+static void i2c_Task(void *arg);
 
 /************************************
  * STATIC FUNCTIONS
  ************************************/
+/**
+ * @brief i2c master initialization
+ */
+static esp_err_t i2c_example_master_init()
+{
+    int i2c_master_port = I2C_CHANNEL_NUM;
+    i2c_config_t conf;
+    conf.mode = I2C_MODE_MASTER;
+    conf.sda_io_num = I2C_EXAMPLE_MASTER_SDA_IO;
+    conf.sda_pullup_en = 1;
+    conf.scl_io_num = I2C_EXAMPLE_MASTER_SCL_IO;
+    conf.scl_pullup_en = 1;
+    conf.clk_stretch_tick = 300; // 300 ticks, Clock stretch is about 210us, you can make changes according to the actual situation.
+    ESP_ERROR_CHECK(i2c_driver_install(i2c_master_port, conf.mode));
+    ESP_ERROR_CHECK(i2c_param_config(i2c_master_port, &conf));
+    return ESP_OK;
+}
 
 /************************************
  * GLOBAL FUNCTIONS
  ************************************/
 void init_i2cHandler(void)
 {
-    /*  create i2c task */
-    xTaskCreate(i2c_Task, "i2c_task", 1024, NULL, 5, NULL);
+
+    i2c_example_master_init();
 
     /* queue to queue pointers to i2c command objects   */
-    i2cQueueHdl = xQueueCreateStatic(   QUEUE_LENGTH, 
-                                        ITEM_SIZE,
-                                        queueStorage,
-                                        &i2cCmdQueue );
+    i2cQueueHdl = xQueueCreate( QUEUE_LENGTH, 
+                                ITEM_SIZE );
+
+    /*  create i2c task */
+    xTaskCreate(i2c_Task, "i2c_task", 1024, NULL, 5, NULL);
 }
 
 
-void i2c_Task(void)
+static void i2c_Task(void *arg)
 {
     
     /* i2c object pointer to receive queue value   */
@@ -119,9 +127,11 @@ void i2c_Task(void)
                                 &i2cObjPtr,
                                 QUEUE_TIMEOUT);
 
+        ESP_LOGI(TAG, "got data from queue\r\n");
         /* if received data, process data*/
         if(pdPASS == retVal)
         {
+            ESP_LOGI(TAG, "i2cObjPtr: %i\r\n", (uint32_t)i2cObjPtr);
 
             if( i2cObjPtr != NULL && 
                 i2cObjPtr->cmd != NULL &&

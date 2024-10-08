@@ -27,11 +27,11 @@ extern "C" {
  ************************************/
 typedef enum
 {
-    SUCCESS,
-    UNKNOWN_ERROR,
-    FAIL,
-    NULL_POINTER,
-    OUT_OF_BOUNDS,
+    ERR_NONE,
+    ERR_UNKNOWN,
+    ERR_FAIL,
+    ERR_NULL_POINTER,
+    ERR_OUT_OF_BOUNDS,
 
     TOTAL_ERR_TYPES
 }errType_t;
