@@ -14,6 +14,10 @@
         "_default_types.h": "c",
         "freertos.h": "c",
         "bus_voltage.h": "c",
-        "task.h": "c"
+        "task.h": "c",
+        "typedefs.h": "c",
+        "i2c_handler.h": "c",
+        "ads1115.h": "c",
+        "esp_err.h": "c"
     }
 }

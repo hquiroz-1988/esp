@@ -16,8 +16,11 @@
 #include "driver/adc.h"
 #include "driver/i2c.h"
 #include "esp_log.h"
+
 #include "i2c_task.h"
+#include "ads1115.h"
 #include "bus_voltage.h"
+
 
 
 #define TEST_I2C_TASK
@@ -87,7 +90,13 @@ void app_main()
     float voltageValue;
     errType_t errRet;
 
+    /* initialize i2c handler task and i2c module    */
     init_i2cHandler();
+
+    /* intialize ads1115 module  */
+    init_ads1115();
+
+    /*  initialize bus voltage module   */
     init_BusVoltage();
     
     while (1) 

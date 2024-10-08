@@ -1,14 +1,14 @@
 /**
  ********************************************************************************
- * @file    typedefs.h
+ * @file    ads1115.h
  * @author  Hugo Quiroz
- * @date    2024-09-27 10:28:03
+ * @date    2024-10-08 11:51:00
  * @brief   description
  ********************************************************************************
  */
 
-#ifndef TYPEDEFS_H
-#define TYPEDEFS_H
+#ifndef ADS1115_H
+#define ADS1115_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,8 +17,7 @@ extern "C" {
 /************************************
  * INCLUDES
  ************************************/
-#include "stdint.h"
-#include "stdbool.h"
+
 /************************************
  * MACROS AND DEFINES
  ************************************/
@@ -26,16 +25,6 @@ extern "C" {
 /************************************
  * TYPEDEFS
  ************************************/
-typedef enum
-{
-    ERR_NONE,
-    ERR_UNKNOWN,
-    ERR_FAIL,
-    ERR_NULL_POINTER,
-    ERR_OUT_OF_BOUNDS,
-
-    TOTAL_ERR_TYPES
-}errType_t;
 
 /************************************
  * EXPORTED VARIABLES
@@ -44,10 +33,11 @@ typedef enum
 /************************************
  * GLOBAL FUNCTION PROTOTYPES
  ************************************/
+void init_ads1115(void);
 
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif //TYPEDEFS_H
+#endif //ADS1115_H
