@@ -10,6 +10,13 @@
 /************************************
  * INCLUDES
  ************************************/
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "esp_log.h"
 #include "bus_voltage.h"
 
 /************************************
@@ -19,6 +26,7 @@
 /************************************
  * PRIVATE MACROS AND DEFINES
  ************************************/
+static const char *TAG = "bus voltage";
 
 /************************************
  * PRIVATE TYPEDEFS
@@ -35,11 +43,27 @@
 /************************************
  * STATIC FUNCTION PROTOTYPES
  ************************************/
-void voltage_Task(void);
+static void voltage_Task(void *arg);
 
 /************************************
  * STATIC FUNCTIONS
  ************************************/
+static void voltage_Task(void *arg)
+{
+
+    /* initialize voltage task */
+
+   while (1) 
+    {
+        /* while i2c data exists send out data  */
+        ESP_LOGI(TAG, "bus voltage task\r\n");
+
+        /* design i2c task, this might have multiple channels*/
+
+
+        vTaskDelay(1000 / portTICK_RATE_MS);
+    }
+}
 
 /************************************
  * GLOBAL FUNCTIONS
@@ -52,29 +76,13 @@ void init_BusVoltage(void)
 
 errType_t get_filtered_voltage(float * value)
 {
-    errType_t retVal = UNKNOWN_ERROR;
+    errType_t retVal = ERR_UNKNOWN;
 
     
 
     return retVal;
 }
 
-void voltage_Task(void)
-{
 
-    /* initialize voltage task */
-
-   while (1) 
-    {
-        /* while i2c data exists send out data  */
-        ESP_LOGI(TAG, "manage i2c\r\n");
-
-        /* design i2c task, this might have multiple channels*/
-
-
-        vTaskDelay(1000 / portTICK_RATE_MS);
-    }
-\
-}
 
 

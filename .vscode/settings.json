@@ -13,6 +13,7 @@
         "stdlib.h": "c",
         "_default_types.h": "c",
         "freertos.h": "c",
-        "bus_voltage.h": "c"
+        "bus_voltage.h": "c",
+        "task.h": "c"
     }
 }

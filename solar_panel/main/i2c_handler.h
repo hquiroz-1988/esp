@@ -17,6 +17,7 @@ extern "C" {
 /************************************
  * INCLUDES
  ************************************/
+#include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 #include "driver/i2c.h"
 
