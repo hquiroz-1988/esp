@@ -97,10 +97,11 @@ static void read_ads1115Registers(void)
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
-    /*  queue up a write command     */
+    /*  address ads1115 device     */
     i2c_master_write_byte(cmd, ADS1115_ADDRESS | I2C_MASTER_WRITE, I2C_ACK_CHECK_DIS);
     /*  write config register address to pointer register       */
     i2c_master_write_byte(cmd, ADS1115_CONFIG_REGISTER, I2C_ACK_CHECK_DIS);
+    /* read configuration register   */
     i2c_master_read(cmd, ads1115CfgObj.configReg, ADS1115_CONFIG_REGISTER_SIZE, I2C_MASTER_LAST_NACK);
     i2c_master_stop(cmd);
     ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, 1000 / portTICK_RATE_MS);
