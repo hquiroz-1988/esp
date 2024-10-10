@@ -19,6 +19,7 @@
         "i2c_handler.h": "c",
         "ads1115.h": "c",
         "esp_err.h": "c",
-        "queue.h": "c"
+        "queue.h": "c",
+        "common.h": "c"
     }
 }

@@ -10,9 +10,10 @@
 /************************************
  * INCLUDES
  ************************************/
+#include "common.h"
 #include "i2c_handler.h"
 #include "ads1115.h"
-#include "typedefs.h"
+
 
 /************************************
  * EXTERN VARIABLES
@@ -21,27 +22,26 @@
 /************************************
  * PRIVATE MACROS AND DEFINES
  ************************************/
-#define GND_ADDR_PIN                             (0x48)              /* ADDR PIN connected to GND Pin */
-#define VDD_ADDR_PIN                             (0x49)              /* ADDR PIN connected to VDD Pin */
-#define SDA_ADDR_PIN                             (0x4A)              /* ADDR PIN connected to SDA Pin */
-#define SCL_ADDR_PIN                             (0x4B)              /* ADDR PIN connected to SCL Pin */
-#define ADS1115_ADDRESS_SHIFT                    (1u)
-#define ADS1115_ADDRESS_MASK                     (0x7)
-#define ADS1115_ADDRESS                          ((GND_ADDR_PIN & ADS1115_ADDRESS_MASK) << ADS1115_ADDRESS_SHIFT)
-
-
+#define GND_ADDR_PIN                                    (0x48)              /* ADDR PIN connected to GND Pin */
+#define VDD_ADDR_PIN                                    (0x49)              /* ADDR PIN connected to VDD Pin */
+#define SDA_ADDR_PIN                                    (0x4A)              /* ADDR PIN connected to SDA Pin */
+#define SCL_ADDR_PIN                                    (0x4B)              /* ADDR PIN connected to SCL Pin */
+#define ADS1115_ADDRESS_SHIFT                           (1u)
+#define ADS1115_ADDRESS_MASK                            (0x7)
+#define ADS1115_ADDRESS                                 ((GND_ADDR_PIN & ADS1115_ADDRESS_MASK) << ADS1115_ADDRESS_SHIFT)
 
 #define ADS1115_WRITE_BIT                               (0x0)
 #define ADS1115_READ_BIT                                (0x1)
-    
-#define ADS1115_POINTER_REGISTER_SIZE                   (1u)
+
 #define ADS1115_CONVERSION_REGISTER                     (0x00)
-#define ADS1115_CONVERSION_REGISTER_SIZE                (2u)
 #define ADS1115_CONFIG_REGISTER                         (0x01)
-#define ADS1115_CONFIG_REGISTER_SIZE                    (2u)
 #define ADS1115_LO_THRESH_REGISTER                      (0x02)
-#define ADS1115_LO_THRESH_REGISTER_SIZE                 (2u)
 #define ADS1115_HI_THRESH_REGISTER                      (0x03)
+
+#define ADS1115_POINTER_REGISTER_SIZE                   (1u)
+#define ADS1115_CONVERSION_REGISTER_SIZE                (2u)
+#define ADS1115_CONFIG_REGISTER_SIZE                    (2u)
+#define ADS1115_LO_THRESH_REGISTER_SIZE                 (2u)
 #define ADS1115_HI_THRESH_REGISTER_SIZE                 (2u)
 
 #define ADS1115_OS_CFG_BIT                              (15u)
@@ -64,10 +64,6 @@
 #define ADS1115_COMP_LATCH_CFG_MASK                     (1u)
 #define ADS1115_COMP_QUEUE_CFG_MASK                     (2u)
 
-
-#define BUILD()
-
-
 #define I2C_ACK_CHECK_DISABLE                           (false)
 #define I2C_ACK_CHECK_ENABLE                            (true)
 
@@ -77,27 +73,13 @@
 /************************************
  * PRIVATE TYPEDEFS
  ************************************/
-typedef union
-{
-    struct{
-        uint8_t opStatus        : 1;
-        uint8_t mux             : 3;
-        uint8_t pga             : 3;
-        uint8_t mode            : 1;
-        uint8_t dataRate        : 3;   
-        uint8_t compMode        : 1;
-        uint8_t compPolarity    : 1;
-        uint8_t compLatch       : 1;
-        uint8_t compQueue       : 2;
-    }
-    uint8_t data[ADS1115_CONFIG_REGISTER_SIZE];
-}ads1115ConfigRegister_t;
+
 
 typedef struct
 {
     uint8_t pointerReg[ADS1115_POINTER_REGISTER_SIZE];                  /* write only   */
     uint8_t conversionReg[ADS1115_CONVERSION_REGISTER_SIZE];            /*  read only   */
-    uint8_t configReg[ADS1115_CONFIG_REGISTER_SIZE];                    /* read/write   */
+    ads1115ConfigRegister_t configReg;
     uint8_t loThreshReg[ADS1115_LO_THRESH_REGISTER_SIZE];               /* read/write   */
     uint8_t hiThreshReg[ADS1115_HI_THRESH_REGISTER_SIZE];               /* read/write   */
 }ads1115_RegisterMap_t;
@@ -115,14 +97,15 @@ static ads1115_RegisterMap_t ads1115CfgObj;
 /************************************
  * STATIC FUNCTION PROTOTYPES
  ************************************/
-static void read_ads1115ConfigRegisters(void);
+static errType_t read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr);
+static errType_t write_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr);
 
 /************************************
  * STATIC FUNCTIONS
  ************************************/
-static void read_ads1115ConfigRegisters(void)
+static errType_t read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr)
 {
-    esp_err_t ret;
+    errType_t errRet = ERR_UNKNOWN;
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
@@ -138,14 +121,55 @@ static void read_ads1115ConfigRegisters(void)
     i2c_master_write_byte(cmd, ADS1115_ADDRESS | ADS1115_READ_BIT, I2C_ACK_CHECK_DISABLE);
     
     /* read configuration register   */
-    i2c_master_read(cmd, ads1115CfgObj.configReg, ADS1115_CONFIG_REGISTER_SIZE, I2C_MASTER_ACK);
+    i2c_master_read(cmd, configPtr, ADS1115_CONFIG_REGISTER_SIZE, I2C_MASTER_ACK);
 
     i2c_master_stop(cmd);
-    ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, 1000 / portTICK_RATE_MS);
+    if(ESP_OK == i2c_master_cmd_begin(I2C_NUM_0, cmd, 1000 / portTICK_RATE_MS))
+    {
+        errRet = ERR_NONE;
+    }
+    else
+    {
+        errRet = ERR_FAIL;
+    }
+
     i2c_cmd_link_delete(cmd);
 
+    return errRet;
+}
+
+static errType_t write_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr)
+{
+    errType_t errRet;
+    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    cmd = i2c_cmd_link_create();
+    i2c_master_start(cmd);
+
+    /*  address ads1115 device with intention to write     */
+    i2c_master_write_byte(cmd, ADS1115_ADDRESS | ADS1115_WRITE_BIT, I2C_ACK_CHECK_DISABLE);
+    
+    /*  write config register address to pointer register       */
+    i2c_master_write_byte(cmd, ADS1115_CONFIG_REGISTER, I2C_ACK_CHECK_DISABLE);
 
 
+    /*  address ads1115 device with intention to write again    */
+    i2c_master_write_byte(cmd, ADS1115_ADDRESS | ADS1115_WRITE_BIT, I2C_ACK_CHECK_DISABLE);
+    
+    /* write to configuration registers   */
+    i2c_master_write(cmd, configPtr->data, ADS1115_CONFIG_REGISTER_SIZE, I2C_MASTER_ACK);
+
+    i2c_master_stop(cmd);
+    if(ESP_OK == i2c_master_cmd_begin(I2C_NUM_0, cmd, 1000 / portTICK_RATE_MS))
+    {
+        errRet = ERR_NONE;
+    }
+    else
+    {
+        errRet = ERR_FAIL;
+    }
+    i2c_cmd_link_delete(cmd);
+
+    return errRet;
 }
 
 /************************************
@@ -155,30 +179,62 @@ static void read_ads1115ConfigRegisters(void)
 void init_ads1115(void)
 {
     /* read and poppulate config registers object */
-    read_ads1115ConfigRegisters();
+    read_ads1115ConfigRegisters(&ads1115CfgObj.configReg);
 }
 
 errType_t get_ads1115Configuration(ads1115ConfigRegister_t * configPtr)
 {
-    errType_t errRet;
+    errType_t errRet = ERR_UNKNOWN;
 
-    /*  copy config values */
-    memcpy(configPtr, &ads1115CfgObj.configReg, ADS1115_CONFIG_REGISTER_SIZE);
+    if(configPtr != NULL)
+    {
+        /*  copy config values into pointer */
+        memcpy(configPtr, &ads1115CfgObj.configReg, ADS1115_CONFIG_REGISTER_SIZE);
+
+        /*   */
+        errRet = ERR_NONE;
+    }
+    else
+    {
+        /*   */
+        errRet = ERR_NULL_POINTER;
+    }
 
     return errRet;
 }
 
-
-errType_t get_ads1115ChannelValue(uint8_t ch, float *value)
+errType_t set_ads1115Configuration(ads1115ConfigRegister_t * configPtr)
 {
-    errType_t errRet = ERR_FAIL;
+    errType_t errRet = ERR_NONE;
+    ads1115ConfigRegister_t tempConfig;
+
+    if(configPtr == NULL)
+    {
+       /*   */
+        errRet = ERR_NULL_POINTER;
+    }
+
+    if(errRet == ERR_NONE)
+    {
+        /*  copy config values into pointer */
+        errRet = write_ads1115ConfigRegisters(configPtr);
+    }
+
+    if(errRet == ERR_NONE)
+    {
+        /*  read value from registers to confirm write */
+        errRet = read_ads1115ConfigRegisters(&ads1115CfgObj.configReg);
+    }
 
 
+    if(errRet == ERR_NONE)
+    {
+        /* compare memory  */
+        if(0 != memcmp(&ads1115CfgObj.configReg, configPtr, sizeof(ads1115ConfigRegister_t)))
+        {
+            errRet = ERR_FAIL;
+        }
+    }
 
     return errRet;
-}
-
-errType_t reset_ads1115(void)
-{
-
 }
