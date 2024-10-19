@@ -11,7 +11,7 @@
  * INCLUDES
  ************************************/
 #include "common.h"
-#include "i2c_handler.h"
+#include "i2c_task.h"
 #include "ads1115.h"
 
 
@@ -67,6 +67,9 @@
 #define I2C_ACK_CHECK_DISABLE                           (false)
 #define I2C_ACK_CHECK_ENABLE                            (true)
 
+#define ADS1115_WRITE                                   (ADS1115_ADDRESS & ~(ADS1115_WRITE_BIT))
+#define ADS1115_READ                                   (ADS1115_ADDRESS | (ADS1115_READ_BIT))
+
 
 
 
@@ -99,41 +102,67 @@ static ads1115_RegisterMap_t ads1115CfgObj;
  ************************************/
 static errType_t read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr);
 static errType_t write_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr);
+static errType_t queue_ads1115I2cObject( i2c_handler_t ** i2cObjPtr);
 
 /************************************
  * STATIC FUNCTIONS
  ************************************/
+static errType_t queue_ads1115I2cObject( i2c_handler_t ** i2cObjPtr)
+{
+    errType_t errRet = ERR_UNKNOWN;
+
+    /* send to queue*/
+    if( NULL == i2cQueueHdl)
+    {
+        errRet = ERR_NULL_POINTER;
+    }
+
+    if(ERR_NONE == errRet && pdTRUE != xQueueSendToBack( i2cQueueHdl, ( void *) i2cObjPtr , ( TickType_t ) 10 ))
+    {
+        /* failed to send to queue*/
+        /* Failed to post the message, even after 10 ticks. */
+        errRet = ERR_QUEUE_FAIL;
+    }
+
+    /*  Send I2C object pointer */
+    if(ERR_NONE == errRet && 0u == ulTaskNotifyTake(pdFALSE, ( TickType_t ) 1000))
+    {
+        /* failed to get notification from queue set failure*/
+        errRet = ERR_NOTIFY_FAIL;
+    }
+
+    return errRet;
+}
+
 static errType_t read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr)
 {
     errType_t errRet = ERR_UNKNOWN;
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);
+    i2c_handler_t i2cObj;
+    i2c_handler_t * i2cObjPtr = &i2cObj;
+
+    i2cObj.cmd = i2c_cmd_link_create();
+    i2cObj.taskHdl = xTaskGetCurrentTaskHandle();
+
+    i2c_master_start(i2cObj.cmd);
 
     /*  address ads1115 device with intention to write     */
-    i2c_master_write_byte(cmd, ADS1115_ADDRESS | ADS1115_WRITE_BIT, I2C_ACK_CHECK_DISABLE);
+    i2c_master_write_byte(i2cObj.cmd, ADS1115_WRITE, I2C_ACK_CHECK_DISABLE);
     
     /*  write config register address to pointer register       */
-    i2c_master_write_byte(cmd, ADS1115_CONFIG_REGISTER, I2C_ACK_CHECK_DISABLE);
-
+    i2c_master_write_byte(i2cObj.cmd, ADS1115_CONFIG_REGISTER, I2C_ACK_CHECK_DISABLE);
 
     /*  address ads1115 device with intention to read    */
-    i2c_master_write_byte(cmd, ADS1115_ADDRESS | ADS1115_READ_BIT, I2C_ACK_CHECK_DISABLE);
+    i2c_master_write_byte(i2cObj.cmd, ADS1115_READ, I2C_ACK_CHECK_DISABLE);
     
     /* read configuration register   */
-    i2c_master_read(cmd, configPtr, ADS1115_CONFIG_REGISTER_SIZE, I2C_MASTER_ACK);
+    i2c_master_read(i2cObj.cmd, configPtr, ADS1115_CONFIG_REGISTER_SIZE, I2C_MASTER_ACK);
 
-    i2c_master_stop(cmd);
-    if(ESP_OK == i2c_master_cmd_begin(I2C_NUM_0, cmd, 1000 / portTICK_RATE_MS))
-    {
-        errRet = ERR_NONE;
-    }
-    else
-    {
-        errRet = ERR_FAIL;
-    }
+    i2c_master_stop(i2cObj.cmd);
 
-    i2c_cmd_link_delete(cmd);
+    errRet = queue_ads1115I2cObject(&i2cObjPtr);
+    //!TODO: check against errRet
+
+    i2c_cmd_link_delete(i2cObj.cmd);
 
     return errRet;
 }
@@ -159,6 +188,8 @@ static errType_t write_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPt
     i2c_master_write(cmd, configPtr->data, ADS1115_CONFIG_REGISTER_SIZE, I2C_MASTER_ACK);
 
     i2c_master_stop(cmd);
+
+    /*      send to i2c handler */
     if(ESP_OK == i2c_master_cmd_begin(I2C_NUM_0, cmd, 1000 / portTICK_RATE_MS))
     {
         errRet = ERR_NONE;
@@ -178,7 +209,7 @@ static errType_t write_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPt
 
 void init_ads1115(void)
 {
-    /* read and poppulate config registers object */
+    /* read config registers object */
     read_ads1115ConfigRegisters(&ads1115CfgObj.configReg);
 }
 

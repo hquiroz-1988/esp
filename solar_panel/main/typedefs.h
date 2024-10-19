@@ -31,6 +31,8 @@ typedef enum
     ERR_NONE,
     ERR_UNKNOWN,
     ERR_FAIL,
+    ERR_QUEUE_FAIL,
+    ERR_NOTIFY_FAIL,
     ERR_NULL_POINTER,
     ERR_OUT_OF_BOUNDS,
 
