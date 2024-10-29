@@ -19,6 +19,7 @@ extern "C" {
  ************************************/
 #include "freertos/FreeRTOS.h"
 #include "typedefs.h"
+#include "esp_log.h"
 
 /************************************
  * MACROS AND DEFINES

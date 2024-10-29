@@ -32,9 +32,11 @@ typedef enum
     ERR_UNKNOWN,
     ERR_FAIL,
     ERR_QUEUE_FAIL,
-    ERR_NOTIFY_FAIL,
+    ERR_NOTIFY_TIMEOUT,
     ERR_NULL_POINTER,
     ERR_OUT_OF_BOUNDS,
+    ERR_I2C_CMD_FAIL,
+    
 
     TOTAL_ERR_TYPES
 }errType_t;

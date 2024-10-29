@@ -93,6 +93,7 @@ typedef struct
  * STATIC VARIABLES
  ************************************/
 static ads1115_RegisterMap_t ads1115CfgObj;
+static const char *TAG = "ads1115";
 /************************************
  * GLOBAL VARIABLES
  ************************************/
@@ -124,11 +125,11 @@ static errType_t queue_ads1115I2cObject( i2c_handler_t ** i2cObjPtr)
         errRet = ERR_QUEUE_FAIL;
     }
 
-    /*  Send I2C object pointer */
+    /*  Wait for i2c task to notify of completion    */
     if(ERR_NONE == errRet && 0u == ulTaskNotifyTake(pdFALSE, ( TickType_t ) 1000))
     {
-        /* failed to get notification from queue set failure*/
-        errRet = ERR_NOTIFY_FAIL;
+        /* failed to get notification from queue within timeout, set failure*/
+        errRet = ERR_NOTIFY_TIMEOUT;
     }
 
     return errRet;
@@ -136,34 +137,69 @@ static errType_t queue_ads1115I2cObject( i2c_handler_t ** i2cObjPtr)
 
 static errType_t read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr)
 {
-    errType_t errRet = ERR_UNKNOWN;
+    errType_t errRet = ERR_NONE;
     i2c_handler_t i2cObj;
     i2c_handler_t * i2cObjPtr = &i2cObj;
 
     i2cObj.cmd = i2c_cmd_link_create();
     i2cObj.taskHdl = xTaskGetCurrentTaskHandle();
 
-    i2c_master_start(i2cObj.cmd);
+    /*  check for null pointers */
+    if(NULL == i2cObj.cmd)
+    {
+        errRet = ERR_NULL_POINTER;
+    }
+
+    /*  start i2c command     */
+    if(ERR_NONE == errRet && ESP_OK != i2c_master_start(i2cObj.cmd))
+    {
+        errRet = ERR_I2C_CMD_FAIL;
+    }
 
     /*  address ads1115 device with intention to write     */
-    i2c_master_write_byte(i2cObj.cmd, ADS1115_WRITE, I2C_ACK_CHECK_DISABLE);
+    if( ERR_NONE == errRet && 
+        ESP_OK != i2c_master_write_byte(i2cObj.cmd, ADS1115_WRITE, I2C_ACK_CHECK_DISABLE))
+    {
+        errRet = ERR_I2C_CMD_FAIL;
+    }
     
     /*  write config register address to pointer register       */
-    i2c_master_write_byte(i2cObj.cmd, ADS1115_CONFIG_REGISTER, I2C_ACK_CHECK_DISABLE);
+    if( ERR_NONE == errRet && 
+        ESP_OK != i2c_master_write_byte(i2cObj.cmd, ADS1115_CONFIG_REGISTER, I2C_ACK_CHECK_DISABLE))
+    {
+        errRet = ERR_I2C_CMD_FAIL;
+    }
 
     /*  address ads1115 device with intention to read    */
-    i2c_master_write_byte(i2cObj.cmd, ADS1115_READ, I2C_ACK_CHECK_DISABLE);
-    
+    if( ERR_NONE == errRet && 
+        ESP_OK != i2c_master_write_byte(i2cObj.cmd, ADS1115_READ, I2C_ACK_CHECK_DISABLE))
+    {
+        errRet = ERR_I2C_CMD_FAIL;
+    }
+
     /* read configuration register   */
-    i2c_master_read(i2cObj.cmd, configPtr, ADS1115_CONFIG_REGISTER_SIZE, I2C_MASTER_ACK);
+    if( ERR_NONE == errRet && 
+        ESP_OK != i2c_master_read(i2cObj.cmd, configPtr, ADS1115_CONFIG_REGISTER_SIZE, I2C_MASTER_ACK))
+    {
+        errRet = ERR_I2C_CMD_FAIL;
+    }
 
-    i2c_master_stop(i2cObj.cmd);
+    /* i2c command stop  */
+    if( ERR_NONE == errRet && 
+        ESP_OK != i2c_master_stop(i2cObj.cmd))
+    {
+        errRet = ERR_I2C_CMD_FAIL;
+    }
 
-    errRet = queue_ads1115I2cObject(&i2cObjPtr);
-    //!TODO: check against errRet
+    if(ERR_NONE == errRet)
+    {
+        /* queue commands    */
+        errRet = queue_ads1115I2cObject(&i2cObjPtr);
+    }
 
+    /* delete command object */
     i2c_cmd_link_delete(i2cObj.cmd);
-
+    
     return errRet;
 }
 
@@ -209,8 +245,14 @@ static errType_t write_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPt
 
 void init_ads1115(void)
 {
+    errType_t errRet = ERR_NONE;
     /* read config registers object */
-    read_ads1115ConfigRegisters(&ads1115CfgObj.configReg);
+    errRet = read_ads1115ConfigRegisters(&ads1115CfgObj.configReg);
+
+    if(ERR_NONE != errRet)
+    {
+        ESP_LOGI(TAG, "Config Reg Read Fail: %i", errRet);   
+    }
 }
 
 errType_t get_ads1115Configuration(ads1115ConfigRegister_t * configPtr)
@@ -219,7 +261,7 @@ errType_t get_ads1115Configuration(ads1115ConfigRegister_t * configPtr)
 
     if(configPtr != NULL)
     {
-        /*  copy config values into pointer */
+        /*  last read config values should persist */
         memcpy(configPtr, &ads1115CfgObj.configReg, ADS1115_CONFIG_REGISTER_SIZE);
 
         /*   */
