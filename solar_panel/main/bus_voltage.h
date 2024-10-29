@@ -48,9 +48,9 @@ void init_BusVoltage(void);
  *
  *  @param value - pointer to a float value that will return
  *  the voltage value
- *  @return errType_t - returns error type or success
+ *  @return retVal_t - returns error type or success
  */
-errType_t get_filtered_voltage(float * value);
+retVal_t get_filtered_voltage(float * value);
 
 
 #ifdef __cplusplus

@@ -101,16 +101,16 @@ static const char *TAG = "ads1115";
 /************************************
  * STATIC FUNCTION PROTOTYPES
  ************************************/
-static errType_t read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr);
-static errType_t write_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr);
-static errType_t queue_ads1115I2cObject( i2c_handler_t ** i2cObjPtr);
+static retVal_t read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr);
+static retVal_t write_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr);
+static retVal_t queue_ads1115I2cObject( i2c_handler_t ** i2cObjPtr);
 
 /************************************
  * STATIC FUNCTIONS
  ************************************/
-static errType_t queue_ads1115I2cObject( i2c_handler_t ** i2cObjPtr)
+static retVal_t queue_ads1115I2cObject( i2c_handler_t ** i2cObjPtr)
 {
-    errType_t errRet = ERR_UNKNOWN;
+    retVal_t errRet = ERR_UNKNOWN;
 
     /* send to queue*/
     if( NULL == i2cQueueHdl)
@@ -135,9 +135,9 @@ static errType_t queue_ads1115I2cObject( i2c_handler_t ** i2cObjPtr)
     return errRet;
 }
 
-static errType_t read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr)
+static retVal_t read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr)
 {
-    errType_t errRet = ERR_NONE;
+    retVal_t errRet = ERR_NONE;
     i2c_handler_t i2cObj;
     i2c_handler_t * i2cObjPtr = &i2cObj;
 
@@ -203,9 +203,9 @@ static errType_t read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr
     return errRet;
 }
 
-static errType_t write_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr)
+static retVal_t write_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr)
 {
-    errType_t errRet;
+    retVal_t errRet;
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
@@ -245,7 +245,7 @@ static errType_t write_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPt
 
 void init_ads1115(void)
 {
-    errType_t errRet = ERR_NONE;
+    retVal_t errRet = ERR_NONE;
     /* read config registers object */
     errRet = read_ads1115ConfigRegisters(&ads1115CfgObj.configReg);
 
@@ -255,9 +255,9 @@ void init_ads1115(void)
     }
 }
 
-errType_t get_ads1115Configuration(ads1115ConfigRegister_t * configPtr)
+retVal_t get_ads1115Configuration(ads1115ConfigRegister_t * configPtr)
 {
-    errType_t errRet = ERR_UNKNOWN;
+    retVal_t errRet = ERR_UNKNOWN;
 
     if(configPtr != NULL)
     {
@@ -276,9 +276,9 @@ errType_t get_ads1115Configuration(ads1115ConfigRegister_t * configPtr)
     return errRet;
 }
 
-errType_t set_ads1115Configuration(ads1115ConfigRegister_t * configPtr)
+retVal_t set_ads1115Configuration(ads1115ConfigRegister_t * configPtr)
 {
-    errType_t errRet = ERR_NONE;
+    retVal_t errRet = ERR_NONE;
     ads1115ConfigRegister_t tempConfig;
 
     if(configPtr == NULL)

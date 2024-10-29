@@ -74,9 +74,9 @@ void init_BusVoltage(void)
     xTaskCreate(voltage_Task, "voltage_task", 1024, NULL, 5, NULL);
 }
 
-errType_t get_filtered_voltage(float * value)
+retVal_t get_filtered_voltage(float * value)
 {
-    errType_t retVal = ERR_UNKNOWN;
+    retVal_t retVal = ERR_UNKNOWN;
 
     
 

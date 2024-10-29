@@ -39,7 +39,7 @@ typedef enum
     
 
     TOTAL_ERR_TYPES
-}errType_t;
+}retVal_t;
 
 /************************************
  * EXPORTED VARIABLES

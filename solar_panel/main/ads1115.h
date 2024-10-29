@@ -56,8 +56,8 @@ typedef union
  * GLOBAL FUNCTION PROTOTYPES
  ************************************/
 void init_ads1115(void);
-errType_t get_ads1115Configuration(ads1115ConfigRegister_t * configPtr);
-errType_t set_ads1115Configuration(ads1115ConfigRegister_t * configPtr);
+retVal_t get_ads1115Configuration(ads1115ConfigRegister_t * configPtr);
+retVal_t set_ads1115Configuration(ads1115ConfigRegister_t * configPtr);
 
 
 #ifdef __cplusplus

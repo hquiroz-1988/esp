@@ -88,7 +88,7 @@ void app_main()
 
     /* initialize task */
     float voltageValue;
-    errType_t errRet;
+    retVal_t errRet;
 
     /* initialize i2c handler task and i2c module    */
     init_i2cHandler();
