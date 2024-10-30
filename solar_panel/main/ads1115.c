@@ -66,6 +66,7 @@
 
 #define I2C_ACK_CHECK_DISABLE                           (false)
 #define I2C_ACK_CHECK_ENABLE                            (true)
+#define ADS1115_ACK_CHECK_STATUS                            (I2C_ACK_CHECK_DISABLE)//!TODO: enable checking when ready to connect to device
 
 #define ADS1115_WRITE                                   (ADS1115_ADDRESS & ~(ADS1115_WRITE_BIT))
 #define ADS1115_READ                                   (ADS1115_ADDRESS | (ADS1115_READ_BIT))
@@ -81,7 +82,7 @@
 typedef struct
 {
     uint8_t pointerReg[ADS1115_POINTER_REGISTER_SIZE];                  /* write only   */
-    uint8_t conversionReg[ADS1115_CONVERSION_REGISTER_SIZE];            /*  read only   */
+    ads1115ConversionRegister_t conversionReg;            /*  read only   */
     ads1115ConfigRegister_t configReg;
     uint8_t loThreshReg[ADS1115_LO_THRESH_REGISTER_SIZE];               /* read/write   */
     uint8_t hiThreshReg[ADS1115_HI_THRESH_REGISTER_SIZE];               /* read/write   */
@@ -103,12 +104,13 @@ static const char *TAG = "ads1115";
  ************************************/
 static retVal_t read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr);
 static retVal_t write_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr);
-static retVal_t queue_ads1115I2cObject( i2c_handler_t ** i2cObjPtr);
+static retVal_t queueWait_ads1115I2cObject( i2c_handler_t ** i2cObjPtr);
 
 /************************************
  * STATIC FUNCTIONS
  ************************************/
-static retVal_t queue_ads1115I2cObject( i2c_handler_t ** i2cObjPtr)
+//!TODO: document function
+static retVal_t queueWait_ads1115I2cObject( i2c_handler_t ** i2cObjPtr)
 {
     retVal_t errRet = ERR_UNKNOWN;
 
@@ -135,6 +137,7 @@ static retVal_t queue_ads1115I2cObject( i2c_handler_t ** i2cObjPtr)
     return errRet;
 }
 
+//!TODO: document function
 static retVal_t read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr)
 {
     retVal_t errRet = ERR_NONE;
@@ -158,21 +161,21 @@ static retVal_t read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr)
 
     /*  address ads1115 device with intention to write     */
     if( ERR_NONE == errRet && 
-        ESP_OK != i2c_master_write_byte(i2cObj.cmd, ADS1115_WRITE, I2C_ACK_CHECK_DISABLE))
+        ESP_OK != i2c_master_write_byte(i2cObj.cmd, ADS1115_WRITE, ADS1115_ACK_CHECK_STATUS))
     {
         errRet = ERR_I2C_CMD_FAIL;
     }
     
     /*  write config register address to pointer register       */
     if( ERR_NONE == errRet && 
-        ESP_OK != i2c_master_write_byte(i2cObj.cmd, ADS1115_CONFIG_REGISTER, I2C_ACK_CHECK_DISABLE))
+        ESP_OK != i2c_master_write_byte(i2cObj.cmd, ADS1115_CONFIG_REGISTER, ADS1115_ACK_CHECK_STATUS))
     {
         errRet = ERR_I2C_CMD_FAIL;
     }
 
     /*  address ads1115 device with intention to read    */
     if( ERR_NONE == errRet && 
-        ESP_OK != i2c_master_write_byte(i2cObj.cmd, ADS1115_READ, I2C_ACK_CHECK_DISABLE))
+        ESP_OK != i2c_master_write_byte(i2cObj.cmd, ADS1115_READ, ADS1115_ACK_CHECK_STATUS))
     {
         errRet = ERR_I2C_CMD_FAIL;
     }
@@ -194,7 +197,7 @@ static retVal_t read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr)
     if(ERR_NONE == errRet)
     {
         /* queue commands    */
-        errRet = queue_ads1115I2cObject(&i2cObjPtr);
+        errRet = queueWait_ads1115I2cObject(&i2cObjPtr);
     }
 
     /* delete command object */
@@ -203,25 +206,28 @@ static retVal_t read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr)
     return errRet;
 }
 
+//!TODO: document function
 static retVal_t write_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr)
 {
+    //!TODO: refactor this function to perform retval checks
+
     retVal_t errRet;
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
 
     /*  address ads1115 device with intention to write     */
-    i2c_master_write_byte(cmd, ADS1115_ADDRESS | ADS1115_WRITE_BIT, I2C_ACK_CHECK_DISABLE);
+    i2c_master_write_byte(cmd, ADS1115_ADDRESS | ADS1115_WRITE_BIT, ADS1115_ACK_CHECK_STATUS);
     
     /*  write config register address to pointer register       */
-    i2c_master_write_byte(cmd, ADS1115_CONFIG_REGISTER, I2C_ACK_CHECK_DISABLE);
+    i2c_master_write_byte(cmd, ADS1115_CONFIG_REGISTER, ADS1115_ACK_CHECK_STATUS);
 
 
     /*  address ads1115 device with intention to write again    */
-    i2c_master_write_byte(cmd, ADS1115_ADDRESS | ADS1115_WRITE_BIT, I2C_ACK_CHECK_DISABLE);
+    i2c_master_write_byte(cmd, ADS1115_ADDRESS | ADS1115_WRITE_BIT, ADS1115_ACK_CHECK_STATUS);
     
     /* write to configuration registers   */
-    i2c_master_write(cmd, configPtr->data, ADS1115_CONFIG_REGISTER_SIZE, I2C_MASTER_ACK);
+    i2c_master_write(cmd, configPtr->bytes, ADS1115_CONFIG_REGISTER_SIZE, I2C_MASTER_ACK);
 
     i2c_master_stop(cmd);
 
@@ -243,6 +249,7 @@ static retVal_t write_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr
  * GLOBAL FUNCTIONS
  ************************************/
 
+//!TODO: document function
 void init_ads1115(void)
 {
     retVal_t errRet = ERR_NONE;
@@ -255,6 +262,7 @@ void init_ads1115(void)
     }
 }
 
+//!TODO: document function
 retVal_t get_ads1115Configuration(ads1115ConfigRegister_t * configPtr)
 {
     retVal_t errRet = ERR_UNKNOWN;
@@ -276,6 +284,7 @@ retVal_t get_ads1115Configuration(ads1115ConfigRegister_t * configPtr)
     return errRet;
 }
 
+//!TODO: document function
 retVal_t set_ads1115Configuration(ads1115ConfigRegister_t * configPtr)
 {
     retVal_t errRet = ERR_NONE;
@@ -308,6 +317,68 @@ retVal_t set_ads1115Configuration(ads1115ConfigRegister_t * configPtr)
             errRet = ERR_FAIL;
         }
     }
+
+    return errRet;
+}
+
+//!TODO: document function
+retVal_t get_ads1115ConversionRegister(ads1115ConversionRegister_t * regPtr)
+{
+    /* write conversion addy to the pointer register    */
+    retVal_t errRet = ERR_NONE;
+    i2c_handler_t i2cObj;
+    i2c_handler_t * i2cObjPtr = &i2cObj;
+
+    i2cObj.cmd = i2c_cmd_link_create();
+    i2cObj.taskHdl = xTaskGetCurrentTaskHandle();
+
+    /*  check for null pointers */
+    if(NULL == i2cObj.cmd)
+    {
+        errRet = ERR_NULL_POINTER;
+    }
+
+    /*  start i2c command     */
+    if(ERR_NONE == errRet && ESP_OK != i2c_master_start(i2cObj.cmd))
+    {
+        errRet = ERR_I2C_CMD_FAIL;
+    }
+
+    /*  address ads1115 device with intention to write     */
+    if( ERR_NONE == errRet && 
+        ESP_OK != i2c_master_write_byte(i2cObj.cmd, ADS1115_WRITE, ADS1115_ACK_CHECK_STATUS))
+    {
+        errRet = ERR_I2C_CMD_FAIL;
+    }
+    
+    /*  write converstion register address to pointer register       */
+    if( ERR_NONE == errRet && 
+        ESP_OK != i2c_master_write_byte(i2cObj.cmd, ADS1115_CONVERSION_REGISTER, ADS1115_ACK_CHECK_STATUS))
+    {
+        errRet = ERR_I2C_CMD_FAIL;
+    }
+
+    /* i2c command stop  */
+    if( ERR_NONE == errRet && 
+        ESP_OK != i2c_master_stop(i2cObj.cmd))
+    {
+        errRet = ERR_I2C_CMD_FAIL;
+    }
+
+    if(ERR_NONE == errRet)
+    {
+        /* queue commands    */
+        errRet = queueWait_ads1115I2cObject(&i2cObjPtr);
+    }
+
+    /* delete command object */
+    i2c_cmd_link_delete(i2cObj.cmd);
+
+
+    /* wait for conversion to be completed */
+    //  TODO: this is either a timed loop or preferably waiting for a pin interrupt with a timeout
+
+    /* read conversion register    */
 
     return errRet;
 }

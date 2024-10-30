@@ -45,8 +45,14 @@ typedef union
         uint8_t compLatch       : 1;
         uint8_t compQueue       : 2;
     };
-    uint8_t data[ADS1115_CONFIG_REGISTER_SIZE];
+    uint8_t bytes[ADS1115_CONFIG_REGISTER_SIZE];
 }ads1115ConfigRegister_t;
+
+typedef union
+{
+    uint16_t value;
+    uint8_t bytes[ADS1115_CONVERSION_REGISTER_SIZE];
+}ads1115ConversionRegister_t;
 
 /************************************
  * EXPORTED VARIABLES
@@ -58,6 +64,8 @@ typedef union
 void init_ads1115(void);
 retVal_t get_ads1115Configuration(ads1115ConfigRegister_t * configPtr);
 retVal_t set_ads1115Configuration(ads1115ConfigRegister_t * configPtr);
+retVal_t get_ads1115ConversionRegister(ads1115ConversionRegister_t * regPtr);
+
 
 
 #ifdef __cplusplus
