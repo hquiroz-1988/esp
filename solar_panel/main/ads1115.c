@@ -78,14 +78,19 @@
  * PRIVATE TYPEDEFS
  ************************************/
 
-
+/*!
+ * \brief a typedef struct that contains the register map for the ads1115
+ * 
+ * This typedef struct contains all read and write registers for the
+ * in the ads1115.
+ */
 typedef struct
 {
-    uint8_t pointerReg[ADS1115_POINTER_REGISTER_SIZE];                  /* write only   */
-    ads1115ConversionRegister_t conversionReg;            /*  read only   */
-    ads1115ConfigRegister_t configReg;
-    uint8_t loThreshReg[ADS1115_LO_THRESH_REGISTER_SIZE];               /* read/write   */
-    uint8_t hiThreshReg[ADS1115_HI_THRESH_REGISTER_SIZE];               /* read/write   */
+    uint8_t pointerReg[ADS1115_POINTER_REGISTER_SIZE];                  /**< pointer register is write only     */
+    ads1115ConversionRegister_t conversionReg;                          /**< conversion register is read only   */
+    ads1115ConfigRegister_t configReg;                                  /**< config register is read and write  */
+    uint8_t loThreshReg[ADS1115_LO_THRESH_REGISTER_SIZE];               /**< loThresh register is read and write   */
+    uint8_t hiThreshReg[ADS1115_HI_THRESH_REGISTER_SIZE];               /**< hiThresh is read and write   */
 }ads1115_RegisterMap_t;
 
 
@@ -109,7 +114,18 @@ static retVal_t queueWait_ads1115I2cObject( i2c_handler_t ** i2cObjPtr);
 /************************************
  * STATIC FUNCTIONS
  ************************************/
-//!TODO: document function
+
+/*!
+ * \brief Queues i2c object and waits for its return
+ *  
+ * Function takes a pointer to an i2c object pointer so that it can be sent to
+ * the i2c task queue, function then waits for a notification from the queue to
+ * continue.
+ *
+ * \param i2cObjPtr -Even if there is only one possible unified theory. it is just a
+ *               set of rules and equations.
+ * \return return value is NO_ERROR, NULL_POINTER, QUEUE_FAIL, or NOTIFY_TIMEOUT.
+ */
 static retVal_t queueWait_ads1115I2cObject( i2c_handler_t ** i2cObjPtr)
 {
     retVal_t errRet = ERR_UNKNOWN;
@@ -137,7 +153,12 @@ static retVal_t queueWait_ads1115I2cObject( i2c_handler_t ** i2cObjPtr)
     return errRet;
 }
 
-//!TODO: document function
+/*!
+ * \brief 
+ * 
+ * \param configPtr 
+ * \return retVal_t 
+ */
 static retVal_t read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr)
 {
     retVal_t errRet = ERR_NONE;
@@ -206,7 +227,12 @@ static retVal_t read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr)
     return errRet;
 }
 
-//!TODO: document function
+/*!
+ * \brief 
+ * 
+ * \param configPtr 
+ * \return retVal_t 
+ */
 static retVal_t write_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr)
 {
     //!TODO: refactor this function to perform retval checks
@@ -322,7 +348,7 @@ retVal_t set_ads1115Configuration(ads1115ConfigRegister_t * configPtr)
 }
 
 //!TODO: document function
-retVal_t get_ads1115ConversionRegister(ads1115ConversionRegister_t * regPtr)
+retVal_t get_ads1115LatestConversionRegister(ads1115ConversionRegister_t * regPtr)
 {
     /* write conversion addy to the pointer register    */
     retVal_t errRet = ERR_NONE;
@@ -351,12 +377,15 @@ retVal_t get_ads1115ConversionRegister(ads1115ConversionRegister_t * regPtr)
         errRet = ERR_I2C_CMD_FAIL;
     }
     
-    /*  write converstion register address to pointer register       */
+    /*  write conversion register address to pointer register       */
     if( ERR_NONE == errRet && 
         ESP_OK != i2c_master_write_byte(i2cObj.cmd, ADS1115_CONVERSION_REGISTER, ADS1115_ACK_CHECK_STATUS))
     {
         errRet = ERR_I2C_CMD_FAIL;
     }
+
+    /* read conversion register    */
+
 
     /* i2c command stop  */
     if( ERR_NONE == errRet && 
@@ -373,12 +402,6 @@ retVal_t get_ads1115ConversionRegister(ads1115ConversionRegister_t * regPtr)
 
     /* delete command object */
     i2c_cmd_link_delete(i2cObj.cmd);
-
-
-    /* wait for conversion to be completed */
-    //  TODO: this is either a timed loop or preferably waiting for a pin interrupt with a timeout
-
-    /* read conversion register    */
 
     return errRet;
 }

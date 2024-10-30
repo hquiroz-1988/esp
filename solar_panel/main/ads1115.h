@@ -64,7 +64,7 @@ typedef union
 void init_ads1115(void);
 retVal_t get_ads1115Configuration(ads1115ConfigRegister_t * configPtr);
 retVal_t set_ads1115Configuration(ads1115ConfigRegister_t * configPtr);
-retVal_t get_ads1115ConversionRegister(ads1115ConversionRegister_t * regPtr);
+retVal_t get_ads1115LatestConversionRegister(ads1115ConversionRegister_t * regPtr);
 
 
 
