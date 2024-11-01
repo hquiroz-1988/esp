@@ -3,7 +3,21 @@
  * @file    ads1115.c
  * @author  Hugo Quiroz
  * @date    2024-10-08 11:50:19
- * @brief   description
+ * @brief   This module serves as an interface to the ads1115 ADC device. 
+ *  The ADS1115 is a precision, low-power, 16-bit, I2Ccompatible,
+ * analog-to-digital converters (ADCs). The ADS1115 device incorporate a low-drift 
+ * voltage reference and an oscillator. The ADS1115 also incorporate a programmable 
+ * gain amplifier (PGA) and a digital comparator. These features, along with a wide
+ * operating supply range, make the ADS111x well suited for power- and 
+ * space-constrained, sensormeasurement applications. The ADS111x perform 
+ * conversions at data rates up to 860 samples per second (SPS). The PGA offers 
+ * input ranges from ±256 mV to ±6.144 V, allowing precise large- and small-signal 
+ * measurements. The ADS1115 features an input multiplexer (MUX) that allows two 
+ * differential or four single-ended input measurements. Use the digital comparator
+ *  in the ADS1114 and ADS1115 for under- and overvoltage detection. The ADS111x 
+ * operate in either continuousconversion mode or single-shot mode. The devices
+ * are automatically powered down after one conversion in single-shot mode; 
+ * therefore, power consumption is significantly reduced during idle periods.
  ********************************************************************************
  */
 
@@ -66,10 +80,10 @@
 
 #define I2C_ACK_CHECK_DISABLE                           (false)
 #define I2C_ACK_CHECK_ENABLE                            (true)
-#define ADS1115_ACK_CHECK_STATUS                            (I2C_ACK_CHECK_DISABLE)//!TODO: enable checking when ready to connect to device
+#define ADS1115_ACK_CHECK_STATUS                        (I2C_ACK_CHECK_DISABLE)//TODO: enable checking when ready to connect to device
 
 #define ADS1115_WRITE                                   (ADS1115_ADDRESS & ~(ADS1115_WRITE_BIT))
-#define ADS1115_READ                                   (ADS1115_ADDRESS | (ADS1115_READ_BIT))
+#define ADS1115_READ                                    (ADS1115_ADDRESS | (ADS1115_READ_BIT))
 
 
 
@@ -130,23 +144,23 @@ static retVal_t queueWait_ads1115I2cObject( i2c_handler_t ** i2cObjPtr)
 {
     retVal_t errRet = ERR_UNKNOWN;
 
-    /* send to queue*/
-    if( NULL == i2cQueueHdl)
+    /*! - check i2c Queue Handle and i2c object pointer are not null*/
+    if( NULL == i2cQueueHdl && NULL != i2cObjPtr)
     {
         errRet = ERR_NULL_POINTER;
     }
 
-    if(ERR_NONE == errRet && pdTRUE != xQueueSendToBack( i2cQueueHdl, ( void *) i2cObjPtr , ( TickType_t ) 10 ))
+    /*! - send i2c object pointer to queue  */
+    if(ERR_NONE == errRet && pdTRUE != xQueueSendToBack( i2cQueueHdl, ( void *) i2cObjPtr , ( TickType_t ) 10 ))// TODO: replace literals with macro or const
     {
-        /* failed to send to queue*/
-        /* Failed to post the message, even after 10 ticks. */
+        /*! - if message fails to queue after 10 ticks, return queue fail */
         errRet = ERR_QUEUE_FAIL;
     }
 
-    /*  Wait for i2c task to notify of completion    */
-    if(ERR_NONE == errRet && 0u == ulTaskNotifyTake(pdFALSE, ( TickType_t ) 1000))
+    /*! - Wait for i2c task to notify of completion    */
+    if(ERR_NONE == errRet && 0u == ulTaskNotifyTake(pdFALSE, ( TickType_t ) 1000)) // TODO: replace literals with macro or const
     {
-        /* failed to get notification from queue within timeout, set failure*/
+        /* - if i2c task fails to notify within timeout return notify timeout fail*/
         errRet = ERR_NOTIFY_TIMEOUT;
     }
 
@@ -154,10 +168,14 @@ static retVal_t queueWait_ads1115I2cObject( i2c_handler_t ** i2cObjPtr)
 }
 
 /*!
- * \brief 
+ * \brief reads ads1115 configuration registers
  * 
- * \param configPtr 
- * \return retVal_t 
+ * Function creates an i2c handler object, builds the the i2c command
+ * then queues and waits for the command then deletes the object.
+ * 
+ * \param configPtr - pointer to configuration register struct that will be poppulated with
+ * configuration register data after read.
+ * \return retVal_t - returns succces or reason for failure of the function.
  */
 static retVal_t read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr)
 {
@@ -168,47 +186,47 @@ static retVal_t read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr)
     i2cObj.cmd = i2c_cmd_link_create();
     i2cObj.taskHdl = xTaskGetCurrentTaskHandle();
 
-    /*  check for null pointers */
+    /*! check for null pointers */
     if(NULL == i2cObj.cmd)
     {
         errRet = ERR_NULL_POINTER;
     }
 
-    /*  start i2c command     */
+    /*!  start i2c command     */
     if(ERR_NONE == errRet && ESP_OK != i2c_master_start(i2cObj.cmd))
     {
         errRet = ERR_I2C_CMD_FAIL;
     }
 
-    /*  address ads1115 device with intention to write     */
+    /*!  address ads1115 device with intention to write     */
     if( ERR_NONE == errRet && 
         ESP_OK != i2c_master_write_byte(i2cObj.cmd, ADS1115_WRITE, ADS1115_ACK_CHECK_STATUS))
     {
         errRet = ERR_I2C_CMD_FAIL;
     }
     
-    /*  write config register address to pointer register       */
+    /*!  write config register address to pointer register       */
     if( ERR_NONE == errRet && 
         ESP_OK != i2c_master_write_byte(i2cObj.cmd, ADS1115_CONFIG_REGISTER, ADS1115_ACK_CHECK_STATUS))
     {
         errRet = ERR_I2C_CMD_FAIL;
     }
 
-    /*  address ads1115 device with intention to read    */
+    /*!  address ads1115 device with intention to read    */
     if( ERR_NONE == errRet && 
         ESP_OK != i2c_master_write_byte(i2cObj.cmd, ADS1115_READ, ADS1115_ACK_CHECK_STATUS))
     {
         errRet = ERR_I2C_CMD_FAIL;
     }
 
-    /* read configuration register   */
+    /*! read configuration register   */
     if( ERR_NONE == errRet && 
         ESP_OK != i2c_master_read(i2cObj.cmd, configPtr, ADS1115_CONFIG_REGISTER_SIZE, I2C_MASTER_ACK))
     {
         errRet = ERR_I2C_CMD_FAIL;
     }
 
-    /* i2c command stop  */
+    /*! i2c command stop  */
     if( ERR_NONE == errRet && 
         ESP_OK != i2c_master_stop(i2cObj.cmd))
     {
@@ -217,47 +235,51 @@ static retVal_t read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr)
 
     if(ERR_NONE == errRet)
     {
-        /* queue commands    */
+        /*! queue commands    */
         errRet = queueWait_ads1115I2cObject(&i2cObjPtr);
     }
 
-    /* delete command object */
+    /*! delete command object */
     i2c_cmd_link_delete(i2cObj.cmd);
     
     return errRet;
 }
 
 /*!
- * \brief 
+ * \brief writes to the ads1115 configuration registers
  * 
- * \param configPtr 
- * \return retVal_t 
+ * This function uses config register pointer passed as argument to
+ * write to ads1115 config registers.
+ * 
+ * \param configPtr - pointer to configuration register that contains the ads1115
+ * configuration to be written to the ads1115.
+ * \return retVal_t - returns succces or reason for failure of the function.
  */
 static retVal_t write_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr)
 {
-    //!TODO: refactor this function to perform retval checks
+    //TODO: refactor this function to perform retval checks
 
     retVal_t errRet;
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
 
-    /*  address ads1115 device with intention to write     */
+    /*! - address ads1115 device with intention to write */
     i2c_master_write_byte(cmd, ADS1115_ADDRESS | ADS1115_WRITE_BIT, ADS1115_ACK_CHECK_STATUS);
     
-    /*  write config register address to pointer register       */
+    /*! - write config register address to pointer register       */
     i2c_master_write_byte(cmd, ADS1115_CONFIG_REGISTER, ADS1115_ACK_CHECK_STATUS);
 
 
-    /*  address ads1115 device with intention to write again    */
+    /*! - address ads1115 device with intention to write again    */
     i2c_master_write_byte(cmd, ADS1115_ADDRESS | ADS1115_WRITE_BIT, ADS1115_ACK_CHECK_STATUS);
     
-    /* write to configuration registers   */
+    /*! - write to configuration registers   */
     i2c_master_write(cmd, configPtr->bytes, ADS1115_CONFIG_REGISTER_SIZE, I2C_MASTER_ACK);
 
     i2c_master_stop(cmd);
 
-    /*      send to i2c handler */
+    /*! - send to i2c handler */
     if(ESP_OK == i2c_master_cmd_begin(I2C_NUM_0, cmd, 1000 / portTICK_RATE_MS))
     {
         errRet = ERR_NONE;
@@ -266,6 +288,8 @@ static retVal_t write_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr
     {
         errRet = ERR_FAIL;
     }
+
+    /*! - delete the i2c command handle   */
     i2c_cmd_link_delete(cmd);
 
     return errRet;
@@ -275,12 +299,20 @@ static retVal_t write_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr
  * GLOBAL FUNCTIONS
  ************************************/
 
-//!TODO: document function
+/*!
+ * \brief initializes the ads1115 ADC Module
+ * 
+ * Function reads the configuration registers of the ads1115,
+ * these are used to poppulate the local ads1115 object.
+ * 
+ */
 void init_ads1115(void)
 {
     retVal_t errRet = ERR_NONE;
-    /* read config registers object */
+    /*! - read config registers object */
     errRet = read_ads1115ConfigRegisters(&ads1115CfgObj.configReg);
+
+    //TODO: determing if writing a default configuration is needed
 
     if(ERR_NONE != errRet)
     {
@@ -288,7 +320,13 @@ void init_ads1115(void)
     }
 }
 
-//!TODO: document function
+/*!
+ * \brief Get the ads1115Configuration object
+ * 
+ * \param configPtr - pointer to configuration object that will be be poppulated
+ * with the current ads1115 configuration. 
+ * \return retVal_t - returns succces or reason for failure
+ */
 retVal_t get_ads1115Configuration(ads1115ConfigRegister_t * configPtr)
 {
     retVal_t errRet = ERR_UNKNOWN;
@@ -310,7 +348,12 @@ retVal_t get_ads1115Configuration(ads1115ConfigRegister_t * configPtr)
     return errRet;
 }
 
-//!TODO: document function
+/*!
+ * \brief Set the ads1115Configuration object
+ * 
+ * \param configPtr 
+ * \return retVal_t 
+ */
 retVal_t set_ads1115Configuration(ads1115ConfigRegister_t * configPtr)
 {
     retVal_t errRet = ERR_NONE;
@@ -347,7 +390,7 @@ retVal_t set_ads1115Configuration(ads1115ConfigRegister_t * configPtr)
     return errRet;
 }
 
-//!TODO: document function
+//TODO: document function
 retVal_t get_ads1115LatestConversionRegister(ads1115ConversionRegister_t * regPtr)
 {
     /* write conversion addy to the pointer register    */
