@@ -27,6 +27,7 @@
 #include "common.h"
 #include "i2c_task.h"
 #include "ads1115.h"
+#include <string.h>
 
 
 /************************************
@@ -180,19 +181,22 @@ static retVal_t queueWait_ads1115I2cObject( i2c_handler_t ** i2cObjPtr)
 static retVal_t read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr)
 {
     retVal_t errRet = ERR_NONE;
+
+    /*! - create i2c object handler */
     i2c_handler_t i2cObj;
     i2c_handler_t * i2cObjPtr = &i2cObj;
 
+    /*! - create command link an  */
     i2cObj.cmd = i2c_cmd_link_create();
     i2cObj.taskHdl = xTaskGetCurrentTaskHandle();
 
-    /*! check for null pointers */
+    /*! - check for null pointers */
     if(NULL == i2cObj.cmd)
     {
         errRet = ERR_NULL_POINTER;
     }
 
-    /*!  start i2c command     */
+    /*! - start i2c command     */
     if(ERR_NONE == errRet && ESP_OK != i2c_master_start(i2cObj.cmd))
     {
         errRet = ERR_I2C_CMD_FAIL;
@@ -221,7 +225,7 @@ static retVal_t read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr)
 
     /*! read configuration register   */
     if( ERR_NONE == errRet && 
-        ESP_OK != i2c_master_read(i2cObj.cmd, configPtr, ADS1115_CONFIG_REGISTER_SIZE, I2C_MASTER_ACK))
+        ESP_OK != i2c_master_read(i2cObj.cmd, configPtr->bytes, ADS1115_CONFIG_REGISTER_SIZE, I2C_MASTER_ACK))
     {
         errRet = ERR_I2C_CMD_FAIL;
     }
@@ -357,7 +361,6 @@ retVal_t get_ads1115Configuration(ads1115ConfigRegister_t * configPtr)
 retVal_t set_ads1115Configuration(ads1115ConfigRegister_t * configPtr)
 {
     retVal_t errRet = ERR_NONE;
-    ads1115ConfigRegister_t tempConfig;
 
     if(configPtr == NULL)
     {
