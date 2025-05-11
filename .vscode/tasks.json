@@ -1,0 +1,25 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "cppbuild",
+			"label": "building project",
+			"command": "C:\\msys32\\usr\\bin\\make.exe",
+			"options": {
+				"cwd": "${fileDirname}"
+			},
+			"args": ["all"],
+			"group": "build",
+			"detail": "compiler: C:\\msys32\\usr\\bin\\mingw32.exe"
+		},
+		{
+			"type": "make",
+			"targetName": "build-all",
+			"makeFileRelativePath": "ESP8266_RTOS_SDK\\components\\spiffs\\spiffs\\makefile",
+			"group": "build",
+			"problemMatcher": [],
+			"label": "make: build-all",
+			"detail": "./ESP8266_RTOS_SDK\\components\\spiffs\\spiffs\\makefile"
+		}
+	]
+}
