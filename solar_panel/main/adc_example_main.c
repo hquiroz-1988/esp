@@ -19,7 +19,7 @@ static const char *TAG = "adc example";
 
 static void adc_task()
 {
-    int x;
+    // int x;
     uint16_t adc_data[100];
 
     while (1) {
@@ -27,13 +27,13 @@ static void adc_task()
             ESP_LOGI(TAG, "adc read: %d\r\n", adc_data[0]);
         }
 
-        ESP_LOGI(TAG, "adc read fast:\r\n");
+        // ESP_LOGI(TAG, "adc read fast:\r\n");
 
-        if (ESP_OK == adc_read_fast(adc_data, 100)) {
-            for (x = 0; x < 100; x++) {
-                printf("%d\n", adc_data[x]);
-            }
-        }
+        // if (ESP_OK == adc_read_fast(adc_data, 100)) {
+        //     for (x = 0; x < 100; x++) {
+        //         printf("%d\n", adc_data[x]);
+        //     }
+        // }
 
         vTaskDelay(1000 / portTICK_RATE_MS);
     }
