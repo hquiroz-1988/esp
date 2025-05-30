@@ -12,3 +12,4 @@ i2c/build/
 i2c/sdkconfig
 i2c/sdkconfig.old
 solar_panel/html/
+bin/
