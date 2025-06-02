@@ -24,7 +24,7 @@
 
 
 #define TEST_I2C_TASK
-// #undef  TEST_I2C_TASK
+#undef  TEST_I2C_TASK
 
 
 #ifdef TEST_I2C_TASK
@@ -40,7 +40,7 @@ static void testI2CTask(void);
 /* static variables    */
 static const char *TAG = "main";
 
-
+#ifdef TEST_I2C_TASK
 static void testI2CTask(void)
 {
     // int ret;
@@ -81,6 +81,48 @@ static void testI2CTask(void)
     }
     i2c_cmd_link_delete(i2cObj.cmd);
 }
+#endif //TEST_I2C_TASK
+
+// static void testAds1115Task(void)
+// {
+//     // int ret;
+//     /* create i2c object pointer    */
+//     i2c_handler_t i2cObj;
+//     i2c_handler_t * i2cObjPtr = &i2cObj;
+//     i2cObj.cmd = i2c_cmd_link_create();
+//     i2cObj.taskHdl = xTaskGetCurrentTaskHandle();
+
+//     i2c_master_start(i2cObj.cmd);
+//     i2c_master_write_byte(i2cObj.cmd, 0xAA, ACK_CHECK_DIS);
+//     i2c_master_stop(i2cObj.cmd);
+//     /* send to queue*/
+//     if( i2cQueueHdl != NULL )
+//     {
+//         /* 
+//             Send an unsigned long. Wait for 10 ticks for space to become
+//             available if necessary.
+//         */
+//         ESP_LOGI(TAG, "i2cObjPtr = %i\r\n", (uint32_t)i2cObjPtr);
+//         if( xQueueSendToBack( i2cQueueHdl,
+//                             ( void * ) &i2cObjPtr,
+//                             ( TickType_t ) 10 ) != pdPASS )
+//         {
+//             /* Failed to post the message, even after 10 ticks. */
+//             ESP_LOGI(TAG, "failed to send command\r\n");
+//         }
+//         else
+//         {
+//             ESP_LOGI(TAG, "sent command\r\n");
+//             ulTaskNotifyTake(pdTRUE, ( TickType_t ) 1000);
+//             ESP_LOGI(TAG, "command complete\r\n");
+//         }
+//     }
+//     else 
+//     {
+//         ESP_LOGI(TAG, "queue hdl null\r\n");
+//     }
+//     i2c_cmd_link_delete(i2cObj.cmd);
+// }
 
 
 void app_main()
