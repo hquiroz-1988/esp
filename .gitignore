@@ -2,7 +2,6 @@
 *.d
 *.a
 hello_world/build/
-*.mk
 testTasks/build/
 testTasks/sdkconfig
 testTasks/sdkconfig.old
@@ -13,3 +12,4 @@ i2c/sdkconfig
 i2c/sdkconfig.old
 solar_panel/html/
 bin/
+xtensa-lx106-elf/
