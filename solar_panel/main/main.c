@@ -34,10 +34,10 @@
 #define READ_BIT                            I2C_MASTER_READ  /*!< I2C master read */
 #define ACK_CHECK_EN                        0x1              /*!< I2C master will check ack from slave*/
 #define ACK_CHECK_DIS                       0x0              /*!< I2C master will not check ack from slave */
+static void testI2CTask(void);
 #endif
 
 /* static function prototypes    */
-static void testI2CTask(void);
 static void testAds1115Task(void);
 
 /* static variables    */
@@ -102,8 +102,10 @@ static void testAds1115Task(void)
 
 
     /* change configuration  */
+    
     /* no conversion needed at the moment    */
-    configRegister.opStatus = 0;
+    configRegister.opStatus = ADS1115_MUX_AIN0_AIN1;
+    
 
     /*  set mux to use AIN0 and AIN1 as diferential pair        */
     configRegister.mux = ADS1115_MUX_AIN0_AIN1;
@@ -153,6 +155,13 @@ void app_main()
         #ifdef TEST_I2C_TASK
         testI2CTask();
         #endif
+
+        /* add test for i2c task here */
+        #ifdef TEST_ADS1115_TASK
+        testAds1115Task();
+        #endif
+
+        testClass_Call();
 
         vTaskDelay(1000 / portTICK_RATE_MS);
     }
