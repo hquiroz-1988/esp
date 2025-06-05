@@ -54,6 +54,19 @@ typedef union
     uint8_t bytes[ADS1115_CONVERSION_REGISTER_SIZE];
 }ads1115ConversionRegister_t;
 
+//!TODO: consider renaming this 
+typedef enum
+{
+    ADS1115_MUX_AIN0_AIN1 = 0b000, // AINP = AIN0 and AINN = AIN1 (default)
+    ADS1115_MUX_AIN0_AIN3 = 0b001, // AINP = AIN0 and AINN = AIN3
+    ADS1115_MUX_AIN1_AIN3 = 0b010, // AINP = AIN1 and AINN = AIN3
+    ADS1115_MUX_AIN2_AIN3 = 0b011, // AINP = AIN2 and AINN = AIN3
+    ADS1115_MUX_AIN0_GND  = 0b100, // AINP = AIN0 and AINN = GND
+    ADS1115_MUX_AIN1_GND  = 0b101, // AINP = AIN1 and AINN = GND
+    ADS1115_MUX_AIN2_GND  = 0b110, // AINP = AIN2 and AINN = GND
+    ADS1115_MUX_AIN3_GND  = 0b111  // AINP = AIN3 and AINN = GND
+} ads1115Mux_t;
+
 /************************************
  * EXPORTED VARIABLES
  ************************************/
