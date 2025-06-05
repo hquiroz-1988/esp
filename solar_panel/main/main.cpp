@@ -118,7 +118,7 @@ static void testAds1115Task(void)
 #endif //TEST_ADS1115_TASK
 
 
-void app_main()
+extern "C" void app_main()
 {
 
     /* initialize task */
