@@ -333,15 +333,12 @@ void init_ads1115(void)
  */
 retVal_t get_ads1115Configuration(ads1115ConfigRegister_t * configPtr)
 {
-    retVal_t errRet = ERR_UNKNOWN;
+    retVal_t errRet = ERR_NONE;
 
     if(configPtr != NULL)
     {
-        /*  last read config values should persist */
-        memcpy(configPtr, &ads1115CfgObj.configReg, ADS1115_CONFIG_REGISTER_SIZE);
-
-        /*   */
-        errRet = ERR_NONE;
+        /*  read value from registers to confirm write */
+        errRet = read_ads1115ConfigRegisters(configPtr);
     }
     else
     {
