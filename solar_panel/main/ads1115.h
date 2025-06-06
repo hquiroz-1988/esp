@@ -22,11 +22,7 @@ extern "C" {
 /************************************
  * MACROS AND DEFINES
  ************************************/
-#define ADS1115_POINTER_REGISTER_SIZE                   (1u)
-#define ADS1115_CONVERSION_REGISTER_SIZE                (2u)
-#define ADS1115_CONFIG_REGISTER_SIZE                    (2u)
-#define ADS1115_LO_THRESH_REGISTER_SIZE                 (2u)
-#define ADS1115_HI_THRESH_REGISTER_SIZE                 (2u)
+
 
 /************************************
  * TYPEDEFS
