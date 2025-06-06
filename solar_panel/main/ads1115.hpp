@@ -3,7 +3,21 @@
  * @file    ads1115.hpp
  * @author  hugo
  * @date    2025-06-04 23:18:08
- * @brief   
+ * @brief   This module serves as an interface to the ads1115 ADC device. 
+ *  The ADS1115 is a precision, low-power, 16-bit, I2Ccompatible,
+ * analog-to-digital converters (ADCs). The ADS1115 device incorporate a low-drift 
+ * voltage reference and an oscillator. The ADS1115 also incorporate a programmable 
+ * gain amplifier (PGA) and a digital comparator. These features, along with a wide
+ * operating supply range, make the ADS111x well suited for power- and 
+ * space-constrained, sensormeasurement applications. The ADS111x perform 
+ * conversions at data rates up to 860 samples per second (SPS). The PGA offers 
+ * input ranges from ±256 mV to ±6.144 V, allowing precise large- and small-signal 
+ * measurements. The ADS1115 features an input multiplexer (MUX) that allows two 
+ * differential or four single-ended input measurements. Use the digital comparator
+ *  in the ADS1114 and ADS1115 for under- and overvoltage detection. The ADS111x 
+ * operate in either continuousconversion mode or single-shot mode. The devices
+ * are automatically powered down after one conversion in single-shot mode; 
+ * therefore, power consumption is significantly reduced during idle periods.
  ********************************************************************************
  */
 
@@ -14,6 +28,9 @@
  * INCLUDES
 *******************************************************************************/
 #include "typedefs.h"
+#include "i2c_task.h"
+#include "ads1115_regs.h"
+#include <string.h>
 
 /*******************************************************************************
  * MACROS AND DEFINES
@@ -114,6 +131,13 @@ public:
     void init_ads1115(void);
     retVal_t getConfiguration(ads1115ConfigRegister_t * configPtr);
     retVal_t setConfiguration(ads1115ConfigRegister_t * configPtr);
+
+    private:
+
+    retVal_t read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr);
+    retVal_t write_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr);
+    retVal_t queueWait_ads1115I2cObject( i2c_handler_t ** i2cObjPtr);
+
 };
 
 /*******************************************************************************
