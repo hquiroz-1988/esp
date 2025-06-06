@@ -92,7 +92,9 @@ static void testAds1115Task(void)
 {
     ads1115ConfigRegister_t configRegister;
 
-    if(ERR_NONE != get_ads1115Configuration(&configRegister))
+    ADS1115 ads1115;
+
+    if(ERR_NONE != ads1115.getConfiguration(&configRegister))
     {
         /* some failure occured     */
         ESP_LOGI(TAG, "Could not get configuration");
@@ -128,9 +130,6 @@ extern "C" void app_main()
     /* initialize i2c handler task and i2c module    */
     init_i2cHandler();
 
-    /* intialize ads1115 module  */
-    init_ads1115();
-
     /*  initialize bus voltage module   */
     init_BusVoltage();
     
@@ -160,8 +159,6 @@ extern "C" void app_main()
         #ifdef TEST_ADS1115_TASK
         testAds1115Task();
         #endif
-
-        testClass_Call();
 
         vTaskDelay(1000 / portTICK_RATE_MS);
     }
