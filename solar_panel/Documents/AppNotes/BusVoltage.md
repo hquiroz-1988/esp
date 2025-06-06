@@ -2,6 +2,37 @@
 
 ## Overview
 This application note provides guidance on monitoring bus voltage using the ADS1115 analog-to-digital converter (ADC) and the I2C communication protocol. The ADS1115 is a 16-bit ADC that offers high precision and flexibility for voltage measurement applications.
+```mermaid
+classDiagram
+    class BusVoltage {
+        +BusVoltage()
+        +void initialize()
+        +float measureVoltage()
+        +void handleErrors()
+    }
+    class ADS1115 {
+        +ADS1115()
+        +bool begin(uint8_t i2cAddress = 0x48)
+        +void setGain(uint16_t gain)
+        +int16_t readADC_SingleEnded(uint8_t channel)
+        +int16_t readADC_Differential_0_1()
+        +int16_t readADC_Differential_2_3()
+        +void startComparator_SingleEnded(uint8_t channel, int16_t threshold)
+        +void startComparator_Differential_0_1(int16_t threshold)
+        +void startComparator_Differential_2_3(int16_t threshold)
+        +void stopComparator()
+    }
+    class I2C {
+        +I2C()
+        +void initialize()
+        +bool write(uint8_t address, uint8_t* data, size_t length)
+        +bool read(uint8_t address, uint8_t* buffer, size_t length)
+    }
+
+    BusVoltage --> ADS1115 : uses
+    ADS1115 --> I2C : depends on
+```
+
 
 ## Dependencies
 ### ADS1115
