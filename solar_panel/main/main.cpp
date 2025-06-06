@@ -22,6 +22,10 @@
 #include "bus_voltage.h"
 
 
+/* static variables    */
+static const char *TAG = "main";
+
+
 
 #define TEST_I2C_TASK
 #undef  TEST_I2C_TASK
@@ -30,20 +34,13 @@
 
 
 #ifdef TEST_I2C_TASK
+
 #define WRITE_BIT                           I2C_MASTER_WRITE /*!< I2C master write */
 #define READ_BIT                            I2C_MASTER_READ  /*!< I2C master read */
 #define ACK_CHECK_EN                        0x1              /*!< I2C master will check ack from slave*/
 #define ACK_CHECK_DIS                       0x0              /*!< I2C master will not check ack from slave */
 static void testI2CTask(void);
-#endif
 
-/* static function prototypes    */
-static void testAds1115Task(void);
-
-/* static variables    */
-static const char *TAG = "main";
-
-#ifdef TEST_I2C_TASK
 static void testI2CTask(void)
 {
     // int ret;
@@ -88,6 +85,9 @@ static void testI2CTask(void)
 
 
 #ifdef TEST_ADS1115_TASK
+/* static function prototypes    */
+static void testAds1115Task(void);
+
 static void testAds1115Task(void)
 {
     ads1115ConfigRegister_t configRegister;
