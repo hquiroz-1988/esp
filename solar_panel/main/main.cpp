@@ -18,7 +18,7 @@
 #include "esp_log.h"
 
 #include "i2c_task.h"
-#include "ads1115.h"
+#include "ads1115.hpp"
 #include "bus_voltage.h"
 
 
