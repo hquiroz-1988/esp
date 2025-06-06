@@ -1,104 +1,34 @@
 /**
  ********************************************************************************
- * @file    ads1115.c
- * @author  Hugo Quiroz
- * @date    2024-10-08 11:50:19
- * @brief   This module serves as an interface to the ads1115 ADC device. 
- *  The ADS1115 is a precision, low-power, 16-bit, I2Ccompatible,
- * analog-to-digital converters (ADCs). The ADS1115 device incorporate a low-drift 
- * voltage reference and an oscillator. The ADS1115 also incorporate a programmable 
- * gain amplifier (PGA) and a digital comparator. These features, along with a wide
- * operating supply range, make the ADS111x well suited for power- and 
- * space-constrained, sensormeasurement applications. The ADS111x perform 
- * conversions at data rates up to 860 samples per second (SPS). The PGA offers 
- * input ranges from ±256 mV to ±6.144 V, allowing precise large- and small-signal 
- * measurements. The ADS1115 features an input multiplexer (MUX) that allows two 
- * differential or four single-ended input measurements. Use the digital comparator
- *  in the ADS1114 and ADS1115 for under- and overvoltage detection. The ADS111x 
- * operate in either continuousconversion mode or single-shot mode. The devices
- * are automatically powered down after one conversion in single-shot mode; 
- * therefore, power consumption is significantly reduced during idle periods.
+ * @file    ads1115.cpp
+ * @author  hugo
+ * @date    2025-06-04 23:22:04
+ * @brief   
  ********************************************************************************
  */
 
-/************************************
+/*******************************************************************************
  * INCLUDES
- ************************************/
-#include "common.h"
-#include "i2c_task.h"
-#include "ads1115.h"
-#include <string.h>
+*******************************************************************************/
+extern "C" 
+{
+    #include "esp_log.h"
+    #include "ads1115_regs.h"
+}
 
+#include "ads1115.hpp"
 
-/************************************
+/*******************************************************************************
  * EXTERN VARIABLES
- ************************************/
+ *******************************************************************************/
 
-/************************************
+/*******************************************************************************
  * PRIVATE MACROS AND DEFINES
- ************************************/
-#define GND_ADDR_PIN                                    (0x48)              /* ADDR PIN connected to GND Pin */
-#define VDD_ADDR_PIN                                    (0x49)              /* ADDR PIN connected to VDD Pin */
-#define SDA_ADDR_PIN                                    (0x4A)              /* ADDR PIN connected to SDA Pin */
-#define SCL_ADDR_PIN                                    (0x4B)              /* ADDR PIN connected to SCL Pin */
-#define ADS1115_ADDRESS_SHIFT                           (1u)
-#define ADS1115_ADDRESS_MASK                            (0x7)
-#define ADS1115_ADDRESS                                 ((GND_ADDR_PIN & ADS1115_ADDRESS_MASK) << ADS1115_ADDRESS_SHIFT)
+ *******************************************************************************/
 
-#define ADS1115_WRITE_BIT                               (0x0)
-#define ADS1115_READ_BIT                                (0x1)
-
-#define ADS1115_CONVERSION_REGISTER                     (0x00)
-#define ADS1115_CONFIG_REGISTER                         (0x01)
-#define ADS1115_LO_THRESH_REGISTER                      (0x02)
-#define ADS1115_HI_THRESH_REGISTER                      (0x03)
-
-#define ADS1115_POINTER_REGISTER_SIZE                   (1u)
-#define ADS1115_CONVERSION_REGISTER_SIZE                (2u)
-#define ADS1115_CONFIG_REGISTER_SIZE                    (2u)
-#define ADS1115_LO_THRESH_REGISTER_SIZE                 (2u)
-#define ADS1115_HI_THRESH_REGISTER_SIZE                 (2u)
-
-#define ADS1115_OS_CFG_BIT                              (15u)
-#define ADS1115_MUX_CFG_BITS                            (12u)
-#define ADS1115_PGA_CFG_BITS                            (9u)
-#define ADS1115_MODE_CFG_BIT                            (8u)
-#define ADS1115_DR_CFG_BIT                              (5u)
-#define ADS1115_COMP_MODE_CFG_BIT                       (4u)
-#define ADS1115_COMP_POL_CFG_BIT                        (3u)
-#define ADS1115_COMP_LATCH_CFG_BIT                      (2u)
-#define ADS1115_COMP_QUEUE_CFG_BIT                      (0u)
-
-#define ADS1115_OS_CFG_MASK                             (1u)
-#define ADS1115_MUX_CFG_MASK                            (3u)
-#define ADS1115_PGA_CFG_MASK                            (3u)
-#define ADS1115_MODE_CFG_MASK                           (1u)
-#define ADS1115_DR_CFG_MASK                             (3u)
-#define ADS1115_COMP_MODE_CFG_MASK                      (1u)
-#define ADS1115_COMP_POL_CFG_MASK                       (1u)
-#define ADS1115_COMP_LATCH_CFG_MASK                     (1u)
-#define ADS1115_COMP_QUEUE_CFG_MASK                     (2u)
-
-#define I2C_ACK_CHECK_DISABLE                           (false)
-#define I2C_ACK_CHECK_ENABLE                            (true)
-#define ADS1115_ACK_CHECK_STATUS                        (I2C_ACK_CHECK_DISABLE)//TODO: enable checking when ready to connect to device
-
-#define ADS1115_WRITE                                   (ADS1115_ADDRESS & ~(ADS1115_WRITE_BIT))
-#define ADS1115_READ                                    (ADS1115_ADDRESS | (ADS1115_READ_BIT))
-
-
-
-
-/************************************
+/*******************************************************************************
  * PRIVATE TYPEDEFS
- ************************************/
-
-/*!
- * \brief a typedef struct that contains the register map for the ads1115
- * 
- * This typedef struct contains all read and write registers for the
- * in the ads1115.
- */
+ *******************************************************************************/
 typedef struct
 {
     uint8_t pointerReg[ADS1115_POINTER_REGISTER_SIZE];                  /**< pointer register is write only     */
@@ -108,27 +38,22 @@ typedef struct
     uint8_t hiThreshReg[ADS1115_HI_THRESH_REGISTER_SIZE];               /**< hiThresh is read and write   */
 }ads1115_RegisterMap_t;
 
-
-
-/************************************
+/*******************************************************************************
  * STATIC VARIABLES
- ************************************/
+ *******************************************************************************/
 static ads1115_RegisterMap_t ads1115CfgObj;
 static const char *TAG = "ads1115";
-/************************************
+/*******************************************************************************
  * GLOBAL VARIABLES
- ************************************/
+ *******************************************************************************/
 
-/************************************
+/*******************************************************************************
  * STATIC FUNCTION PROTOTYPES
- ************************************/
-static retVal_t read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr);
-static retVal_t write_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr);
-static retVal_t queueWait_ads1115I2cObject( i2c_handler_t ** i2cObjPtr);
+ *******************************************************************************/
 
-/************************************
+/*******************************************************************************
  * STATIC FUNCTIONS
- ************************************/
+ *******************************************************************************/
 
 /*!
  * \brief Queues i2c object and waits for its return
@@ -141,7 +66,7 @@ static retVal_t queueWait_ads1115I2cObject( i2c_handler_t ** i2cObjPtr);
  *               set of rules and equations.
  * \return return value is NO_ERROR, NULL_POINTER, QUEUE_FAIL, or NOTIFY_TIMEOUT.
  */
-static retVal_t queueWait_ads1115I2cObject( i2c_handler_t ** i2cObjPtr)
+retVal_t ADS1115::queueWait_ads1115I2cObject( i2c_handler_t ** i2cObjPtr)
 {
     retVal_t errRet = ERR_UNKNOWN;
 
@@ -178,7 +103,7 @@ static retVal_t queueWait_ads1115I2cObject( i2c_handler_t ** i2cObjPtr)
  * configuration register data after read.
  * \return retVal_t - returns succces or reason for failure of the function.
  */
-static retVal_t read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr)
+retVal_t ADS1115::read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr)
 {
     retVal_t errRet = ERR_NONE;
 
@@ -259,7 +184,7 @@ static retVal_t read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr)
  * configuration to be written to the ads1115.
  * \return retVal_t - returns succces or reason for failure of the function.
  */
-static retVal_t write_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr)
+retVal_t ADS1115::write_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr)
 {
     //TODO: refactor this function to perform retval checks
 
@@ -299,10 +224,10 @@ static retVal_t write_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr
     return errRet;
 }
 
-/************************************
- * GLOBAL FUNCTIONS
- ************************************/
 
+/*******************************************************************************
+ * GLOBAL FUNCTIONS
+ *******************************************************************************/
 /*!
  * \brief initializes the ads1115 ADC Module
  * 
@@ -310,8 +235,9 @@ static retVal_t write_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr
  * these are used to poppulate the local ads1115 object.
  * 
  */
-void init_ads1115(void)
+ADS1115::ADS1115()
 {
+    
     retVal_t errRet = ERR_NONE;
     /*! - read config registers object */
     errRet = read_ads1115ConfigRegisters(&ads1115CfgObj.configReg);
@@ -324,14 +250,12 @@ void init_ads1115(void)
     }
 }
 
-/*!
- * \brief Get the ads1115Configuration object
- * 
- * \param configPtr - pointer to configuration object that will be be poppulated
- * with the current ads1115 configuration. 
- * \return retVal_t - returns succces or reason for failure
- */
-retVal_t get_ads1115Configuration(ads1115ConfigRegister_t * configPtr)
+ADS1115::~ADS1115()
+{
+    // Destructor implementation
+}
+
+retVal_t ADS1115::getConfiguration(ads1115ConfigRegister_t * configPtr)
 {
     retVal_t errRet = ERR_NONE;
 
@@ -349,13 +273,14 @@ retVal_t get_ads1115Configuration(ads1115ConfigRegister_t * configPtr)
     return errRet;
 }
 
+
 /*!
  * \brief Set the ads1115Configuration object
  * 
  * \param configPtr 
  * \return retVal_t 
  */
-retVal_t set_ads1115Configuration(ads1115ConfigRegister_t * configPtr)
+retVal_t ADS1115::setConfiguration(ads1115ConfigRegister_t * configPtr)
 {
     retVal_t errRet = ERR_NONE;
 
@@ -391,7 +316,7 @@ retVal_t set_ads1115Configuration(ads1115ConfigRegister_t * configPtr)
 }
 
 //TODO: document function
-retVal_t get_ads1115LatestConversionRegister(ads1115ConversionRegister_t * regPtr)
+retVal_t ADS1115::getLatestReading(ads1115ConversionRegister_t * regPtr)
 {
     /* write conversion addy to the pointer register    */
     retVal_t errRet = ERR_NONE;
@@ -448,3 +373,5 @@ retVal_t get_ads1115LatestConversionRegister(ads1115ConversionRegister_t * regPt
 
     return errRet;
 }
+
+
