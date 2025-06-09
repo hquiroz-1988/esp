@@ -1,6 +1,6 @@
-<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.7.17 Chrome/128.0.6613.36 Electron/32.0.1 Safari/537.36" version="24.7.17">
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/27.0.9 Chrome/134.0.6998.205 Electron/35.4.0 Safari/537.36" version="27.0.9">
   <diagram name="Page-1" id="JHq0QTUSLiZrBxeyeRcd">
-    <mxGraphModel dx="2087" dy="993" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1278" dy="583" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -348,10 +348,10 @@
           <mxGeometry y="104" width="201" height="26" as="geometry" />
         </mxCell>
         <mxCell id="4sJv92y5VJKQOatMEMJv-23" value="Vertical Container" style="swimlane;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="913" y="1127" width="905" height="847" as="geometry" />
+          <mxGeometry x="845" y="1075" width="803" height="707" as="geometry" />
         </mxCell>
         <mxCell id="4sJv92y5VJKQOatMEMJv-25" value="set_ads1115PointerRegister" style="rounded=1;whiteSpace=wrap;html=1;" parent="4sJv92y5VJKQOatMEMJv-23" vertex="1">
-          <mxGeometry x="672" y="215" width="177" height="82" as="geometry" />
+          <mxGeometry x="386" y="219" width="177" height="82" as="geometry" />
         </mxCell>
         <mxCell id="4sJv92y5VJKQOatMEMJv-26" value="init_ads1115" style="rounded=1;whiteSpace=wrap;html=1;" parent="4sJv92y5VJKQOatMEMJv-23" vertex="1">
           <mxGeometry x="66" y="102" width="177" height="82" as="geometry" />
@@ -359,17 +359,11 @@
         <mxCell id="4sJv92y5VJKQOatMEMJv-30" value="get_ads1115Configuration" style="rounded=1;whiteSpace=wrap;html=1;" parent="4sJv92y5VJKQOatMEMJv-23" vertex="1">
           <mxGeometry x="66" y="215" width="177" height="82" as="geometry" />
         </mxCell>
-        <mxCell id="4sJv92y5VJKQOatMEMJv-31" value="reqWait_ads1115SingleShotValue" style="rounded=1;whiteSpace=wrap;html=1;" parent="4sJv92y5VJKQOatMEMJv-23" vertex="1">
-          <mxGeometry x="66" y="445" width="287" height="82" as="geometry" />
+        <mxCell id="4sJv92y5VJKQOatMEMJv-31" value="get_ads1115Value" style="rounded=1;whiteSpace=wrap;html=1;" parent="4sJv92y5VJKQOatMEMJv-23" vertex="1">
+          <mxGeometry x="66" y="445" width="177" height="82" as="geometry" />
         </mxCell>
         <mxCell id="4sJv92y5VJKQOatMEMJv-32" value="set_ads1115Configuration" style="rounded=1;whiteSpace=wrap;html=1;" parent="4sJv92y5VJKQOatMEMJv-23" vertex="1">
           <mxGeometry x="66" y="329" width="177" height="82" as="geometry" />
-        </mxCell>
-        <mxCell id="mnTbVDgPovGEpuoolRMK-1" value="get_ads1115LatestConversionValue" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="4sJv92y5VJKQOatMEMJv-23">
-          <mxGeometry x="66" y="561" width="287" height="82" as="geometry" />
-        </mxCell>
-        <mxCell id="mnTbVDgPovGEpuoolRMK-2" value="wait_ads1115ConversionReady" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="4sJv92y5VJKQOatMEMJv-23">
-          <mxGeometry x="66" y="681" width="287" height="82" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
