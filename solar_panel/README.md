@@ -1,4 +1,4 @@
-# Solar Panel Project
+# Sunlight Meter
 
 
 # ESP8266 Projects with RTOS SDK
