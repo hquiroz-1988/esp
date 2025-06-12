@@ -12,3 +12,4 @@ i2c/sdkconfig.old
 solar_panel/html/
 bin/
 xtensa-lx106-elf/
+*.bkp
