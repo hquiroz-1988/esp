@@ -6,14 +6,6 @@
         "mpu_wrappers.h": "c",
         "esp_heap_caps.h": "c",
         "esp_log.h": "c",
-        "i2c_task.h": "c",
-        "string.h": "c",
-        "stdio.h": "c",
-        "stdint.h": "c",
-        "stdlib.h": "c",
-        "_default_types.h": "c",
-        "freertos.h": "c",
-        "bus_voltage.h": "c",
-        "task.h": "c"
+        "i2c_task.h": "c"
     }
 }

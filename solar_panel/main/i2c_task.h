@@ -17,8 +17,6 @@ extern "C" {
 /************************************
  * INCLUDES
  ************************************/
-#include "i2c_handler.h"
-#include "freertos/queue.h"
 
 /************************************
  * MACROS AND DEFINES
@@ -31,20 +29,12 @@ extern "C" {
 /************************************
  * EXPORTED VARIABLES
  ************************************/
-/*  create queue handle */
-extern QueueHandle_t i2cQueueHdl;
 
 /************************************
  * GLOBAL FUNCTION PROTOTYPES
  ************************************/
 
-/** @brief  Initializes i2c handler module including
- *  task and variables
- *
- *  @param void 
- *  @return void 
- */
-void init_i2cHandler(void);
+void i2c_task(void);
 
 
 #ifdef __cplusplus
