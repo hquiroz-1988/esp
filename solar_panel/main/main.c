@@ -8,110 +8,54 @@
 */
 
 #include <stdio.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "driver/adc.h"
-#include "driver/i2c.h"
 #include "esp_log.h"
 #include "i2c_task.h"
-#include "bus_voltage.h"
 
+static const char *TAG = "solar panel";
 
-#define TEST_I2C_TASK
-// #undef  TEST_I2C_TASK
-
-
-#ifdef TEST_I2C_TASK
-#define WRITE_BIT                           I2C_MASTER_WRITE /*!< I2C master write */
-#define READ_BIT                            I2C_MASTER_READ  /*!< I2C master read */
-#define ACK_CHECK_EN                        0x1              /*!< I2C master will check ack from slave*/
-#define ACK_CHECK_DIS                       0x0              /*!< I2C master will not check ack from slave */
-#endif
-
-/* static function prototypes    */
-static void testI2CTask(void);
-
-/* static variables    */
-static const char *TAG = "main";
-
-
-static void testI2CTask(void)
+static void adc_task()
 {
-    // int ret;
-    /* create i2c object pointer    */
-    i2c_handler_t i2cObj;
-    i2c_handler_t * i2cObjPtr = &i2cObj;
-    i2cObj.cmd = i2c_cmd_link_create();
-    i2cObj.taskHdl = xTaskGetCurrentTaskHandle();
+    // int x;
+    uint16_t adc_data[100];
 
-    i2c_master_start(i2cObj.cmd);
-    i2c_master_write_byte(i2cObj.cmd, 0xAA, ACK_CHECK_DIS);
-    i2c_master_stop(i2cObj.cmd);
-    /* send to queue*/
-    if( i2cQueueHdl != NULL )
-    {
-        /* 
-            Send an unsigned long. Wait for 10 ticks for space to become
-            available if necessary.
-        */
-        ESP_LOGI(TAG, "i2cObjPtr = %i\r\n", (uint32_t)i2cObjPtr);
-        if( xQueueSendToBack( i2cQueueHdl,
-                            ( void * ) &i2cObjPtr,
-                            ( TickType_t ) 10 ) != pdPASS )
-        {
-            /* Failed to post the message, even after 10 ticks. */
-            ESP_LOGI(TAG, "failed to send command\r\n");
+    while (1) {
+        if (ESP_OK == adc_read(&adc_data[0])) {
+            ESP_LOGI(TAG, "adc read: %d\r\n", adc_data[0]);
         }
-        else
-        {
-            ESP_LOGI(TAG, "sent command\r\n");
-            ulTaskNotifyTake(pdTRUE, ( TickType_t ) 1000);
-            ESP_LOGI(TAG, "command complete\r\n");
-        }
-    }
-    else 
-    {
-        ESP_LOGI(TAG, "queue hdl null\r\n");
-    }
-    i2c_cmd_link_delete(i2cObj.cmd);
-}
 
+        // ESP_LOGI(TAG, "adc read fast:\r\n");
 
-void app_main()
-{
-
-    /* initialize task */
-    float voltageValue;
-    errType_t errRet;
-
-    init_i2cHandler();
-    init_BusVoltage();
-    
-    while (1) 
-    {
-        // /* get filtered voltage and current */
-        // errRet = get_filtered_voltage(&voltageValue);
-
-        // if(ERR_NONE == errRet)
-        // {
-        //     /* print voltage and current */
-        //     ESP_LOGI(TAG, "Voltage: %f, Current: %f\r\n", voltageValue, currentValue);
+        // if (ESP_OK == adc_read_fast(adc_data, 100)) {
+        //     for (x = 0; x < 100; x++) {
+        //         printf("%d\n", adc_data[x]);
+        //     }
         // }
-        // else
-        // {
-        //     /* print err */
-        //     ESP_LOGI(TAG, "Err Value: %i\r\n", errRet);
-        // }
-        
-
-        /* add test for i2c task here */
-        #ifdef TEST_I2C_TASK
-        testI2CTask();
-        #endif
 
         vTaskDelay(1000 / portTICK_RATE_MS);
     }
+}
+
+void app_main()
+{
+    // 1. init adc
+    adc_config_t adc_config;
+
+    // Depend on menuconfig->Component config->PHY->vdd33_const value
+    // When measuring system voltage(ADC_READ_VDD_MODE), vdd33_const must be set to 255.
+    adc_config.mode = ADC_READ_TOUT_MODE;
+    adc_config.clk_div = 8; // ADC sample collection clock = 80MHz/clk_div = 10MHz
+    ESP_ERROR_CHECK(adc_init(&adc_config));
+
+    // 2. Create a adc task to read adc value
+    xTaskCreate(adc_task, "adc_task", 1024, NULL, 5, NULL);
+
+    /*  create i2c task */
+    xTaskCreate(i2c_task, "i2c_task", 1024, NULL, 5, NULL);
+
+
 }
