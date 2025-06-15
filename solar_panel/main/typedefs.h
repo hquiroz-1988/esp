@@ -1,14 +1,14 @@
 /**
  ********************************************************************************
- * @file    i2c_task.h
+ * @file    typedefs.h
  * @author  Hugo Quiroz
- * @date    2024-09-06 15:42:20
+ * @date    2024-09-27 10:28:03
  * @brief   description
  ********************************************************************************
  */
 
-#ifndef I2C_TASK_H
-#define I2C_TASK_H
+#ifndef TYPEDEFS_H
+#define TYPEDEFS_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,8 +17,6 @@ extern "C" {
 /************************************
  * INCLUDES
  ************************************/
-#include "i2c_handler.h"
-#include "freertos/queue.h"
 
 /************************************
  * MACROS AND DEFINES
@@ -27,28 +25,28 @@ extern "C" {
 /************************************
  * TYPEDEFS
  ************************************/
+typedef enum
+{
+    ERR_NONE,
+    ERR_UNKNOWN,
+    ERR_FAIL,
+    ERR_NULL_POINTER,
+    ERR_OUT_OF_BOUNDS,
+
+    TOTAL_ERR_TYPES
+}errType_t;
 
 /************************************
  * EXPORTED VARIABLES
  ************************************/
-/*  create queue handle */
-extern QueueHandle_t i2cQueueHdl;
 
 /************************************
  * GLOBAL FUNCTION PROTOTYPES
  ************************************/
-
-/** @brief  Initializes i2c handler module including
- *  task and variables
- *
- *  @param void 
- *  @return void 
- */
-void init_i2cHandler(void);
 
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif //I2C_TASK_H
+#endif //TYPEDEFS_H
