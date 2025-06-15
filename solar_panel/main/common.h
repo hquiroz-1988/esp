@@ -1,14 +1,14 @@
 /**
  ********************************************************************************
- * @file    i2c_task.h
+ * @file    common.h
  * @author  Hugo Quiroz
- * @date    2024-09-06 15:42:20
+ * @date    2024-10-09 19:26:54
  * @brief   description
  ********************************************************************************
  */
 
-#ifndef I2C_TASK_H
-#define I2C_TASK_H
+#ifndef COMMON_H
+#define COMMON_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,8 +17,9 @@ extern "C" {
 /************************************
  * INCLUDES
  ************************************/
-#include "i2c_handler.h"
-#include "freertos/queue.h"
+#include "freertos/FreeRTOS.h"
+#include "typedefs.h"
+#include "esp_log.h"
 
 /************************************
  * MACROS AND DEFINES
@@ -31,24 +32,14 @@ extern "C" {
 /************************************
  * EXPORTED VARIABLES
  ************************************/
-/*  create queue handle */
-extern QueueHandle_t i2cQueueHdl;
 
 /************************************
  * GLOBAL FUNCTION PROTOTYPES
  ************************************/
-
-/** @brief  Initializes i2c handler module including
- *  task and variables
- *
- *  @param void 
- *  @return void 
- */
-void init_i2cHandler(void);
 
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif //I2C_TASK_H
+#endif //COMMON_H

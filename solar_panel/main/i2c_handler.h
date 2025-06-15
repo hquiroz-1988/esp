@@ -1,14 +1,14 @@
 /**
  ********************************************************************************
- * @file    i2c_task.h
+ * @file    i2c_handler.h
  * @author  Hugo Quiroz
- * @date    2024-09-06 15:42:20
+ * @date    2024-10-04 13:05:57
  * @brief   description
  ********************************************************************************
  */
 
-#ifndef I2C_TASK_H
-#define I2C_TASK_H
+#ifndef I2C_HANDLER_H
+#define I2C_HANDLER_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,8 +17,10 @@ extern "C" {
 /************************************
  * INCLUDES
  ************************************/
-#include "i2c_handler.h"
-#include "freertos/queue.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/semphr.h"
+#include "driver/i2c.h"
 
 /************************************
  * MACROS AND DEFINES
@@ -28,27 +30,29 @@ extern "C" {
  * TYPEDEFS
  ************************************/
 
+/*  
+    i2c_handler_t carries an i2c command along with a TaskHandle_t
+    the Task handle shall be used to notify the task that the i2c
+    command is complete 
+*/
+typedef struct
+{
+    TaskHandle_t taskHdl;
+    i2c_cmd_handle_t cmd;
+}i2c_handler_t;
+
+
 /************************************
  * EXPORTED VARIABLES
  ************************************/
-/*  create queue handle */
-extern QueueHandle_t i2cQueueHdl;
 
 /************************************
  * GLOBAL FUNCTION PROTOTYPES
  ************************************/
-
-/** @brief  Initializes i2c handler module including
- *  task and variables
- *
- *  @param void 
- *  @return void 
- */
-void init_i2cHandler(void);
 
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif //I2C_TASK_H
+#endif //I2C_HANDLER_H
