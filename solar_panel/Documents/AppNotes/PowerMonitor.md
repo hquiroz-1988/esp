@@ -19,20 +19,19 @@
 
 
 
-This application note describes the implementation of a Power Monitor Module for solar panel systems. The module measures both the bus voltage and output current to compute real-time power generation. It integrates the Bus Voltage Module and the Current Monitor Module, both utilizing the ADS1115 analog-to-digital converter (ADC) over the I2C bus for high-precision measurements.
+This application note describes the implementation of a Power Monitor Module for the Solar Meter Project. The module measures both the bus voltage and output current to compute real-time power usage. It integrates the Bus Voltage Module and the Current Monitor Module, both utilizing the ADS1115 analog-to-digital converter (ADC) over the I2C bus for high-precision measurements.
 
-The Power Monitor Module periodically samples voltage and current, calculates power, and logs the data for system analysis and optimization.
+The Power Monitor Module periodically samples voltage and current, calculates power, this data is then periodically sent to the Telemetry Module.
 
-The following sequence diagram illustrates the interaction between the Power Monitor, Bus Voltage, and Current Monitor modules:
+The following sequence diagram illustrates the interaction between the Power Monitor, Bus Voltage, Telemetry, and Current Monitor modules:
 
 ```mermaid
 sequenceDiagram
+    participant Telemetry
     participant PowerMonitor
     participant BusVoltage
     participant CurrentMonitor
-    participant ADS1115
-    participant I2CBus
-    participant GPIO
+    
 
     PowerMonitor->>+BusVoltage: initialize()
     PowerMonitor->>+CurrentMonitor: initialize()
@@ -41,21 +40,16 @@ sequenceDiagram
 
     loop Periodic Measurement
         PowerMonitor->>+BusVoltage: measureVoltage()
-        BusVoltage->>+ADS1115: startVoltageConversion()
-        ADS1115->>I2CBus: writeToBus()
-        GPIO->>ADS1115: gpioISR()
-        ADS1115->>BusVoltage: voltageConversionCompleteISR()
         BusVoltage-->>-PowerMonitor: voltage value
 
         PowerMonitor->>+CurrentMonitor: measureCurrent()
-        CurrentMonitor->>+ADS1115: startCurrentConversion()
-        ADS1115->>I2CBus: writeToBus()
-        GPIO->>ADS1115: gpioISR()
-        ADS1115->>CurrentMonitor: currentConversionCompleteISR()
         CurrentMonitor-->>-PowerMonitor: current value
 
         PowerMonitor->>PowerMonitor: calculatePower()
         PowerMonitor->>PowerMonitor: update power profile
+
+        PowerMonitor->>+Telemetry: send power data
+        Telemetry-->>-PowerMonitor: acknowledge
     end
 ```
 
