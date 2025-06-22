@@ -55,31 +55,31 @@ sequenceDiagram
 
 The schematic below shows the circuit diagram for measuring both bus voltage and current.
 
-![Power Monitor Measurement Schematic](../Images/powerMonitorCircuit.png)
+![Power Monitor Measurement Schematic](../Images/power_monitor_circuit_diagram.png)
 
 The block diagram below shows the Power Monitor class interface and its dependencies.
 
 ```mermaid
 classDiagram
-    class PowerMonitor {
-        +PowerMonitor()
-        +void initialize()
-        +float measurePower()
-        +void handleErrors()
+    class PowerMonitor~Task~{
+        +PowerMonitor(const char *name, uint32_t _stackSize, osPriority_t prio)
+        +~PowerMonitor()
+        -virtual void main()
+        -sm_run()
+        -getVoltage()
+        -getCurrent()
     }
     class BusVoltage {
-        +BusVoltage()
-        +void initialize()
-        +float measureVoltage()
-        +void handleErrors()
+        ...
     }
+
     class CurrentMonitor {
-        +CurrentMonitor()
-        +void initialize()
-        +float measureCurrent()
-        +void handleErrors()
+        ...
     }
     class ADS1115 {
+        ...
+    }
+    class INA219 {
         ...
     }
     class I2CBus {
@@ -89,8 +89,9 @@ classDiagram
     PowerMonitor --> BusVoltage : uses
     PowerMonitor --> CurrentMonitor : uses
     BusVoltage --> ADS1115 : uses
-    CurrentMonitor --> ADS1115 : uses
+    CurrentMonitor --> INA219 : uses
     ADS1115 --> I2CBus : depends on
+    INA219 --> I2CBus : depends on
 ```
 
 ## Components
