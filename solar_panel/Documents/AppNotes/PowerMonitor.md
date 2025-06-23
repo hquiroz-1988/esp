@@ -63,11 +63,11 @@ The block diagram below shows the Power Monitor class interface and its dependen
 classDiagram
     class PowerMonitor~Task~{
         +PowerMonitor(const char *name, uint32_t _stackSize, osPriority_t prio)
-        +~PowerMonitor()
-        -virtual void main()
-        -sm_run()
-        -getVoltage()
-        -getCurrent()
+        +~PowerMonitor(void)
+        -virtual void main(void)
+        -void sm_run(void)
+        -float getVoltage(void)
+        -float getCurrent(void)
     }
     class BusVoltage {
         ...
