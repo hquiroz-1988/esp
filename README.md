@@ -4,10 +4,8 @@
 
 # Table of contents
 1. [Introduction](#bullet1)
-    1. [ESP8266 Project Links](#bullet1.1)
-        1. [Hello World](#bullet1.1.1)
-        2. [Test Tasks](#bullet1.1.2)
-        3. [Solar Panel](#bullet1.1.3)
+    1. [Projects](#bullet1.1)
+        3. [Solar Meter](#bullet1.1.1)
 2. [Pre-Requisites](#bullet2)
     1. [ESP8266 RTOS SDK](#bullet2.1)
     2. [Issues Compiling](#bullet2.2)
@@ -48,13 +46,7 @@ Some issues encountered while compiling are listed below, Windows Toolchain Only
 
 While compiling within the mingw32 environment ensure that the correct python and pip versions will be invoked. The invoked versions should be within the ```mingw32/bin``` folder.
 
-![alt text](docs/whichPythonScreenshot.png)
-
-#### Python Version <a name="bullet2.2.1"></a>
-
-While compiling within the mingw32 environment ensure that the correct python and pip versions will be invoked. The invoked versions should be within the ```mingw32/bin``` folder.
-
-![alt text](docs/whichPythonScreenshot.png)
+![alt text](Documents/Images/whichPythonScreenshot.png)
 
 
 #### Xtensa Compiler <a name="bullet2.2.2"></a>
@@ -63,17 +55,17 @@ If you are getting an issue when calling ```make menuconfig``` and receive the f
 
 ```make: xtensa-lx106-elf-gcc: Command not found```
 
-![alt text](docs/xtensa_not_found.png)
+![alt text](Documents/Images/xtensa_not_found.png)
 
 Then follow instructions below:
 
 After downloading the ```xtensa-lx106-elf``` ```.zip``` or ```.tar.gz```  as instructed in the [Windows Toolchain Setup](https://docs.espressif.com/projects/esp8266-rtos-sdk/en/latest/get-started/windows-setup.html#download-the-toolchain-for-the-esp8266), extract the ```xtensa-lx106-elf``` folder into your ```msys32/opt folder```
 
-![alt text](docs/extract.png)
+![alt text](Documents/Images/extract.png)
  
  Your ```msys32/opt``` folder should now look like below.
 
-![alt text](docs/opt.png)
+![alt text](Documents/Images/opt.png)
 
 Next follow steps 2 & 3  in the [Linux Toolchain Setup](https://docs.espressif.com/projects/esp8266-rtos-sdk/en/latest/get-started/linux-setup.html#toolchain-setup) and ```make``` should now be able to invoke ```xtensa-lx106-elf-gcc```.
 
