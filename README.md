@@ -110,7 +110,7 @@ This repository serves as a base project for various ESP8266-based subprojects. 
 <!-- Features -->
 ### Features
 
-- **[Solar Meter](/solar_panel/)** – Solar Metering project for tracking and monitoring solar energy in different environments.
+- **[Solar Meter](/solar_meter/)** – Solar Metering project for tracking and monitoring solar energy in different environments.
 
 - **[Test Tasks](/test_tasks/)** – Example tasks for testing ESP8266 features and SDK setup.
 - **[I2C](/i2c/)** – Demonstrates I2C communication with sensors and peripherals.
