@@ -5,11 +5,11 @@
 
   -->
   <h1>ESP8266 Projects</h1>
-  
+
   <p>
     Projects using the ESP8266_RTOS_SDK
   </p>
-  
+
 <!-- Badges -->
 <p>
   <a href="https://github.com/Louis3797/awesome-readme-template/graphs/contributors">
@@ -31,7 +31,7 @@
     <img src="https://img.shields.io/github/license/Louis3797/awesome-readme-template.svg" alt="license" />
   </a>
 </p>
-   
+
 <h4>
     <a href="https://github.com/Louis3797/awesome-readme-template/">View Demo</a>
   <span> · </span>
@@ -49,26 +49,22 @@
 # Table of Contents
 
 - [About the Project](#about-the-project)
-  * [Tech Stack](#tech-stack)
-  * [Features](#features)
-  * [Environment Variables](#environment-variables)
+  - [Tech Stack](#tech-stack)
+  - [Features](#features)
 - [Getting Started](#getting-started)
-  * [Prerequisites](#prerequisites)
-  * [Installation](#installation)
-  * [Run Locally](#run-locally)
+  - [Prerequisites](#prerequisites)
+  - [Run Locally](#run-locally)
 - [Usage](#usage)
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
-  * [Code of Conduct](#code-of-conduct)
 - [License](#license)
-- [Contact](#contact)
 - [Acknowledgements](#acknowledgements)
-  
+
 
 <!-- About the Project -->
 ## About the Project
 
-This repository serves as a base project for various ESP8266-based subprojects. It provides a common structure, setup instructions, and shared resources to streamline development and documentation for each subproject. The goal is to make it easy to start new ESP8266 projects, share code, and maintain consistency across related efforts. Current subprojects include tools like a solar meter and other IoT experiments.
+This repository serves as a base project for various ESP8266-based subprojects. It provides a common structure, setup instructions, and shared resources to streamline development and documentation for each subproject. The goal is to make it easy to start new ESP8266 projects, share code, and maintain consistency across related efforts. Current subprojects include Solar Meter and other IoT experiments.
 
 
 <!-- TechStack -->
@@ -108,13 +104,13 @@ This repository serves as a base project for various ESP8266-based subprojects. 
   <li><a href="https://github.com/features/actions">GitHub Actions</a> (CI/CD pipeline)</li>
   <li><a href="https://www.anaconda.com/">Anaconda</a> or <a href="https://github.com/cmmid/conda_micro">Microconda</a> (for Python environment management)</li>
   </ul>
-  
+
 </details>
 
 <!-- Features -->
 ### Features
 
-- **[Solar Meter Project](/solar_panel/)** – Solar Metering project for tracking and monitoring solar energy in different environments.
+- **[Solar Meter](/solar_panel/)** – Solar Metering project for tracking and monitoring solar energy in different environments.
 
 - **[Test Tasks](/test_tasks/)** – Example tasks for testing ESP8266 features and SDK setup.
 - **[I2C](/i2c/)** – Demonstrates I2C communication with sensors and peripherals.
@@ -142,7 +138,7 @@ Windows users will need to compile programs in a virtual Linux environment. This
 To install WSL (Windows Subsystem for Linux):
 
 1. Open **PowerShell** as Administrator.
-2. Run:  
+2. Run:
   ```powershell
   wsl --install
   ```
@@ -151,13 +147,13 @@ To install WSL (Windows Subsystem for Linux):
 
 For more details, see the [official Microsoft WSL guide](https://docs.microsoft.com/windows/wsl/install).
 
-#### Anaconda or Microconda <a name="bullet2.1"></a>
+#### Anaconda or Microconda
 
 Within the WSL or Linux/MAC environment it is recomended to install microconda in order to provide a Python2 sandbox environment within which the ESP8266_RTOS_SDK tools can be used.
 
 ##### MSYS2 MINGW
 
-Alternatively, you can use [MSYS2](https://www.msys2.org/) to provide a Unix-like environment on Windows. 
+Alternatively, you can use [MSYS2](https://www.msys2.org/) to provide a Unix-like environment on Windows.
 
 1. Download and install MSYS2 from the [official website](https://www.msys2.org/).
 2. Open the MSYS2 terminal and update the package database:
@@ -172,9 +168,7 @@ Alternatively, you can use [MSYS2](https://www.msys2.org/) to provide a Unix-lik
 
 Refer to the [MSYS2 documentation](https://www.msys2.org/docs/) for more details.
 
-Once installation of above dependencies is complete a user can clone or fork this repo into the WSL+Miniconda or Windows environment follow the guidelines in the [ESP32 RTOS SDK Programming Guide](https://docs.espressif.com/projects/esp8266-rtos-sdk/en/latest/get-started/index.html#). 
-
-<!-- 
+<!--
 #### Docker <a name="bullet2.1"></a>
 
 TODO: need to hash out these instructions -->
@@ -206,38 +200,7 @@ Flash MCU
   make flash
 ```
 
-
-### Issues Compiling <a name="bullet2.2"></a>
-
-Some issues encountered while compiling are listed below, Windows Toolchain Only! (Mac and Linux installs dont have to deal with MSYS)
-
-##### Python Version <a name="bullet2.2.1"></a>
-
-While compiling within the mingw32 environment ensure that the correct python and pip versions will be invoked. The invoked versions should be within the ```mingw32/bin``` folder.
-
-![alt text](Documents/Images/whichPythonScreenshot.png)
-
-
-##### Xtensa Compiler <a name="bullet2.2.2"></a>
-
-If you are getting an issue when calling ```make menuconfig``` and receive the following error message.
-
-```make: xtensa-lx106-elf-gcc: Command not found```
-
-![alt text](Documents/Images/xtensa_not_found.png)
-
-Then follow instructions below:
-
-After downloading the ```xtensa-lx106-elf``` ```.zip``` or ```.tar.gz```  as instructed in the [Windows Toolchain Setup](https://docs.espressif.com/projects/esp8266-rtos-sdk/en/latest/get-started/windows-setup.html#download-the-toolchain-for-the-esp8266), extract the ```xtensa-lx106-elf``` folder into your ```msys32/opt folder```
-
-![alt text](Documents/Images/extract.png)
- 
- Your ```msys32/opt``` folder should now look like below.
-
-![alt text](Documents/Images/opt.png)
-
-Next follow steps 2 & 3  in the [Linux Toolchain Setup](https://docs.espressif.com/projects/esp8266-rtos-sdk/en/latest/get-started/linux-setup.html#toolchain-setup) and ```make``` should now be able to invoke ```xtensa-lx106-elf-gcc```.
-
+For installation issues in WSL or MSYS2 please refer to this [Installation Issues AppNote](/Documents/AppNotes/Issues.md).
 
 <!-- Usage -->
 ## Usage
