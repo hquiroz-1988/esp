@@ -80,6 +80,11 @@ block-beta
 
 ```
 
+### ESP32 Modules
+- **[PowerMonitor](/solar_meter/Documents/AppNotes/PowerMonitor.md)**: Handles voltage and current sensing from the solar panel and battery.
+- **[Telemetry](/solar_meter/Documents/AppNotes/Telemetry.md)**: Manages data collection and communication with the server via MQTT.
+- **[Lighting](/solar_meter/Documents/AppNotes/Lighting.md)**: Controls the LED lighting based on system logic and sensor data.
+
 ## RPI Server Module Overview
 
 tbd
