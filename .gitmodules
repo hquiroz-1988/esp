@@ -1,6 +1,9 @@
 [submodule "ESP8266_RTOS_SDK"]
 	path = ESP8266_RTOS_SDK
 	url = git@github.com:hquiroz-1988/ESP8266_RTOS_SDK.git
-[submodule "unit_test/cpputest"]
-	path = unit_test/cpputest
-	url = https://github.com/cpputest/cpputest.git
+[submodule "unit_test"]
+	path = unit_test
+	url = git@github.com:jwgrenning/cpputest-starter-project.git
+[submodule "cpputest"]
+	path = cpputest
+	url = git@github.com:cpputest/cpputest.git
