@@ -13,7 +13,6 @@
 extern "C" 
 {
     #include "esp_log.h"
-    #include "ads1115_regs.h"
 }
 
 #include "ads1115.hpp"
@@ -253,6 +252,12 @@ ADS1115::ADS1115()
 ADS1115::~ADS1115()
 {
     // Destructor implementation
+}
+
+void ADS1115::init_ads1115(void)
+{
+    // static ADS1115 ads1115_instance;
+    // Optionally, add further initialization or configuration here if needed
 }
 
 retVal_t ADS1115::getConfiguration(ads1115ConfigRegister_t * configPtr)

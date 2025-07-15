@@ -13,3 +13,4 @@ solar_panel/html/
 bin/
 xtensa-lx106-elf/
 *.bkp
+docker-build.log

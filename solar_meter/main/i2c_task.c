@@ -131,7 +131,7 @@ static void i2c_Task(void *arg)
         /* if received data, process data*/
         if(pdPASS == retVal)
         {
-            ESP_LOGI(TAG, "i2cObjPtr: %i\r\n", (uint32_t)i2cObjPtr);
+            ESP_LOGI(TAG, "i2cObjPtr: %p\r\n", (void *)i2cObjPtr);
 
             if( i2cObjPtr != NULL && 
                 i2cObjPtr->cmd != NULL &&
