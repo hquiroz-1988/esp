@@ -24,6 +24,11 @@ extern "C" {
 /************************************
  * MACROS AND DEFINES
  ************************************/
+#define ESP_MIN_PRIOITY (0)
+#define ESP_LOW_PRIORITY (1)
+#define ESP_NORMAL_PRIORITY (2)
+#define ESP_HIGH_PRIORITY (3)
+#define ESP_MAX_PRIORITY (configMAX_PRIORITIES - 1)
 
 /************************************
  * TYPEDEFS
