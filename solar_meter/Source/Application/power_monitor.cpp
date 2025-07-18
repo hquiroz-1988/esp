@@ -10,6 +10,7 @@
 /*******************************************************************************
  * INCLUDES
 *******************************************************************************/
+#include "power_monitor.hpp"
 
 /*******************************************************************************
  * EXTERN VARIABLES
@@ -42,3 +43,24 @@
 /*******************************************************************************
  * GLOBAL FUNCTIONS
  *******************************************************************************/
+PowerMonitor::PowerMonitor() : Task("PowerMonitor", 256 * 4)
+{
+    // Constructor implementation
+}
+
+
+PowerMonitor::~PowerMonitor()
+{
+    // Destructor implementation
+}
+
+
+void PowerMonitor::taskRun()
+{
+    /* initialize task variables     */
+
+    while(1)
+    {
+
+    }
+}
