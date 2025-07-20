@@ -57,10 +57,10 @@ PowerMonitor::~PowerMonitor()
 
 void PowerMonitor::taskRun()
 {
-    /* initialize task variables     */
+    /*  initialize power monitor variables     */
 
-    while(1)
+    while(FOREVER())
     {
-
+        
     }
 }
