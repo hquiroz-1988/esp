@@ -32,8 +32,8 @@ public:
 
     // suspend/resume only make sense if a new thread was started with run().
     // Ignored if runInCurrent() was used
-    void suspend(void);
-    void resume(void);
+    retVal_t suspend(void);
+    retVal_t resume(void);
 
 private:
     TaskHandle_t taskHandle;
