@@ -53,8 +53,9 @@ retVal_t Task::initTask(void)
 
     TaskFunction_t taskFunction = (TaskFunction_t)Task::startTask;
 
-    if (taskHandle != nullptr) 
+    if (CHECK_POINTER_VALID(taskHandle)) 
     {
+        /* if task handle is not null pointer, dont init again   */
         ret = ERR_FAIL;
     }
 
@@ -94,39 +95,54 @@ void Task::runInCurrent() { taskRun(); }
 
 void Task::startTask(void *argument) { ((Task *)argument)->taskRun(); }
 
-void Task::suspend() {
+retVal_t Task::suspend(void)
+{
+    retVal_t ret = ERR_NONE;
 
-    if (xPortInIsrContext()) 
+    if(CHECK_POINTER_VALID(taskHandle) == false)
     {
-        // stat = osErrorISR;
+        ret = ERR_NULL_POINTER;
     }
-    else if (taskHandle == NULL) 
-    {
-        // stat = osErrorParameter;
-    }
-    else 
-    {
-        // stat = osOK;
-        vTaskSuspend (taskHandle);
-        suspended = true;
-    }
-}
 
-void Task::resume() {
-    if (taskHandle && suspended) {
+    if( (ret == ERR_NONE) 
+        && (!suspended) )
+    {
         if (xPortInIsrContext()) 
         {
-            // stat = osErrorISR;
-        }
-        else if (taskHandle == NULL) 
-        {
-            // stat = osErrorParameter;
+            ret = ERR_IN_ISR;
         }
         else 
         {
-            // stat = osOK;
-            vTaskResume (taskHandle);
+            vTaskSuspend (taskHandle);
+            suspended = true;
         }
-        suspended = false;
     }
+
+    return ret;
+}
+
+retVal_t Task::resume() 
+{
+    retVal_t ret = ERR_NONE;
+
+    if(CHECK_POINTER_VALID(taskHandle) == false)
+    {
+        ret = ERR_NULL_POINTER;
+    }
+
+    if( (ret == ERR_NONE) 
+        && suspended )
+    {
+        if (xPortInIsrContext()) 
+        {
+            ret = ERR_IN_ISR;
+        }
+        else 
+        {
+            vTaskResume (taskHandle);
+            suspended = false;
+        }
+    }
+
+    return ret;
 }
