@@ -33,6 +33,14 @@ extern "C" {
 /************************************
  * TYPEDEFS
  ************************************/
+#ifdef UNIT_TEST
+bool FOREVER(void);
+bool CHECK_POINTER_VALID(void *ptr);
+#else
+#define FOREVER() (1)
+#define CHECK_POINTER_VALID(ptr) ((ptr) != nullptr)
+#endif
+
 
 /************************************
  * EXPORTED VARIABLES
