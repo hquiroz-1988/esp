@@ -69,8 +69,8 @@ void PowerMonitor::taskRun()
         // This is a placeholder for actual implementation
 
         float voltage = 0.0f;
-        retVal_t ret = busVoltage.getFilteredVoltage(&voltage);
-        if (ret == ERR_NONE)
+        Status_t ret = busVoltage.getFilteredVoltage(&voltage);
+        if (ret == STATUS_OKAY)
         {
             // Process the voltage value as needed
             // For example, log the voltage or take action based on its value
@@ -78,8 +78,8 @@ void PowerMonitor::taskRun()
 
         /* collect current data */
         float current = 0.0f;
-        retVal_t ret = busCurrent.getFilteredCurrent(&current);
-        if (ret == ERR_NONE)
+        ret = busCurrent.getFilteredCurrent(&current);
+        if (ret == STATUS_OKAY)
         {
             // Process the current value as needed
             // For example, log the current or take action based on its value

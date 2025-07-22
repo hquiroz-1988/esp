@@ -41,7 +41,7 @@ public:
     Telemetry() = default;
     ~Telemetry() = default;
     void init(void);
-    retVal_t sendPacket(telemetry_packet_t * packet);
+    Status_t sendPacket(telemetry_packet_t * packet);
 private:
     // Add any private members or methods if necessary
 };

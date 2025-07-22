@@ -45,9 +45,9 @@ public:
      *
      *  @param value - pointer to a float value that will return
      *  the voltage value
-     *  @return retVal_t - returns error type or success
+     *  @return Status_t - returns error type or success
      */
-    retVal_t getFilteredVoltage(float * value);
+    Status_t getFilteredVoltage(float * value);
 
     private:
     // Add private members if needed

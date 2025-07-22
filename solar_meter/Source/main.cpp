@@ -94,7 +94,7 @@ static void testAds1115Task(void)
 
     ADS1115 ads1115;
 
-    if(ERR_NONE != ads1115.getConfiguration(&configRegister))
+    if(STATUS_OKAY != ads1115.getConfiguration(&configRegister))
     {
         /* some failure occured     */
         ESP_LOGI(TAG, "Could not get configuration");
@@ -125,7 +125,7 @@ extern "C" void app_main()
 
     /* initialize task */
     // float voltageValue;
-    // retVal_t errRet;
+    // Status_t errRet;
 
     /* initialize i2c handler task and i2c module    */
     init_i2cHandler();
@@ -138,7 +138,7 @@ extern "C" void app_main()
         // /* get filtered voltage and current */
         // errRet = get_filtered_voltage(&voltageValue);
 
-        // if(ERR_NONE == errRet)
+        // if(STATUS_OKAY == errRet)
         // {
         //     /* print voltage and current */
         //     ESP_LOGI(TAG, "Voltage: %f, Current: %f\r\n", voltageValue, currentValue);
