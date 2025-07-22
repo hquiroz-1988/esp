@@ -103,6 +103,7 @@ void PowerMonitor::taskRun()
 
 
         // Add a delay or yield to avoid busy-waiting
-        vTaskDelay(pdMS_TO_TICKS(100)); // Delay for 100 milliseconds
+        //!TODO: Uncomment the following before merging into main branch
+        // vTaskDelay(pdMS_TO_TICKS(100)); // Delay for 100 milliseconds
     }
 }
