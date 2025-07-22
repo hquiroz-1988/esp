@@ -126,17 +126,17 @@ public:
      * 
      * This method fetches the most recent analog-to-digital conversion result.
      */
-    retVal_t getLatestReading(ads1115ConversionRegister_t * regPtr);
+    Status_t getLatestReading(ads1115ConversionRegister_t * regPtr);
 
     void init_ads1115(void);
-    retVal_t getConfiguration(ads1115ConfigRegister_t * configPtr);
-    retVal_t setConfiguration(ads1115ConfigRegister_t * configPtr);
+    Status_t getConfiguration(ads1115ConfigRegister_t * configPtr);
+    Status_t setConfiguration(ads1115ConfigRegister_t * configPtr);
 
     private:
 
-    retVal_t read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr);
-    retVal_t write_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr);
-    retVal_t queueWait_ads1115I2cObject( i2c_handler_t ** i2cObjPtr);
+    Status_t read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr);
+    Status_t write_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr);
+    Status_t queueWait_ads1115I2cObject( i2c_handler_t ** i2cObjPtr);
 
 };
 

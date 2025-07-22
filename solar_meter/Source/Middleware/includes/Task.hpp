@@ -24,7 +24,7 @@ public:
     virtual ~Task();
 
     // start internal loop (main function) in new task and return
-    retVal_t initTask(void);
+    Status_t initTask(void);
 
     // start internal loop (main function) in current task
     // (should not return)
@@ -32,8 +32,8 @@ public:
 
     // suspend/resume only make sense if a new thread was started with run().
     // Ignored if runInCurrent() was used
-    retVal_t suspend(void);
-    retVal_t resume(void);
+    Status_t suspend(void);
+    Status_t resume(void);
 
 private:
     TaskHandle_t taskHandle;

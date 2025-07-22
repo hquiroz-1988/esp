@@ -28,21 +28,21 @@ extern "C" {
  ************************************/
 typedef enum
 {
-    ERR_NONE,
-    ERR_UNKNOWN,
-    ERR_FAIL,
-    ERR_OS_FAIL,
-    ERR_QUEUE_FAIL,
-    ERR_NOTIFY_TIMEOUT,
-    ERR_NULL_POINTER,
-    ERR_OUT_OF_BOUNDS,
-    ERR_STACK_SIZE_TOO_SMALL,
-    ERR_I2C_CMD_FAIL,
-    ERR_IN_ISR,
+    STATUS_OKAY,
+    STATUS_UNKNOWN,
+    STATUS_OS_ERROR,
+    STATUS_QUEUE_FAIL,
+    STATUS_NOTIFY_TIMEOUT,
+    STATUS_NULL_POINTER,
+    STATUS_REINIT_ERROR,
+    STATUS_OUT_OF_BOUNDS,
+    STATUS_STACK_SIZE_TOO_SMALL,
+    STATUS_IN_ISR_ERROR,
+    STATUS_HAL_ERROR,
+    STATUS_MEMCMP_FAIL,
     
-
-    TOTAL_ERR_TYPES
-}retVal_t;
+    TOTAL_STATUS_TYPES
+}Status_t;
 
 /************************************
  * EXPORTED VARIABLES

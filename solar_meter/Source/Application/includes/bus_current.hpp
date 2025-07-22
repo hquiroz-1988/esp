@@ -28,7 +28,7 @@ public:
     BusCurrent() = default;
     ~BusCurrent() = default;
     void init(void);
-    retVal_t getFilteredCurrent(float * value);
+    Status_t getFilteredCurrent(float * value);
 
     private:
     // Add any private members or methods if necessary

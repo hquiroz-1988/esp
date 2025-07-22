@@ -47,43 +47,43 @@ Task::~Task()
     }
 }
 
-retVal_t Task::initTask(void)
+Status_t Task::initTask(void)
 {
-    retVal_t ret = ERR_NONE;
+    Status_t ret = STATUS_OKAY;
 
     TaskFunction_t taskFunction = (TaskFunction_t)Task::startTask;
 
     if (CHECK_POINTER_VALID(taskHandle)) 
     {
         /* if task handle is not null pointer, dont init again   */
-        ret = ERR_FAIL;
+        ret = STATUS_REINIT_ERROR;
     }
 
-    if( (ret == ERR_NONE) 
+    if( (ret == STATUS_OKAY) 
         && (stackSize < configMINIMAL_STACK_SIZE) )
     {
-        ret = ERR_STACK_SIZE_TOO_SMALL;
+        ret = STATUS_STACK_SIZE_TOO_SMALL;
     }
 
-    if( (ret == ERR_NONE) 
+    if( (ret == STATUS_OKAY) 
         && (priority > configMAX_PRIORITIES))
     {
-        ret = ERR_OUT_OF_BOUNDS;
+        ret = STATUS_OUT_OF_BOUNDS;
     }
 
-    if( (ret == ERR_NONE) )
+    if( (ret == STATUS_OKAY) )
     {
         if(!xPortInIsrContext())
         {
             if (xTaskCreate ((TaskFunction_t)taskFunction, taskName, (uint16_t)stackSize, (void *)this, priority, &taskHandle) != pdPASS) 
             {
                 taskHandle = nullptr;
-                ret = ERR_OS_FAIL;
+                ret = STATUS_OS_ERROR;
             }
         }
         else
         {
-            ret = ERR_IN_ISR;
+            ret = STATUS_IN_ISR_ERROR;
         }
         
     }
@@ -95,21 +95,21 @@ void Task::runInCurrent() { taskRun(); }
 
 void Task::startTask(void *argument) { ((Task *)argument)->taskRun(); }
 
-retVal_t Task::suspend(void)
+Status_t Task::suspend(void)
 {
-    retVal_t ret = ERR_NONE;
+    Status_t ret = STATUS_OKAY;
 
     if(CHECK_POINTER_VALID(taskHandle) == false)
     {
-        ret = ERR_NULL_POINTER;
+        ret = STATUS_NULL_POINTER;
     }
 
-    if( (ret == ERR_NONE) 
+    if( (ret == STATUS_OKAY) 
         && (!suspended) )
     {
         if (xPortInIsrContext()) 
         {
-            ret = ERR_IN_ISR;
+            ret = STATUS_IN_ISR_ERROR;
         }
         else 
         {
@@ -121,21 +121,21 @@ retVal_t Task::suspend(void)
     return ret;
 }
 
-retVal_t Task::resume() 
+Status_t Task::resume() 
 {
-    retVal_t ret = ERR_NONE;
+    Status_t ret = STATUS_OKAY;
 
     if(CHECK_POINTER_VALID(taskHandle) == false)
     {
-        ret = ERR_NULL_POINTER;
+        ret = STATUS_NULL_POINTER;
     }
 
-    if( (ret == ERR_NONE) 
+    if( (ret == STATUS_OKAY) 
         && suspended )
     {
         if (xPortInIsrContext()) 
         {
-            ret = ERR_IN_ISR;
+            ret = STATUS_IN_ISR_ERROR;
         }
         else 
         {
