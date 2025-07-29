@@ -48,8 +48,12 @@ static const char *TAG = "PowerMonitor";
 /*******************************************************************************
  * GLOBAL FUNCTIONS
  *******************************************************************************/
-PowerMonitor::PowerMonitor(Telemetry & _telemetry) 
-: Task("PowerMonitor", 256 * 4), telemetry(_telemetry)
+PowerMonitor::PowerMonitor(NetworkingModule &_networkingModule,
+                           BusVoltage &_busVoltage,
+                           BusCurrent &_busCurrent) : Task("PowerMonitor", 256 * 4),
+                                                      busVoltage(_busVoltage),
+                                                      busCurrent(_busCurrent),
+                                                      networkingModule(_networkingModule)
 {
     // Constructor implementation
 }
