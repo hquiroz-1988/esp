@@ -19,6 +19,7 @@ extern "C" {
  ************************************/
 #include "stdint.h"
 #include "stdbool.h"
+#include "string.h"
 /************************************
  * MACROS AND DEFINES
  ************************************/
@@ -32,6 +33,7 @@ typedef enum
     STATUS_UNKNOWN,
     STATUS_OS_ERROR,
     STATUS_QUEUE_FAIL,
+    STATUS_QUEUE_FULL,
     STATUS_NOTIFY_TIMEOUT,
     STATUS_NULL_POINTER,
     STATUS_REINIT_ERROR,
