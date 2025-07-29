@@ -27,7 +27,7 @@ Task::~Task()
 {
     if (xPortInIsrContext()) 
     {
-        ESP_LOGE(TAG, "Error: %i", STATUS_IN_ISR_ERROR);
+        ESP_LOGE(TAG, "Error: %i", STATUS_ISR_ERROR);
     }
     else if (CHECK_POINTER_VALID(taskHandle) == false)
     {
@@ -40,7 +40,6 @@ Task::~Task()
 
         if (tstate != eDeleted) 
         {
-            // stat = osOK;
             vTaskDelete (taskHandle);
         }
         else 
@@ -86,7 +85,7 @@ Status_t Task::initTask(void)
         }
         else
         {
-            ret = STATUS_IN_ISR_ERROR;
+            ret = STATUS_ISR_ERROR;
         }
         
     }
@@ -112,7 +111,7 @@ Status_t Task::suspend(void)
     {
         if (xPortInIsrContext()) 
         {
-            ret = STATUS_IN_ISR_ERROR;
+            ret = STATUS_ISR_ERROR;
         }
         else 
         {
@@ -138,7 +137,7 @@ Status_t Task::resume()
     {
         if (xPortInIsrContext()) 
         {
-            ret = STATUS_IN_ISR_ERROR;
+            ret = STATUS_ISR_ERROR;
         }
         else 
         {
