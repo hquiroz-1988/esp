@@ -16,11 +16,12 @@
 #include "Task.hpp"
 #include "bus_voltage.hpp"
 #include "bus_current.hpp"
-#include "telemetry.hpp"
+#include "networking.hpp"
 
 /*******************************************************************************
  * MACROS AND DEFINES
 *******************************************************************************/
+#define GET_POWER_NOTIFY_BIT    (0x01)
 
 /*******************************************************************************
  * TYPEDEFS
@@ -28,29 +29,61 @@
 class PowerMonitor : public Task
 {
 public:
-    PowerMonitor(Telemetry & telemetry);
-    virtual ~PowerMonitor();
+    PowerMonitor(NetworkingModule & networkingModule, 
+                 BusVoltage & busVoltage, 
+                 BusCurrent & busCurrent);
+    ~PowerMonitor();
 
 private:
+    /**
+     * @brief Stores the latest measured bus voltage value.
+     */
+    float latestBusVoltage;
+    /**
+     * @brief Stores the latest measured bus current value.
+     */
+    float latestBusCurrent;
+    /** * @brief Stores the latest measured power value.
+     */
+    float latestPower;
+
     /** @brief  Bus voltage object
      *  This object is used to interact with the bus voltage module.
      */
-    BusVoltage busVoltage;
+    BusVoltage & busVoltage;
     /** @brief  Bus current object
      *  This object is used to interact with the bus current module.
      */
-    BusCurrent busCurrent;
+    BusCurrent & busCurrent;
+
+    /** @brief  NetworkingModule object
+     *  This object is used to send networking data.
+     */
+    NetworkingModule & networkingModule;
 
     /** @brief  Telemetry object
      *  This object is used to send telemetry data.
      */
-    Telemetry & telemetry;
+    NetworkingMessage_t busVoltageMessage;
+    NetworkingMessage_t busCurrentMessage;
+    NetworkingMessage_t powerMessage;
 
     /** @brief  Runs the power monitor task
      *  This function is called to start the power monitor task.
      */
     virtual void taskRun();
-    // Add private members and methods as needed
+    /**
+     * @brief Queues the bus voltage message for transmission.
+     */
+    Status_t queueBusVoltageMessage(void);
+    /**
+     * @brief Queues the bus current message for transmission.
+     */
+    Status_t queueBusCurrentMessage(void);
+    /**
+     * @brief Queues the power message for transmission.
+     */
+    Status_t queuePowerMessage(void);
 };
 
 
