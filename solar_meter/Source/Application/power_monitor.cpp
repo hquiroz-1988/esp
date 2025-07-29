@@ -12,6 +12,11 @@
 *******************************************************************************/
 #include "power_monitor.hpp"
 
+extern "C"
+{
+    #include "esp_log.h"
+}
+
 /*******************************************************************************
  * EXTERN VARIABLES
  *******************************************************************************/
@@ -27,7 +32,7 @@
 /*******************************************************************************
  * STATIC VARIABLES
  *******************************************************************************/
-
+static const char *TAG = "PowerMonitor";
 /*******************************************************************************
  * GLOBAL VARIABLES
  *******************************************************************************/
@@ -91,16 +96,10 @@ void PowerMonitor::taskRun()
         // For example, log the power or take action based on its value
 
         /*   send the voltage, current, and power packets to telemetry module */
-        telemetry_packet_t packet;
-        packet.header[0] = 0xAA; // Example header
-        packet.type = 0x01;      // Example type
-        packet.length = sizeof(packet) - sizeof(packet.header);
-        packet.payload[0] = voltage;
-        packet.payload[1] = current;
-        packet.payload[2] = power;
-
-        telemetry.sendPacket(&packet);
-
+        if (status != STATUS_OKAY)
+        {
+            ESP_LOGE(TAG, "Error: %i", status);
+        }
 
         // Add a delay or yield to avoid busy-waiting
         //!TODO: Uncomment the following before merging into main branch
