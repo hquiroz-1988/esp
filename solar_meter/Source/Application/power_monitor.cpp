@@ -9,7 +9,7 @@
 
 /*******************************************************************************
  * INCLUDES
-*******************************************************************************/
+ *******************************************************************************/
 #include "power_monitor.hpp"
 
 extern "C"
@@ -24,6 +24,7 @@ extern "C"
 /*******************************************************************************
  * PRIVATE MACROS AND DEFINES
  *******************************************************************************/
+#define CLEAR_ALL_BITS (0xFFFFFFFF)
 
 /*******************************************************************************
  * PRIVATE TYPEDEFS
@@ -101,11 +102,11 @@ PowerMonitor::PowerMonitor(NetworkingModule &_networkingModule,
     // Constructor implementation
 }
 
-
 PowerMonitor::~PowerMonitor()
 {
     // Destructor implementation
 }
+
 
 
 void PowerMonitor::taskRun()
@@ -129,7 +130,7 @@ void PowerMonitor::taskRun()
             status = queueBusVoltageMessage();
 
             if(status == STATUS_OKAY)
-        {
+            {
                 status = queueBusCurrentMessage();
             }
 
