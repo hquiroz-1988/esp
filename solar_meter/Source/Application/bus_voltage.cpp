@@ -17,7 +17,8 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
-#include "bus_voltage.h"
+
+#include "bus_voltage.hpp"
 
 /************************************
  * EXTERN VARIABLES
@@ -74,9 +75,9 @@ void init_BusVoltage(void)
     xTaskCreate(voltage_Task, "voltage_task", 1024, NULL, 5, NULL);
 }
 
-retVal_t get_filtered_voltage(float * value)
+Status_t get_filtered_voltage(float * value)
 {
-    retVal_t retVal = ERR_UNKNOWN;
+    Status_t retVal = ERR_UNKNOWN;
 
     
 

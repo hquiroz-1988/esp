@@ -26,6 +26,32 @@ extern "C" {
 /************************************
  * TYPEDEFS
  ************************************/
+class BusVoltage
+{
+public:
+    BusVoltage() = default;
+    ~BusVoltage() = default;
+
+    /** @brief  Initializes Bus Voltage module including
+     *  task and variables
+     *
+     *  @param void 
+     *  @return void 
+     */
+    void init(void);
+
+    /** @brief  Returns the filtered voltage from the
+     *  bus voltage module.
+     *
+     *  @param value - pointer to a float value that will return
+     *  the voltage value
+     *  @return Status_t - returns error type or success
+     */
+    Status_t getFilteredVoltage(float * value);
+
+    private:
+    // Add private members if needed
+};
 
 /************************************
  * EXPORTED VARIABLES
@@ -34,24 +60,6 @@ extern "C" {
 /************************************
  * GLOBAL FUNCTION PROTOTYPES
  ************************************/
-
-/** @brief  Initializes Bus Voltage module including
- *  task and variables
- *
- *  @param void 
- *  @return void 
- */
-void init_BusVoltage(void);
-
-/** @brief  Returns the filtered voltage from the
- *  bus voltage module.
- *
- *  @param value - pointer to a float value that will return
- *  the voltage value
- *  @return retVal_t - returns error type or success
- */
-retVal_t get_filtered_voltage(float * value);
-
 
 #ifdef __cplusplus
 }

@@ -59,23 +59,42 @@ The schematic below shows the circuit diagram for measuring both bus voltage and
 
 The block diagram below shows the Power Monitor class interface and its dependencies.
 
+
 ```mermaid
 classDiagram
-    class PowerMonitor~Task~{
-        +PowerMonitor(const char *name, uint32_t _stackSize, osPriority_t prio)
-        +~PowerMonitor(void)
-        -virtual void main(void)
-        -void sm_run(void)
-        -float getVoltage(void)
-        -float getCurrent(void)
+    class PowerMonitor~Task~ {
+        +PowerMonitor(NetworkingModule &networkingModule, BusVoltage &busVoltage, BusCurrent &busCurrent)
+        +~PowerMonitor()
+        -float latestBusVoltage
+        -float latestBusCurrent
+        -float latestPower
+        -BusVoltage &busVoltage
+        -BusCurrent &busCurrent
+        -NetworkingModule &networkingModule
+        -NetworkingMessage_t busVoltageMessage
+        -NetworkingMessage_t busCurrentMessage
+        -NetworkingMessage_t powerMessage
+        -void taskRun()
+        -Status_t queueBusVoltageMessage(void)
+        -Status_t queueBusCurrentMessage(void)
+        -Status_t queuePowerMessage(void)
+    }
+    class Task {
+        ...
     }
     class BusVoltage {
         ...
     }
-
-    class CurrentMonitor {
+    class BusCurrent {
         ...
     }
+    class NetworkingModule {
+        ...
+    }
+    class NetworkingMessage_t {
+        ...
+    }
+
     class ADS1115 {
         ...
     }
@@ -86,11 +105,14 @@ classDiagram
         ...
     }
 
+    PowerMonitor --|> Task : derived from
     PowerMonitor --> BusVoltage : uses
-    PowerMonitor --> CurrentMonitor : uses
+    PowerMonitor --> BusCurrent : uses
+    PowerMonitor --> NetworkingModule : uses
+    PowerMonitor --> NetworkingMessage_t : uses
     BusVoltage --> ADS1115 : uses
-    CurrentMonitor --> INA219 : uses
     ADS1115 --> I2CBus : depends on
+    BusCurrent --> INA219 : uses
     INA219 --> I2CBus : depends on
 ```
 
