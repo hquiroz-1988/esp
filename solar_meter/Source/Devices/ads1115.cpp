@@ -260,6 +260,12 @@ void ADS1115::init_ads1115(void)
     // Optionally, add further initialization or configuration here if needed
 }
 
+void ADS1115::init_ads1115(void)
+{
+    // static ADS1115 ads1115_instance;
+    // Optionally, add further initialization or configuration here if needed
+}
+
 Status_t ADS1115::getConfiguration(ads1115ConfigRegister_t * configPtr)
 {
     Status_t errRet = STATUS_OKAY;
