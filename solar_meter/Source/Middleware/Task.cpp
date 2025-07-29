@@ -9,8 +9,10 @@
 
 extern "C" 
 {
-
+    #include "esp_log.h"
 }
+
+const char *TAG = "Task";
 
 
 Task::Task(const char *name, uint32_t _stackSize, UBaseType_t prio) :
@@ -25,11 +27,12 @@ Task::~Task()
 {
     if (xPortInIsrContext()) 
     {
-        // stat = osErrorISR;
+        ESP_LOGE(TAG, "Error: %i", STATUS_IN_ISR_ERROR);
     }
-    else if (taskHandle == NULL) 
+    else if (CHECK_POINTER_VALID(taskHandle) == false)
     {
-        // stat = osErrorParameter;
+        /* task is nullptr */
+        ESP_LOGE(TAG, "Error: %i", STATUS_NULL_POINTER);
     }
     else 
     {
@@ -42,7 +45,7 @@ Task::~Task()
         }
         else 
         {
-            // stat = osErrorResource;
+            ESP_LOGE(TAG, "Error: %i", STATUS_OS_ERROR);
         }
     }
 }
