@@ -1,19 +1,20 @@
 /**
  *******************************************************************************
- * @file    telemetry.hpp
+ * @file    networkingmodule.hpp
  * @author  HQ
  * @date    2025-07-20 10:22:46
  * @brief   
  *******************************************************************************
  */
 
-#ifndef TELEMETRY_HPP
-#define TELEMETRY_HPP
+#ifndef NETWORKINGMODULE_HPP
+#define NETWORKINGMODULE_HPP
 
 /*******************************************************************************
  * INCLUDES
 *******************************************************************************/
 #include "common.h"
+#include "typedefs.h"
 
 /*******************************************************************************
  * MACROS AND DEFINES
@@ -25,23 +26,22 @@
 typedef struct
 {
     /**
-     * @brief Telemetry packet structure
-     * This structure defines the format of a telemetry packet.
+     * @brief NetworkingModule packet structure
+     * This structure defines the format of a networkingmodule packet.
      */
-    uint8_t header[2]; // Packet header
-    const char * packet_name; // Name of the packet
-    uint8_t type;      // Packet type
-    uint8_t length;    // Length of the payload
-    uint8_t payload[]; // Variable length payload
-} telemetry_packet_t;
+    std::string name; // Name of the networkingmodule packet
+    uint32_t timestamp; // Timestamp of the networkingmodule packet
+    uint16_t size; // Size of the networkingmodule packet in bytes
+    void * dataPtr; // Data payload of the networkingmodule packet, size can be adjusted as needed
+} NetworkingMessage_t;
 
-class Telemetry
+class NetworkingModule
 {
 public:
-    Telemetry() = default;
-    ~Telemetry() = default;
+    NetworkingModule() = default;
+    ~NetworkingModule() = default;
     void init(void);
-    Status_t sendPacket(telemetry_packet_t * packet);
+    Status_t queueNetworkingMessage(NetworkingMessage_t * message);
 private:
     // Add any private members or methods if necessary
 };
@@ -55,4 +55,4 @@ private:
 *******************************************************************************/
 
 
-#endif // TELEMETRY_HPP
+#endif // NETWORKINGMODULE_HPP
