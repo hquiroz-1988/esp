@@ -1,9 +1,6 @@
 [submodule "unit_test"]
 	path = unit_test
 	url = git@github.com:hquiroz-1988/unit-tests.git
-[submodule "esp-idf"]
-	path = esp-idf
-	url = git@github.com:espressif/esp-idf.git
 [submodule "ESP8266_RTOS_SDK"]
 	path = ESP8266_RTOS_SDK
 	url = git@github.com:hquiroz-1988/ESP8266_RTOS_SDK.git
