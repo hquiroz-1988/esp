@@ -1,9 +1,6 @@
 [submodule "unit_test"]
 	path = unit_test
 	url = git@github.com:hquiroz-1988/unit-tests.git
-[submodule "cpputest"]
-	path = cpputest
-	url = git@github.com:cpputest/cpputest.git
 [submodule "esp-idf"]
 	path = esp-idf
 	url = git@github.com:espressif/esp-idf.git
