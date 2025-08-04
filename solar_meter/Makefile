@@ -5,5 +5,8 @@
 
 PROJECT_NAME := solar_meter
 
+# add extra directories to the component search path`
+EXTRA_COMPONENT_DIRS+= 
+
 include $(IDF_PATH)/make/project.mk
 
