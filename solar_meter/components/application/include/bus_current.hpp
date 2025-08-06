@@ -1,20 +1,19 @@
 /**
  *******************************************************************************
- * @file    networkingmodule.hpp
+ * @file    bus_current.hpp
  * @author  HQ
- * @date    2025-07-20 10:22:46
+ * @date    2025-07-20 09:56:53
  * @brief   
  *******************************************************************************
  */
 
-#ifndef NETWORKINGMODULE_HPP
-#define NETWORKINGMODULE_HPP
+#ifndef BUS_CURRENT_HPP
+#define BUS_CURRENT_HPP
 
 /*******************************************************************************
  * INCLUDES
 *******************************************************************************/
-#include "common.h"
-#include "typedefs.h"
+#include "helper.h"
 
 /*******************************************************************************
  * MACROS AND DEFINES
@@ -23,26 +22,15 @@
 /*******************************************************************************
  * TYPEDEFS
 *******************************************************************************/
-typedef struct
-{
-    /**
-     * @brief NetworkingModule packet structure
-     * This structure defines the format of a networkingmodule packet.
-     */
-    std::string name; // Name of the networkingmodule packet
-    uint32_t timestamp; // Timestamp of the networkingmodule packet
-    uint16_t size; // Size of the networkingmodule packet in bytes
-    void * dataPtr; // Data payload of the networkingmodule packet, size can be adjusted as needed
-} NetworkingMessage_t;
-
-class NetworkingModule
+class BusCurrent
 {
 public:
-    NetworkingModule() = default;
-    ~NetworkingModule() = default;
+    BusCurrent() = default;
+    ~BusCurrent() = default;
     void init(void);
-    Status_t queueNetworkingMessage(NetworkingMessage_t * message);
-private:
+    Status_t getFilteredCurrent(float * value);
+
+    private:
     // Add any private members or methods if necessary
 };
 
@@ -55,4 +43,4 @@ private:
 *******************************************************************************/
 
 
-#endif // NETWORKINGMODULE_HPP
+#endif // BUS_CURRENT_HPP

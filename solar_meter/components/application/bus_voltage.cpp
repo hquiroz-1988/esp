@@ -77,7 +77,7 @@ void init_BusVoltage(void)
 
 Status_t get_filtered_voltage(float * value)
 {
-    Status_t retVal = ERR_UNKNOWN;
+    Status_t retVal = STATUS_UNKNOWN;
 
     
 
