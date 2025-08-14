@@ -26,16 +26,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      -name : Checkout code
-        # This step checks out the code from the repository
-        # so that it can be used in the workflow
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
 
-      - name: Build with ESP-IDF Docker
-        run: |
-          # run script to build the project
-          pwd
-          ls
-          ./ESP8266_RTOS_SDK/tools/docker/build.sh
+    - name: Build with ESP-IDF Docker
+      run: |
+        # run script to build the project
+        pwd
+        ls
+        ./ESP8266_RTOS_SDK/tools/docker/build.sh
