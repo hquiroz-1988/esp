@@ -1,0 +1,55 @@
+# Name wokflow
+name: ESP Workflow
+
+#define the trigger for the workflow
+on: [push]
+  # push:
+  #   branches:
+  #     - main
+  # pull_request:
+  #   branches:
+  #     - main
+
+
+# Define the jobs that will run in this workflow
+jobs:
+
+  # Just print some messages
+  say-hello:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Say Hello
+        run: echo "Hello, Github Actions!"
+
+  # This job builds an ESP-IDF project using Docker
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+
+    - name: Build with ESP-IDF Docker
+      run: |
+        # run script to build the project
+        pwd
+        ls
+        ./ESP8266_RTOS_SDK/tools/docker/build.sh
+        ./ESP8266_RTOS_SDK/tools/docker/run.sh
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+
+    - name: Run Unit Tests with Docker
+      run: |
+        # run script to run unit tests
+        pwd
+        ls
+        ./unit_test/docker/build.sh
+        ./unit_test/docker/run.sh
