@@ -20,3 +20,18 @@ jobs:
     steps:
       - name: Say Hello
         run: echo "Hello, Github Actions!"
+
+        name: Custom ESP-IDF Build
+  # This job builds an ESP-IDF project using Docker
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Build with ESP-IDF Docker
+      run: |
+        # run script to build the project
+        pwd
+        ls
+        ./ESP8266_RTOS_SDK/tools/docker/build.sh
