@@ -21,7 +21,6 @@ jobs:
       - name: Say Hello
         run: echo "Hello, Github Actions!"
 
-        name: Custom ESP-IDF Build
   # This job builds an ESP-IDF project using Docker
   build:
     runs-on: ubuntu-latest
