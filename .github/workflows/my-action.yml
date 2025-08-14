@@ -37,5 +37,19 @@ jobs:
         ls
         ./ESP8266_RTOS_SDK/tools/docker/build.sh
         ./ESP8266_RTOS_SDK/tools/docker/run.sh
-        # ./unit_test/docker/build.sh
-        # ./unit_test/docker/run.sh
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+
+    - name: Run Unit Tests with Docker
+      run: |
+        # run script to run unit tests
+        pwd
+        ls
+        ./unit_test/docker/build.sh
+        ./unit_test/docker/run.sh
