@@ -22,6 +22,11 @@
         "queue.h": "c",
         "common.h": "c",
         "random": "c",
-        "esp_wifi.h": "c"
+        "esp_wifi.h": "c",
+        "ets_sys.h": "c",
+        "projdefs.h": "c",
+        "esp_heap_config.h": "c",
+        "freertosconfig.h": "c",
+        "format": "cpp"
     }
 }
