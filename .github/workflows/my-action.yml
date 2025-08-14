@@ -35,4 +35,5 @@ jobs:
         # run script to build the project
         pwd
         ls
-        ./ESP8266_RTOS_SDK/tools/docker/build.sh
+        ./unit_test/docker/build.sh
+        ./unit_test/docker/run.sh
