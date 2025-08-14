@@ -1,0 +1,22 @@
+# Name wokflow
+name: ESP Workflow
+
+#define the trigger for the workflow
+on: [push]
+  # push:
+  #   branches:
+  #     - main
+  # pull_request:
+  #   branches:
+  #     - main
+
+
+# Define the jobs that will run in this workflow
+jobs:
+
+  # Just print some messages
+  say-hello:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Say Hello
+        run: echo "Hello, Github Actions!"
