@@ -35,5 +35,7 @@ jobs:
         # run script to build the project
         pwd
         ls
-        ./unit_test/docker/build.sh
-        ./unit_test/docker/run.sh
+        ./ESP8266_RTOS_SDK/tools/docker/build.sh
+        ./ESP8266_RTOS_SDK/tools/docker/run.sh
+        # ./unit_test/docker/build.sh
+        # ./unit_test/docker/run.sh
