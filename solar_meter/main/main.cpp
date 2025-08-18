@@ -19,7 +19,7 @@
 
 #include "i2c_task.h"
 #include "ads1115.hpp"
-#include "bus_voltage.h"
+#include "bus_voltage.hpp"
 
 
 /* static variables    */
@@ -131,7 +131,7 @@ extern "C" void app_main()
     init_i2cHandler();
 
     /*  initialize bus voltage module   */
-    init_BusVoltage();
+    BusVoltage busVoltage;
     
     while (1) 
     {
