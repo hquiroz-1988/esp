@@ -17,7 +17,13 @@ extern "C" {
 /************************************
  * INCLUDES
  ************************************/
+extern "C" 
+{
+
+}
+
 #include "typedefs.h"
+#include "ads1115.hpp"
 
 /************************************
  * MACROS AND DEFINES
@@ -29,7 +35,7 @@ extern "C" {
 class BusVoltage
 {
 public:
-    BusVoltage() = default;
+    BusVoltage(ADS1115 & _ads1115);
     ~BusVoltage() = default;
 
     /** @brief  Initializes Bus Voltage module including
@@ -38,7 +44,7 @@ public:
      *  @param void 
      *  @return void 
      */
-    void init(void);
+    Status_t init(void);
 
     /** @brief  Returns the filtered voltage from the
      *  bus voltage module.
@@ -47,10 +53,12 @@ public:
      *  the voltage value
      *  @return Status_t - returns error type or success
      */
-    Status_t getFilteredVoltage(float * value);
+    Status_t getFilteredVoltage(float & value);
 
     private:
     // Add private members if needed
+    ADS1115 & ads1115;
+    ADS1115_Conversion_t convObj;
 };
 
 /************************************

@@ -1,89 +1,103 @@
 /**
- ********************************************************************************
- * @file    bus_voltage.c
- * @author  Hugo Quiroz
- * @date    2024-09-27 10:23:37
- * @brief   description
- ********************************************************************************
+ *******************************************************************************
+ * @file    bus_voltage.cpp
+ * @author  HQ
+ * @date    2025-08-18 22:22:21
+ * @brief   
+ *******************************************************************************
  */
 
-/************************************
+/*******************************************************************************
  * INCLUDES
- ************************************/
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "esp_log.h"
+*******************************************************************************/
+
+extern "C" 
+{
+    #include "esp_log.h"
+}
 
 #include "bus_voltage.hpp"
 
-/************************************
- * EXTERN VARIABLES
- ************************************/
 
-/************************************
+/*******************************************************************************
+ * EXTERN VARIABLES
+ *******************************************************************************/
+
+/*******************************************************************************
  * PRIVATE MACROS AND DEFINES
- ************************************/
+ *******************************************************************************/
 static const char *TAG = "bus voltage";
 
-/************************************
+/*******************************************************************************
  * PRIVATE TYPEDEFS
- ************************************/
+ *******************************************************************************/
 
-/************************************
+/*******************************************************************************
  * STATIC VARIABLES
- ************************************/
+ *******************************************************************************/
 
-/************************************
+/*******************************************************************************
  * GLOBAL VARIABLES
- ************************************/
+ *******************************************************************************/
 
-/************************************
+/*******************************************************************************
  * STATIC FUNCTION PROTOTYPES
- ************************************/
-static void voltage_Task(void *arg);
+ *******************************************************************************/
 
-/************************************
+/*******************************************************************************
  * STATIC FUNCTIONS
- ************************************/
-static void voltage_Task(void *arg)
-{
+ *******************************************************************************/
 
-    /* initialize voltage task */
-
-   while (1) 
-    {
-        /* while i2c data exists send out data  */
-        ESP_LOGI(TAG, "bus voltage task\r\n");
-
-        /* design i2c task, this might have multiple channels*/
-
-
-        vTaskDelay(1000 / portTICK_RATE_MS);
-    }
-}
-
-/************************************
+/*******************************************************************************
  * GLOBAL FUNCTIONS
- ************************************/
-void init_BusVoltage(void)
+ *******************************************************************************/
+BusVoltage::BusVoltage(ADS1115 & _ads1115) : ads1115(_ads1115)
 {
-    /*  create voltage task */
-    xTaskCreate(voltage_Task, "voltage_task", 1024, NULL, 5, NULL);
+    // Constructor implementation
 }
 
-Status_t get_filtered_voltage(float * value)
+Status_t BusVoltage::init(void)
 {
-    Status_t retVal = STATUS_UNKNOWN;
+    /* create configuration object   */
+    ADS1115_Config_t configObj;
 
-    
+    //!TODO: verify all these values are goooood
+    configObj.opStatus = OperationStatus_t::NoConversionInProgress;
+    configObj.mux = ADS1115Mux_t::AIN0_AIN1;
+    configObj.pga = ADS1115PGA_t::FSR_2_048V;
+    configObj.mode = ADS1115Mode_t::Continuous;
+    configObj.dataRate = ADS1115DataRate_t::SPS_860;
+    configObj.compMode = ADS1115CompMode_t::Traditional;
+    configObj.compPolarity = ADS1115CompPolarity_t::ActiveHigh;
+    configObj.compLatch = ADS1115CompLatch_t::NonLatching;
+    configObj.compQueue = ADS1115CompQueue_t::AssertAfterFourConversions;
+
+    /* configure ADS1115 module */
+    Status_t retVal = ads1115.configure(configObj);
+
+    /* init conversion object */
+    convObj.type = Conversion_t::SingleEnded;
+    convObj.channel = ADS1115Mux_t::AIN0_AIN1;
+    convObj.value = 0.0f;
+
 
     return retVal;
 }
 
+Status_t BusVoltage::getFilteredVoltage(float & value)
+{
+    Status_t retVal = STATUS_UNKNOWN;
 
+    retVal = ads1115.readADC_SingleEnded(convObj);
 
+    if (retVal == STATUS_OKAY)
+    {
+        value = convObj.value;
+    }
+    else
+    {
+        value = 0.0f;
+    }
 
+    return retVal;
+}
