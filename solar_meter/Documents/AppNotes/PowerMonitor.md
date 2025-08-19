@@ -163,14 +163,13 @@ The schematic below shows the circuit diagram used to measure the bus voltage.
 
 The block diagram below shows the Bus Voltage class interface and its dependencies.
 
-
 ```mermaid
 classDiagram
     class BusVoltage {
         +BusVoltage()
-        +void initialize()
-        +float measureVoltage()
-        +void handleErrors()
+        +~BusVoltage()
+        +Status_t init()
+        +Status_t measureVoltage()
     }
     class ADS1115 {
         ...
@@ -204,7 +203,7 @@ classDiagram
         +Status_t readADC_Differential(ADS1115_Conversion_t & convObj)
         +Status_t startComparator_SingleEnded(ADS1115_Comparator_t & compObj)
         +Status_t startComparator_Differential(ADS1115_Comparator_t & compObj)
-        +Status_t stopComparator(void)
+        +Status_t stopComparator(ADS115_Comparator_t & compObj)
         +attribute: Conversion_t
         +attribute: ADS1115_Conversion_t 
         +attribute: ADS1115_Comparator_t
