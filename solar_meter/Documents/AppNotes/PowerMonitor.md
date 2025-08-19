@@ -157,7 +157,9 @@ sequenceDiagram
 
 The schematic below shows the circuit diagram used to measure the bus voltage. 
 
-![Bus Voltage Measurement Schematic](../Images/ads1115Circuit.png)
+
+<!-- !TODO: only show ads1115 diagram -->
+![Bus Voltage Measurement Schematic](../Images/power_monitor_circuit_diagram.png)
 
 The block diagram below shows the Bus Voltage class interface and its dependencies.
 
@@ -196,21 +198,54 @@ classDiagram
     }
     class ADS1115 {
         +ADS1115()
-        +bool begin(uint8_t i2cAddress = 0x48)
-        +void setGain(uint16_t gain)
-        +int16_t readADC_SingleEnded(uint8_t channel)
-        +int16_t readADC_Differential_0_1()
-        +int16_t readADC_Differential_2_3()
-        +void startComparator_SingleEnded(uint8_t channel, int16_t threshold)
-        +void startComparator_Differential_0_1(int16_t threshold)
-        +void startComparator_Differential_2_3(int16_t threshold)
-        +void stopComparator()
+        +~ADS1115()
+        +Status_t configure(const ADS1115_Config_t & configObj);
+        +Status_t readADC_SingleEnded(ADS1115_Conversion_t & convObj)
+        +Status_t readADC_Differential(ADS1115_Conversion_t & convObj)
+        +Status_t startComparator_SingleEnded(ADS1115_Comparator_t & compObj)
+        +Status_t startComparator_Differential(ADS1115_Comparator_t & compObj)
+        +Status_t stopComparator(void)
+        +attribute: Conversion_t
+        +attribute: ADS1115_Conversion_t 
+        +attribute: ADS1115_Comparator_t
     }
     class I2CBus {
         ...
     }
+    class ADS1115_Config_t~struct~{
+        +uint8_t operationStatus 
+        +uint8_t mux         
+        +uint8_t pga         
+        +uint8_t mode        
+        +uint8_t dataRate    
+        +uint8_t compMode    
+        +uint8_t compPolarity
+        +uint8_t compLatch   
+        +uint8_t compQueue
+    }
+    class ADS1115_Conversion_t~struct~{
+        +Conversion_t type
+        +uint16_t value
+        +uint16_t channel1
+        +uint16_t channel2
+    }
+    class ADS1115_Comparator_t~struct~{
+        +Conversion_t type
+        +uint16_t upper_bound
+        +uint16_t lower_bound
+        +uint16_t channel1
+        +uint16_t channel2
+    }
+    class Conversion_t~Enumeration~{
+        Differential
+        Single
+    }
     BusVoltage --> ADS1115 : uses
-    ADS1115 --> I2CBus : depends on
+    ADS1115 --> I2CBus : uses
+    ADS1115 --> ADS1115_Config_t : attribute
+    ADS1115 --> ADS1115_Conversion_t : attribute
+    ADS1115 --> ADS1115_Comparator_t : attribute
+    ADS1115 --> Conversion_t : attribute
 ```
 
 ##### I2C Bus
