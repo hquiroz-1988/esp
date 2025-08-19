@@ -88,7 +88,7 @@ typedef union
     uint8_t bytes[ADS1115_CONVERSION_REGISTER_SIZE];
 }ads1115ConversionRegister_t;
 
-enum class OperationStatus_t : uint8_t
+enum class OperationalStatus_t : uint8_t
 {
     ConversionInProgress = 0, // Conversion in progress
     NoConversionInProgress = 1 // Conversion ready
@@ -164,7 +164,7 @@ enum class ADS1115CompQueue_t : uint8_t
 
 struct ADS1115_Config
 {
-    OperationStatus_t opStatus;
+    OperationalStatus_t opStatus;
     ADS1115Mux_t mux;
     ADS1115PGA_t pga;
     ADS1115Mode_t mode;
