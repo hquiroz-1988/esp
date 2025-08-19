@@ -159,7 +159,7 @@ The schematic below shows the circuit diagram used to measure the bus voltage.
 
 
 <!-- !TODO: only show ads1115 diagram -->
-![Bus Voltage Measurement Schematic](../Images/power_monitor_circuit_diagram.png)
+![Bus Voltage Measurement Schematic](../Images/solar_meter_ads1115_diagram.png)
 
 The block diagram below shows the Bus Voltage class interface and its dependencies.
 
