@@ -57,7 +57,8 @@ class ADS1115Channel
      *  the voltage value
      *  @return Status_t - returns error type or success
      */
-    virtual Status_t waitGetConversion(float & value);
+    virtual Status_t getFilteredVoltage(float * value);
+    //!TODO: change to startAndWaitForConversion(float & value)
 
      /**
      * @brief  Runs the alert ISR for the ADS1115 device.
