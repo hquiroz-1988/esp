@@ -51,53 +51,67 @@ static const char *TAG = "bus voltage";
 /*******************************************************************************
  * GLOBAL FUNCTIONS
  *******************************************************************************/
-BusVoltage::BusVoltage(ADS1115 & _ads1115) : ads1115(_ads1115)
+BusVoltage::BusVoltage(PowerMonitor & _pm, ADS1115 & _ads1115) : pm(_pm), ADS1115Channel(_ads1115)
 {
     // Constructor implementation
 }
 
 Status_t BusVoltage::init(void)
 {
-    /* create configuration object   */
-    ADS1115_Config_t configObj;
 
-    //!TODO: verify all these values are goooood
-    configObj.opStatus = OperationStatus_t::NoConversionInProgress;
-    configObj.mux = ADS1115Mux_t::AIN0_AIN1;
-    configObj.pga = ADS1115PGA_t::FSR_2_048V;
-    configObj.mode = ADS1115Mode_t::Continuous;
-    configObj.dataRate = ADS1115DataRate_t::SPS_860;
-    configObj.compMode = ADS1115CompMode_t::Traditional;
-    configObj.compPolarity = ADS1115CompPolarity_t::ActiveHigh;
-    configObj.compLatch = ADS1115CompLatch_t::NonLatching;
-    configObj.compQueue = ADS1115CompQueue_t::AssertAfterFourConversions;
+    /* for configuration we are not trying to trigger a conversion+ */
+    configRegister.opStatus = ADS1115_OperationalStatus_t::Write_No_Effect;
+    /* busvoltage measurement will be single ended at AIN0  */
+    configRegister.mux = ADS1115Mux_t::AIN0_GND;
+    /*  range 2.048 will be used since device VDD will be 3.3V, 2.048 is the
+        next largest value    */
+    configRegister.pga = ADS1115PGA_t::FSR_2_048V;
+    /* all measurements are requested not automatic, continuous would drain power */
+    configRegister.mode = ADS1115Mode_t::SingleShot;
+    /*  sampling rate will be high but actual sampling will be much lower rate
+        this is to save power, lower device sampling rates require device to be on much
+        longer hence consuming more power */
+    configRegister.dataRate = ADS1115DataRate_t::SPS_860;
+    /*  comparator mode might need to window when measuring battery voltage to ensure
+        batteries stay above and below thresholds    */
+    configRegister.compMode = ADS1115CompMode_t::Window;
+    /* comparator polarity will be active low */
+    configRegister.compPolarity = ADS1115CompPolarity_t::ActiveLow;
+    /* comparator is latching, in case we want to poll signal   */
+    configRegister.compLatch = ADS1115CompLatch_t::Latching;
+    /* asserting alert/rdy pin after four coversions to filter out sporadic measurements */
+    configRegister.compQueue = ADS1115CompQueue_t::AssertAfterFourConversions;
 
     /* configure ADS1115 module */
-    Status_t retVal = ads1115.configure(configObj);
+    Status_t retVal = ads1115.configure(configRegister);
+
+    /*  set low and high thresholds for bus voltage, these will be 
+        set to not use the comparator but instad used to alert when
+        a sample is ready this is done by setting low high threshold value to most
+        negative value possible, thresholds will be set at conversion request since
+        different channels might actually use the threshold values  */
+    lowThreshold = ADS1115_CONVERSION_COMPLETE_LO;
+    highThreshold = ADS1115_CONVERSION_COMPLETE_HI;
 
     /* init conversion object */
-    convObj.type = Conversion_t::SingleEnded;
-    convObj.channel = ADS1115Mux_t::AIN0_AIN1;
-    convObj.value = 0.0f;
-
-
-    return retVal;
-}
-
-Status_t BusVoltage::getFilteredVoltage(float & value)
-{
-    Status_t retVal = STATUS_UNKNOWN;
-
-    retVal = ads1115.readADC_SingleEnded(convObj);
-
-    if (retVal == STATUS_OKAY)
-    {
-        value = convObj.value;
-    }
-    else
-    {
-        value = 0.0f;
-    }
+    type = Conversion_t::SingleEnded;
+    channel = ADS1115Mux_t::AIN0_GND;
+    conversionValue = 0;
 
     return retVal;
 }
+
+
+
+/*******************************************************************************
+ * INTERRUPT SERVICE ROUTINES
+ *******************************************************************************/
+
+ void BusVoltage::runAlertISR(void * arg)
+ {
+    // Handle the alert interrupt, e.g., notify a task or set a flag
+    // This is a placeholder implementation
+    ESP_LOGI(TAG, "Alert ISR triggered");
+    //!TODO: call power monitor task notify
+    pm.notifyFromISR();
+ }

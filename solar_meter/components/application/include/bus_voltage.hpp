@@ -23,7 +23,8 @@ extern "C"
 }
 
 #include "typedefs.h"
-#include "ads1115.hpp"
+#include "ads1115_channel.hpp"
+#include "power_monitor.hpp"
 
 /************************************
  * MACROS AND DEFINES
@@ -32,10 +33,10 @@ extern "C"
 /************************************
  * TYPEDEFS
  ************************************/
-class BusVoltage
+class BusVoltage : public ADS1115Channel
 {
 public:
-    BusVoltage(ADS1115 & _ads1115);
+    BusVoltage(PowerMonitor & _pm, ADS1115 & _ads1115);
     ~BusVoltage() = default;
 
     /** @brief  Initializes Bus Voltage module including
@@ -44,21 +45,19 @@ public:
      *  @param void 
      *  @return void 
      */
-    Status_t init(void);
+    virtual Status_t init(void);
 
-    /** @brief  Returns the filtered voltage from the
-     *  bus voltage module.
-     *
-     *  @param value - pointer to a float value that will return
-     *  the voltage value
-     *  @return Status_t - returns error type or success
+    /**
+     * @brief  Runs the alert ISR for the BusVoltage.
+     * 
+     * @param arg - pointer to any arguments needed for the ISR
+     * @return void
      */
-    Status_t getFilteredVoltage(float & value);
+    virtual void runAlertISR(void * arg);
 
     private:
     // Add private members if needed
-    ADS1115 & ads1115;
-    ADS1115_Conversion_t convObj;
+    PowerMonitor & pm;
 };
 
 /************************************
