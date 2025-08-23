@@ -33,6 +33,21 @@
         "istream": "cpp",
         "numeric": "cpp",
         "ostream": "cpp",
-        "sstream": "cpp"
+        "sstream": "cpp",
+        "charconv": "cpp",
+        "chrono": "cpp",
+        "optional": "cpp",
+        "ratio": "cpp",
+        "system_error": "cpp",
+        "array": "cpp",
+        "functional": "cpp",
+        "tuple": "cpp",
+        "type_traits": "cpp",
+        "utility": "cpp",
+        "iosfwd": "cpp",
+        "limits": "cpp",
+        "shared_mutex": "cpp",
+        "stop_token": "cpp",
+        "streambuf": "cpp"
     }
 }
