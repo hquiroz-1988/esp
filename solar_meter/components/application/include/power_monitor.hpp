@@ -33,6 +33,11 @@ public:
                  BusVoltage & busVoltage, 
                  BusCurrent & busCurrent);
     ~PowerMonitor();
+    
+    /**
+     * @brief Notifies the power monitor task from an ISR context.
+     */
+    void notifyFromISR(void);
 
 private:
     /**
