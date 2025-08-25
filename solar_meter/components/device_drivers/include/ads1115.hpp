@@ -30,8 +30,8 @@
 #include "typedefs.h"
 #include "i2c_task.h"
 #include "i2c_device.hpp"
+#include "ads1115_regs.hpp"
 #include "ads1115_channel.hpp"
-#include "ads1115_regs.h"
 #include "gpio.hpp"
 #include <string.h>
 
@@ -97,150 +97,12 @@ typedef union
     uint8_t bytes[ADS1115_CONVERSION_REGISTER_SIZE];
 }ads1115ConversionRegister_t;
 
-// Device address depends on which pin is connected: GND, VDD, SDA, or SCL
-// To use a specific address, connect the ADDR pin of the ADS1115 to the corresponding pin.
-enum class ADS1115_Address : uint8_t
-{
-    Device1 = (0b1001000 << 1), // ADDR connected to GND
-    Device2 = (0b1001001 << 1), // ADDR connected to VDD
-    Device3 = (0b1001010 << 1), // ADDR connected to SDA
-    Device4 = (0b1001011 << 1)  // ADDR connected to SCL
-};
-
-enum class ADS1115_PointerRegister : uint8_t
-{
-    Conversion    = 0b00, // Conversion register
-    Config        = 0b01, // Config register
-    Lo_Threshold  = 0b10, // Lo_thresh register
-    Hi_Threshold  = 0b11  // Hi_thresh register
-};
-
-enum class ADS1115_OperationalStatus_t : uint8_t
-{
-    Read_ConversionInProgress = 0,      // Conversion in progress
-    Read_NoConversionInProgress = 1,    // Conversion ready
-    Write_No_Effect = 0,                // Dont perform an action
-    Write_StartSingleConversion = 1     // Start a Single Conversion
-};
-
-enum class ADS1115Mux_t : uint8_t
-{
-    AIN0_AIN1 = 0b000, // AINP = AIN0 and AINN = AIN1 (default)
-    AIN0_AIN3 = 0b001, // AINP = AIN0 and AINN = AIN3
-    AIN1_AIN3 = 0b010, // AINP = AIN1 and AINN = AIN3
-    AIN2_AIN3 = 0b011, // AINP = AIN2 and AINN = AIN3
-    AIN0_GND  = 0b100, // AINP = AIN0 and AINN = GND
-    AIN1_GND  = 0b101, // AINP = AIN1 and AINN = GND
-    AIN2_GND  = 0b110, // AINP = AIN2 and AINN = GND
-    AIN3_GND  = 0b111  // AINP = AIN3 and AINN = GND
-};
-
-enum class ADS1115PGA_t : uint8_t
-{
-    FSR_6_144V = 0b000, // ±6.144V
-    FSR_4_096V = 0b001, // ±4.096V
-    FSR_2_048V = 0b010, // ±2.048V (default)
-    FSR_1_024V = 0b011, // ±1.024V
-    FSR_0_512V = 0b100, // ±0.512V
-    FSR_0_256V_1 = 0b101, // ±0.256V
-    FSR_0_256V_2 = 0b110, // ±0.256V
-    FSR_0_256V_3 = 0b111  // ±0.256V
-};
-
-enum class ADS1115Mode_t : uint8_t
-{
-    Continuous = 0b0, // Continuous-conversion mode
-    SingleShot = 0b1  // Single-shot mode or power-down state (default)
-};
-
-enum class ADS1115DataRate_t : uint8_t
-{
-    SPS_8   = 0b000, // 8 samples per second
-    SPS_16  = 0b001, // 16 samples per second
-    SPS_32  = 0b010, // 32 samples per second
-    SPS_64  = 0b011, // 64 samples per second
-    SPS_128 = 0b100, // 128 samples per second (default)
-    SPS_250 = 0b101, // 250 samples per second
-    SPS_475 = 0b110, // 475 samples per second
-    SPS_860 = 0b111  // 860 samples per second
-};
-
-enum class ADS1115CompMode_t : uint8_t
-{
-    Traditional = 0b0, // Traditional comparator (default)
-    Window      = 0b1  // Window comparator
-};
-
-enum class ADS1115CompPolarity_t : uint8_t
-{
-    ActiveLow  = 0b0, // Comparator output is active low (default)
-    ActiveHigh = 0b1  // Comparator output is active high
-};
-
-enum class ADS1115CompLatch_t : uint8_t
-{
-    NonLatching = 0b0, // ALERT/RDY pin does not latch when asserted (default)
-    Latching    = 0b1  // ALERT/RDY pin remains latched until conversion data are read or SMBus alert response
-};
-
-enum class ADS1115CompQueue_t : uint8_t
-{
-    AssertAfterOneConversion   = 0b00, // Assert ALERT/RDY after one conversion
-    AssertAfterTwoConversions  = 0b01, // Assert ALERT/RDY after two conversions
-    AssertAfterFourConversions = 0b10, // Assert ALERT/RDY after four conversions
-    DisableComparator          = 0b11  // Disable comparator, ALERT/RDY pin high-impedance (default)
-};
-
-struct ADS1115_Config
-{
-    ADS1115_OperationalStatus_t opStatus;
-    ADS1115Mux_t mux;
-    ADS1115PGA_t pga;
-    ADS1115Mode_t mode;
-    ADS1115DataRate_t dataRate;
-    ADS1115CompMode_t compMode;
-    ADS1115CompPolarity_t compPolarity;
-    ADS1115CompLatch_t compLatch;
-    ADS1115CompQueue_t compQueue;
-};
-using ADS1115_Config_t = struct ADS1115_Config;
-
-enum class Conversion_t
-{
-    SingleEnded,
-    Differential
-};
-
-enum class Channel_t
-{
-    AIN0,
-    AIN1,
-    AIN2,
-    AIN3,
-    AIN0_AIN1,
-    AIN2_AIN3
-};
-
-struct ADS1115_Conversion
-{
-    Conversion_t type;
-    uint16_t value;
-    ADS1115Mux_t channel;
-};
-
-using ADS1115_Conversion_t = struct ADS1115_Conversion;
 
 
-struct ADS1115_Comparator
-{
-    uint16_t lowThreshold;
-    uint16_t highThreshold;
-    Channel_t channel;
-};
+/* forward declaration of ADS1115Channel */
+class ADS1115Channel;
 
-using ADS1115_Comparator_t = struct ADS1115_Comparator;
-
-class ADS1115 : public Gpio, public I2CDevice
+class ADS1115 : public I2CDevice, private InterruptBase
 {
 public:
     /**
@@ -256,14 +118,14 @@ public:
      * 
      * Initializes the ADS1115 instance.
      */
-    ADS1115();
+    ADS1115(Gpio & _gpio);
 
     /**
      * @brief Destructor for the ADS1115 class.
      * 
      * Cleans up resources used by the ADS1115 instance.
      */
-    ~ADS1115();
+    virtual ~ADS1115();
 
     /**
      * @brief Initializes the ADS1115 device channels.
@@ -294,7 +156,6 @@ public:
      * @return Status_t Returns the status of the read operation.
      */
     Status_t readADC_SingleEnded(ADS1115Channel & channel);
-
 
     /**
      * @brief Starts a single-ended ADC measurement using the provided conversion object.
@@ -378,9 +239,23 @@ public:
     Status_t setDeviceAddress(ADS1115_Address addy);
 
     /**
-     * @brief Callback function for handling ALERT/RDY Pin GPIO interrupt.
+     * @brief Enables the GPIO interrupt.
+     *
+     * This method enables the associated GPIO interrupt for the ADS1115 device.
+     *
+     * @return Status_t Returns the status of the operation.
+     */
+    Status_t enableInterrupt();
+    /** 
+     * @brief Callback function for handling GPIO interrupt.
+     *
+     * This function is called when a GPIO interrupt occurs for the ADS1115 device.
+     * It can be overridden by the user to implement custom interrupt handling logic.
+     *
+     * @param arg Pointer to user-defined argument passed during interrupt registration.
      */
     virtual void HAL_GPIO_EXTI_Callback(void * arg);
+
 
     /**
      * @brief Retrieves the latest reading from the ADS1115 device.
@@ -413,6 +288,7 @@ public:
     Status_t queueWait_ads1115I2cObject( i2c_handler_t ** i2cObjPtr);
 
 
+    Gpio & alertPin;
     ADS1115Channel * channels[MAX_CHANNEL_COUNT];
 
     /* configuration for the ADS1115 Device*/

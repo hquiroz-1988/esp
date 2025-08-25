@@ -33,19 +33,20 @@ extern "C"
 /************************************
  * TYPEDEFS
  ************************************/
+class PowerMonitor;
+
 class BusVoltage : public ADS1115Channel
 {
 public:
-    BusVoltage(PowerMonitor & _pm, ADS1115 & _ads1115);
-    ~BusVoltage() = default;
+    BusVoltage(ADS1115 & _ads1115);
+    virtual ~BusVoltage();
 
-    /** @brief  Initializes Bus Voltage module including
-     *  task and variables
+    /** @brief  Initializes Bus Voltage which is an ADS1115 channel type.
      *
      *  @param void 
-     *  @return void 
+     *  @return void
      */
-    virtual Status_t init(void);
+    virtual Status_t initialize(PowerMonitor * _pm);
 
     /**
      * @brief  Runs the alert ISR for the BusVoltage.
@@ -57,7 +58,7 @@ public:
 
     private:
     // Add private members if needed
-    PowerMonitor & pm;
+    PowerMonitor *pm;
 };
 
 /************************************

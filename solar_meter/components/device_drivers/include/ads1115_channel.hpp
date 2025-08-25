@@ -13,6 +13,7 @@
 /*******************************************************************************
  * INCLUDES
 *******************************************************************************/
+#include "ads1115_regs.hpp"
 #include "ads1115.hpp"
 /*******************************************************************************
  * MACROS AND DEFINES
@@ -21,11 +22,13 @@
 /*******************************************************************************
  * TYPEDEFS
 *******************************************************************************/
+class ADS1115;
+
 class ADS1115Channel
 {
     public:
     ADS1115Channel(ADS1115 & _ads1115);
-    ~ADS1115Channel();
+    virtual ~ADS1115Channel();
 
     /** @brief  Initializes ADS1115 module including registers, thresholds,
      *  and other necessary configurations.
@@ -67,7 +70,38 @@ class ADS1115Channel
      * @return void
      */
     virtual void runAlertISR(void * arg);
-    
+
+    /**
+     * @brief Sets the low threshold value of the ADS1115 channel.
+     * 
+     * @param value - low threshold value to set
+     * @return Status_t - returns error type or success
+     */
+    Status_t setLowThreshold(int16_t value);
+
+    /**
+     * @brief Gets low threshold value of the ADS1115 channel.
+     * 
+     * @param value - reference to store the low threshold value
+     * @return Status_t - returns error type or success
+     */
+    Status_t getLowThreshold(int16_t & value) const;
+
+    /**
+     * @brief Sets the high threshold value of the ADS1115 channel.
+     * 
+     * @param value - high threshold value to set
+     * @return Status_t - returns error type or success
+     */
+    Status_t setHighThreshold(int16_t value);
+
+    /**
+     * @brief Gets high threshold value of the ADS1115 channel.
+     * 
+     * @param value - reference to store the high threshold value
+     * @return Status_t - high threshold value
+     */
+    Status_t getHighThreshold(int16_t & value) const;
 
     private:
     

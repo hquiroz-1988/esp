@@ -23,19 +23,41 @@
 /*******************************************************************************
  * TYPEDEFS
 *******************************************************************************/
-class Gpio : public InterruptBase
+enum class GpioPin : uint16_t
+{
+    GPIO_PIN_0,
+    GPIO_PIN_1,
+    GPIO_PIN_2,
+    GPIO_PIN_3,
+    GPIO_PIN_4,
+    GPIO_PIN_5,
+    GPIO_PIN_6,
+    GPIO_PIN_7,
+    GPIO_PIN_8,
+    GPIO_PIN_9,
+    GPIO_PIN_10,
+    GPIO_PIN_11,
+    GPIO_PIN_12,
+    GPIO_PIN_13,
+    GPIO_PIN_14,
+    GPIO_PIN_15,
+    GPIO_PIN_16,
+    GPIO_PIN_TOTAL,
+    GPIO_PIN_NONE = 0xFFFF
+};
+
+class Gpio
 {
     public:
-        Gpio(uint16_t _pin);
+        Gpio(GpioPin _pin);
         virtual ~Gpio();
         void set();
         void reset();
         bool read();
-        uint16_t getPin();
-        virtual void HAL_GPIO_EXTI_Callback(void * arg);
+        GpioPin getPin();
 
     private:
-        uint16_t pin;
+        GpioPin pin;
 };
 
 /*******************************************************************************
@@ -46,3 +68,4 @@ class Gpio : public InterruptBase
  * GLOBAL FUNCTION PROTOTYPES
 *******************************************************************************/
 
+#endif // GPIO_HPP

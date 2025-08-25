@@ -13,7 +13,7 @@
 /*******************************************************************************
  * INCLUDES
 *******************************************************************************/
-#include "Task.hpp"
+#include "task.hpp"
 #include "bus_voltage.hpp"
 #include "bus_current.hpp"
 #include "networking.hpp"
@@ -26,6 +26,9 @@
 /*******************************************************************************
  * TYPEDEFS
 *******************************************************************************/
+class BusVoltage;
+class BusCurrent;
+
 class PowerMonitor : public Task
 {
 public:
@@ -37,7 +40,7 @@ public:
     /**
      * @brief Notifies the power monitor task from an ISR context.
      */
-    void notifyFromISR(void);
+    void notifyFromISR(void * arg);
 
 private:
     /**

@@ -14,7 +14,6 @@
  * INCLUDES
 *******************************************************************************/
 #include "typedefs.h"
-#include <list>
 
 /*******************************************************************************
  * MACROS AND DEFINES
@@ -25,6 +24,8 @@
 *******************************************************************************/
 class InterruptBase {
 public:
+    InterruptBase();
+    virtual ~InterruptBase();
     // pure virtual Callbacks
     virtual void HAL_TIM_PeriodElapsedCallback(void * arg){};
     virtual void HAL_GPIO_EXTI_Callback(void * arg){};

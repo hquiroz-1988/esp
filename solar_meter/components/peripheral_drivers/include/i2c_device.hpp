@@ -25,7 +25,7 @@ class I2CDevice
 {
     public:
     I2CDevice();
-    ~I2CDevice();
+    virtual ~I2CDevice();
 
     private:
     // Add private members if needed
