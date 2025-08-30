@@ -28,7 +28,7 @@ public:
 
     // start internal loop (main function) in current task
     // (should not return)
-    void runInCurrent(void);
+    virtual void taskRun() = 0;
 
     // suspend/resume only make sense if a new thread was started with run().
     // Ignored if runInCurrent() was used
@@ -38,7 +38,6 @@ public:
 private:
     TaskHandle_t taskHandle;
     static void startTask(void *argument);
-    virtual void taskRun() = 0;
     const char *taskName;
     uint32_t stackSize;
     UBaseType_t priority;

@@ -1,21 +1,20 @@
 /**
  *******************************************************************************
- * @file    networkingmodule.hpp
+ * @file    gpio.hpp
  * @author  HQ
- * @date    2025-07-20 10:22:46
+ * @date    2025-08-22 12:05:58
  * @brief   
  *******************************************************************************
  */
 
-#ifndef NETWORKINGMODULE_HPP
-#define NETWORKINGMODULE_HPP
+#ifndef GPIO_HPP
+#define GPIO_HPP
 
 /*******************************************************************************
  * INCLUDES
 *******************************************************************************/
-#include "helper.h"
 #include "typedefs.h"
-#include <string>
+#include "interrupt_base.hpp"
 
 /*******************************************************************************
  * MACROS AND DEFINES
@@ -24,27 +23,41 @@
 /*******************************************************************************
  * TYPEDEFS
 *******************************************************************************/
-typedef struct
+enum class GpioPin : uint16_t
 {
-    /**
-     * @brief NetworkingModule packet structure
-     * This structure defines the format of a networkingmodule packet.
-     */
-    std::string name; // Name of the networkingmodule packet
-    uint32_t timestamp; // Timestamp of the networkingmodule packet
-    uint16_t size; // Size of the networkingmodule packet in bytes
-    void * dataPtr; // Data payload of the networkingmodule packet, size can be adjusted as needed
-} NetworkingMessage_t;
+    GPIO_PIN_0,
+    GPIO_PIN_1,
+    GPIO_PIN_2,
+    GPIO_PIN_3,
+    GPIO_PIN_4,
+    GPIO_PIN_5,
+    GPIO_PIN_6,
+    GPIO_PIN_7,
+    GPIO_PIN_8,
+    GPIO_PIN_9,
+    GPIO_PIN_10,
+    GPIO_PIN_11,
+    GPIO_PIN_12,
+    GPIO_PIN_13,
+    GPIO_PIN_14,
+    GPIO_PIN_15,
+    GPIO_PIN_16,
+    GPIO_PIN_TOTAL,
+    GPIO_PIN_NONE = 0xFFFF
+};
 
-class NetworkingModule
+class Gpio
 {
-public:
-    NetworkingModule();
-    ~NetworkingModule();
-    void init(void);
-    Status_t queueNetworkingMessage(NetworkingMessage_t * message);
-private:
-    // Add any private members or methods if necessary
+    public:
+        Gpio(GpioPin _pin);
+        virtual ~Gpio();
+        void set();
+        void reset();
+        bool read();
+        GpioPin getPin();
+
+    private:
+        GpioPin pin;
 };
 
 /*******************************************************************************
@@ -55,5 +68,4 @@ private:
  * GLOBAL FUNCTION PROTOTYPES
 *******************************************************************************/
 
-
-#endif // NETWORKINGMODULE_HPP
+#endif // GPIO_HPP

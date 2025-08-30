@@ -1,21 +1,18 @@
 /**
  *******************************************************************************
- * @file    networkingmodule.hpp
+ * @file    i2c_device.hpp
  * @author  HQ
- * @date    2025-07-20 10:22:46
+ * @date    2025-08-22 13:22:36
  * @brief   
  *******************************************************************************
  */
 
-#ifndef NETWORKINGMODULE_HPP
-#define NETWORKINGMODULE_HPP
+#ifndef I2C_DEVICE_HPP
+#define I2C_DEVICE_HPP
 
 /*******************************************************************************
  * INCLUDES
 *******************************************************************************/
-#include "helper.h"
-#include "typedefs.h"
-#include <string>
 
 /*******************************************************************************
  * MACROS AND DEFINES
@@ -24,27 +21,14 @@
 /*******************************************************************************
  * TYPEDEFS
 *******************************************************************************/
-typedef struct
+class I2CDevice
 {
-    /**
-     * @brief NetworkingModule packet structure
-     * This structure defines the format of a networkingmodule packet.
-     */
-    std::string name; // Name of the networkingmodule packet
-    uint32_t timestamp; // Timestamp of the networkingmodule packet
-    uint16_t size; // Size of the networkingmodule packet in bytes
-    void * dataPtr; // Data payload of the networkingmodule packet, size can be adjusted as needed
-} NetworkingMessage_t;
+    public:
+    I2CDevice();
+    virtual ~I2CDevice();
 
-class NetworkingModule
-{
-public:
-    NetworkingModule();
-    ~NetworkingModule();
-    void init(void);
-    Status_t queueNetworkingMessage(NetworkingMessage_t * message);
-private:
-    // Add any private members or methods if necessary
+    private:
+    // Add private members if needed
 };
 
 /*******************************************************************************
@@ -56,4 +40,4 @@ private:
 *******************************************************************************/
 
 
-#endif // NETWORKINGMODULE_HPP
+#endif // I2C_DEVICE_HPP

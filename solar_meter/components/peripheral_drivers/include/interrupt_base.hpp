@@ -1,21 +1,19 @@
 /**
  *******************************************************************************
- * @file    networkingmodule.hpp
+ * @file    interrupt_base.hpp
  * @author  HQ
- * @date    2025-07-20 10:22:46
+ * @date    2025-08-22 12:08:27
  * @brief   
  *******************************************************************************
  */
 
-#ifndef NETWORKINGMODULE_HPP
-#define NETWORKINGMODULE_HPP
+#ifndef INTERRUPT_BASE_HPP
+#define INTERRUPT_BASE_HPP
 
 /*******************************************************************************
  * INCLUDES
 *******************************************************************************/
-#include "helper.h"
 #include "typedefs.h"
-#include <string>
 
 /*******************************************************************************
  * MACROS AND DEFINES
@@ -24,27 +22,31 @@
 /*******************************************************************************
  * TYPEDEFS
 *******************************************************************************/
-typedef struct
-{
-    /**
-     * @brief NetworkingModule packet structure
-     * This structure defines the format of a networkingmodule packet.
-     */
-    std::string name; // Name of the networkingmodule packet
-    uint32_t timestamp; // Timestamp of the networkingmodule packet
-    uint16_t size; // Size of the networkingmodule packet in bytes
-    void * dataPtr; // Data payload of the networkingmodule packet, size can be adjusted as needed
-} NetworkingMessage_t;
-
-class NetworkingModule
-{
+class InterruptBase {
 public:
-    NetworkingModule();
-    ~NetworkingModule();
-    void init(void);
-    Status_t queueNetworkingMessage(NetworkingMessage_t * message);
-private:
-    // Add any private members or methods if necessary
+    InterruptBase();
+    virtual ~InterruptBase();
+    // pure virtual Callbacks
+    virtual void HAL_TIM_PeriodElapsedCallback(void * arg){};
+    virtual void HAL_GPIO_EXTI_Callback(void * arg){};
+
+protected:
+    enum class IntType {
+        HAL_TIM_IC_CaptureCallback,
+        HAL_TIM_PeriodElapsedCallback,
+        HAL_GPIO_EXTI_Callback,
+        HAL_ADC_ConvCpltCallback,
+        HAL_TIM_PWM_PulseFinishedCallback,
+        HAL_TIM_OC_DelayElapsedCallback,
+        HAL_UART_RxHalfCpltCallback,
+        HAL_UART_RxCpltCallback,
+        HAL_UART_TxCpltCallback,
+        HAL_SPI_TxHalfCpltCallback,
+        HAL_SPI_TxCpltCallback,
+        HAL_UART_ErrorCallback
+    };
+    bool registerCallback(IntType type);
+    bool removeCallback(IntType type);
 };
 
 /*******************************************************************************
@@ -56,4 +58,4 @@ private:
 *******************************************************************************/
 
 
-#endif // NETWORKINGMODULE_HPP
+#endif // INTERRUPT_BASE_HPP

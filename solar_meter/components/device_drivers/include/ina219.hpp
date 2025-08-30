@@ -1,21 +1,18 @@
 /**
  *******************************************************************************
- * @file    networkingmodule.hpp
+ * @file    ina219.hpp
  * @author  HQ
- * @date    2025-07-20 10:22:46
+ * @date    2025-08-22 19:49:06
  * @brief   
  *******************************************************************************
  */
 
-#ifndef NETWORKINGMODULE_HPP
-#define NETWORKINGMODULE_HPP
+#ifndef INA219_HPP
+#define INA219_HPP
 
 /*******************************************************************************
  * INCLUDES
 *******************************************************************************/
-#include "helper.h"
-#include "typedefs.h"
-#include <string>
 
 /*******************************************************************************
  * MACROS AND DEFINES
@@ -24,25 +21,12 @@
 /*******************************************************************************
  * TYPEDEFS
 *******************************************************************************/
-typedef struct
-{
-    /**
-     * @brief NetworkingModule packet structure
-     * This structure defines the format of a networkingmodule packet.
-     */
-    std::string name; // Name of the networkingmodule packet
-    uint32_t timestamp; // Timestamp of the networkingmodule packet
-    uint16_t size; // Size of the networkingmodule packet in bytes
-    void * dataPtr; // Data payload of the networkingmodule packet, size can be adjusted as needed
-} NetworkingMessage_t;
-
-class NetworkingModule
+class INA219
 {
 public:
-    NetworkingModule();
-    ~NetworkingModule();
-    void init(void);
-    Status_t queueNetworkingMessage(NetworkingMessage_t * message);
+    INA219();
+    ~INA219();
+
 private:
     // Add any private members or methods if necessary
 };
@@ -56,4 +40,4 @@ private:
 *******************************************************************************/
 
 
-#endif // NETWORKINGMODULE_HPP
+#endif // INA219_HPP

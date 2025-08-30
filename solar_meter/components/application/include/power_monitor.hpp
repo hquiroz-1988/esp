@@ -13,7 +13,7 @@
 /*******************************************************************************
  * INCLUDES
 *******************************************************************************/
-#include "Task.hpp"
+#include "task.hpp"
 #include "bus_voltage.hpp"
 #include "bus_current.hpp"
 #include "networking.hpp"
@@ -26,6 +26,9 @@
 /*******************************************************************************
  * TYPEDEFS
 *******************************************************************************/
+class BusVoltage;
+class BusCurrent;
+
 class PowerMonitor : public Task
 {
 public:
@@ -33,6 +36,16 @@ public:
                  BusVoltage & busVoltage, 
                  BusCurrent & busCurrent);
     ~PowerMonitor();
+    
+    /**
+     * @brief Notifies the power monitor task from an ISR context.
+     */
+    void notifyFromISR(void * arg);
+
+    /** @brief  Runs the power monitor task
+     *  This function is called to start the power monitor task.
+     */
+    virtual void taskRun();
 
 private:
     /**
@@ -67,11 +80,6 @@ private:
     NetworkingMessage_t busVoltageMessage;
     NetworkingMessage_t busCurrentMessage;
     NetworkingMessage_t powerMessage;
-
-    /** @brief  Runs the power monitor task
-     *  This function is called to start the power monitor task.
-     */
-    virtual void taskRun();
     /**
      * @brief Queues the bus voltage message for transmission.
      */

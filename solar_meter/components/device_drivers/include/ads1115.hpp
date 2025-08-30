@@ -29,14 +29,23 @@
 *******************************************************************************/
 #include "typedefs.h"
 #include "i2c_task.h"
-#include "ads1115_regs.h"
+#include "i2c_device.hpp"
+#include "ads1115_regs.hpp"
+#include "ads1115_channel.hpp"
+#include "gpio.hpp"
 #include <string.h>
+
 
 /*******************************************************************************
  * MACROS AND DEFINES
 *******************************************************************************/
-constexpr uint8_t ADS1115_MAX_CHANNELS = 0x48; // Default I2C address for ADS1115
+constexpr int16_t ADS1115_CONVERSION_COMPLETE_LO  = static_cast<int16_t>(0x0000);
+constexpr int16_t ADS1115_CONVERSION_COMPLETE_HI  = static_cast<int16_t>(0x8000); // cast to most negative number possible
+constexpr uint8_t MAX_CHANNEL_COUNT = 4;
+constexpr uint8_t MAX_DEVICES_COUNT = 4;
 
+//!TODO: plan to remove this with ADS1115 refactor
+constexpr uint8_t ADS1115_MAX_CHANNELS = 0x48; // Default I2C address for ADS1115
 #define ADS1115_POINTER_REGISTER_SIZE                   (1u)
 #define ADS1115_CONVERSION_REGISTER_SIZE                (2u)
 #define ADS1115_CONFIG_REGISTER_SIZE                    (2u)
@@ -88,133 +97,12 @@ typedef union
     uint8_t bytes[ADS1115_CONVERSION_REGISTER_SIZE];
 }ads1115ConversionRegister_t;
 
-enum class OperationalStatus_t : uint8_t
-{
-    ConversionInProgress = 0, // Conversion in progress
-    NoConversionInProgress = 1 // Conversion ready
-};
-
-enum class ADS1115Mux_t : uint8_t
-{
-    AIN0_AIN1 = 0b000, // AINP = AIN0 and AINN = AIN1 (default)
-    AIN0_AIN3 = 0b001, // AINP = AIN0 and AINN = AIN3
-    AIN1_AIN3 = 0b010, // AINP = AIN1 and AINN = AIN3
-    AIN2_AIN3 = 0b011, // AINP = AIN2 and AINN = AIN3
-    AIN0_GND  = 0b100, // AINP = AIN0 and AINN = GND
-    AIN1_GND  = 0b101, // AINP = AIN1 and AINN = GND
-    AIN2_GND  = 0b110, // AINP = AIN2 and AINN = GND
-    AIN3_GND  = 0b111  // AINP = AIN3 and AINN = GND
-};
-
-enum class ADS1115PGA_t : uint8_t
-{
-    FSR_6_144V = 0b000, // ±6.144V
-    FSR_4_096V = 0b001, // ±4.096V
-    FSR_2_048V = 0b010, // ±2.048V (default)
-    FSR_1_024V = 0b011, // ±1.024V
-    FSR_0_512V = 0b100, // ±0.512V
-    FSR_0_256V_1 = 0b101, // ±0.256V
-    FSR_0_256V_2 = 0b110, // ±0.256V
-    FSR_0_256V_3 = 0b111  // ±0.256V
-};
-
-enum class ADS1115Mode_t : uint8_t
-{
-    Continuous = 0b0, // Continuous-conversion mode
-    SingleShot = 0b1  // Single-shot mode or power-down state (default)
-};
-
-enum class ADS1115DataRate_t : uint8_t
-{
-    SPS_8   = 0b000, // 8 samples per second
-    SPS_16  = 0b001, // 16 samples per second
-    SPS_32  = 0b010, // 32 samples per second
-    SPS_64  = 0b011, // 64 samples per second
-    SPS_128 = 0b100, // 128 samples per second (default)
-    SPS_250 = 0b101, // 250 samples per second
-    SPS_475 = 0b110, // 475 samples per second
-    SPS_860 = 0b111  // 860 samples per second
-};
-
-enum class ADS1115CompMode_t : uint8_t
-{
-    Traditional = 0b0, // Traditional comparator (default)
-    Window      = 0b1  // Window comparator
-};
-
-enum class ADS1115CompPolarity_t : uint8_t
-{
-    ActiveLow  = 0b0, // Comparator output is active low (default)
-    ActiveHigh = 0b1  // Comparator output is active high
-};
-
-enum class ADS1115CompLatch_t : uint8_t
-{
-    NonLatching = 0b0, // ALERT/RDY pin does not latch when asserted (default)
-    Latching    = 0b1  // ALERT/RDY pin remains latched until conversion data are read or SMBus alert response
-};
-
-enum class ADS1115CompQueue_t : uint8_t
-{
-    AssertAfterOneConversion   = 0b00, // Assert ALERT/RDY after one conversion
-    AssertAfterTwoConversions  = 0b01, // Assert ALERT/RDY after two conversions
-    AssertAfterFourConversions = 0b10, // Assert ALERT/RDY after four conversions
-    DisableComparator          = 0b11  // Disable comparator, ALERT/RDY pin high-impedance (default)
-};
-
-struct ADS1115_Config
-{
-    OperationalStatus_t opStatus;
-    ADS1115Mux_t mux;
-    ADS1115PGA_t pga;
-    ADS1115Mode_t mode;
-    ADS1115DataRate_t dataRate;
-    ADS1115CompMode_t compMode;
-    ADS1115CompPolarity_t compPolarity;
-    ADS1115CompLatch_t compLatch;
-    ADS1115CompQueue_t compQueue;
-};
 
 
+/* forward declaration of ADS1115Channel */
+class ADS1115Channel;
 
-using ADS1115_Config_t = struct ADS1115_Config;
-
-enum class Conversion_t
-{
-    SingleEnded,
-    Differential
-};
-
-enum class Channel_t
-{
-    AIN0,
-    AIN1,
-    AIN2,
-    AIN3,
-    AIN0_AIN1,
-    AIN2_AIN3
-};
-
-struct ADS1115_Conversion
-{
-    Conversion_t type;
-    uint16_t value;
-    ADS1115Mux_t channel;
-};
-
-using ADS1115_Conversion_t = struct ADS1115_Conversion;
-
-
-struct ADS1115_Comparator
-{
-    uint16_t lowThreshold;
-    uint16_t highThreshold;
-    Channel_t channel;
-};
-
-using ADS1115_Comparator_t = struct ADS1115_Comparator;
-
-class ADS1115
+class ADS1115 : public I2CDevice, private InterruptBase
 {
 public:
     /**
@@ -230,14 +118,22 @@ public:
      * 
      * Initializes the ADS1115 instance.
      */
-    ADS1115();
+    ADS1115(Gpio & _gpio);
 
     /**
      * @brief Destructor for the ADS1115 class.
      * 
      * Cleans up resources used by the ADS1115 instance.
      */
-    ~ADS1115();
+    virtual ~ADS1115();
+
+    /**
+     * @brief Initializes the ADS1115 device channels.
+     *
+     * This method performs any necessary setup for the ADS1115 device channels.
+     * @return Status_t Returns the status of the initialization operation.
+     */
+    Status_t initializeChannels(ADS1115Channel * channels[]);
 
     /**
      * @brief Configures the ADS1115 device with the specified settings.
@@ -250,18 +146,29 @@ public:
      */
     Status_t configure(const ADS1115_Config_t & configObj);
 
-
     /**
      * @brief Performs a single-ended ADC measurement using the provided conversion object.
      *
      * This method initiates a single-ended analog-to-digital conversion on the ADS1115 device.
      * The conversion result and channel information are stored in the supplied ADS1115_Conversion_t object.
      *
+     * @param channel Reference to an ADS1115Channel to get reference which channel where to put result.
+     * @return Status_t Returns the status of the read operation.
+     */
+    Status_t readADC_SingleEnded(ADS1115Channel & channel);
+
+    /**
+     * @brief Starts a single-ended ADC measurement using the provided conversion object.
+     *
+     * This method initiates a single-ended analog-to-digital conversion on the ADS1115 device
+     * and then returns to the caller. Conversion is not fetched immediately and will be
+     * The conversion completion will be indicated by a callback or polling mechanism.
+     * The conversion result and channel information are stored in the supplied ADS1115_Conversion_t object.
+     *
      * @param convObj Reference to an ADS1115_Conversion_t structure to hold the conversion result and channel.
      * @return Status_t Returns the status of the read operation.
      */
-    Status_t readADC_SingleEnded(ADS1115_Conversion_t & convObj);
-
+    Status_t startSingleConversion(ADS1115Channel & channel);
 
     /**
      * @brief Performs a differential ADC measurement using the provided conversion object.
@@ -273,6 +180,16 @@ public:
      * @return Status_t Returns the status of the read operation.
      */
     Status_t readADC_Differential(ADS1115_Conversion_t & convObj);
+
+    /**
+     * @brief Starts a differential ADC measurement using the provided conversion object.
+     *
+     * This method initiates a differential-ended analog-to-digital conversion on the ADS1115 device
+     * and then returns to the caller. Conversion is not fetched immediately.
+     * The conversion completion will be indicated by a callback or polling mechanism.
+     * The conversion result and channel information are stored in the supplied ADS1115_Conversion_t object.
+     */
+    Status_t startDifferentialConversion(ADS1115_Conversion_t & convObj);
 
     /**
      * @brief Starts a single-ended comparator operation on the ADS1115.
@@ -310,7 +227,42 @@ public:
      */
     Status_t stopComparator(const ADS1115_Comparator_t & compObj);
 
+    /**
+     * @brief Sets the I2C device address for the ADS1115.
+     *
+     * This method updates the internal address used for I2C communication with the ADS1115 device.
+     * Use this to select which ADS1115 device to communicate with if multiple devices are present.
+     *
+     * @param addy The ADS1115_Address enum value representing the desired device address.
+     * @return Status_t Returns the status of the address set operation.
+     */
+    Status_t setDeviceAddress(ADS1115_Address addy);
 
+    /**
+     * @brief Enables the GPIO interrupt.
+     *
+     * This method enables the associated GPIO interrupt for the ADS1115 device.
+     *
+     * @return Status_t Returns the status of the operation.
+     */
+    Status_t enableInterrupt();
+    /** 
+     * @brief Callback function for handling GPIO interrupt.
+     *
+     * This function is called when a GPIO interrupt occurs for the ADS1115 device.
+     * It can be overridden by the user to implement custom interrupt handling logic.
+     *
+     * @param arg Pointer to user-defined argument passed during interrupt registration.
+     */
+    virtual void HAL_GPIO_EXTI_Callback(void * arg);
+
+    /**
+     * @brief Get alert pin state for the ADS1115 device
+     * 
+     * @param pinState - output parameter for reading pin state
+     * @return Status_t - returns error type or success
+     */
+    Status_t getAlertPinStatus(bool & pinState);
 
 
     /**
@@ -326,10 +278,54 @@ public:
 
     private:
 
+    /**
+     * @brief Sets the address pointer registerm for the ADS1115 device.
+     * @brief Sets the address pointer register for the ADS1115 device.
+     *
+     * This method configures the address pointer register for the ADS1115 device,
+     * allowing the user to select which internal register to read from or write to.
+     *
+     * @param reg The register address to set (ADS1115_Register_t enum value).
+     * @return Status_t Returns the status of the address pointer register set operation.
+     */
+    Status_t setAddressPointerRegister(ADS1115_PointerRegister reg);
+    
+
     Status_t read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr);
     Status_t write_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr);
     Status_t queueWait_ads1115I2cObject( i2c_handler_t ** i2cObjPtr);
 
+
+    Gpio & alertPin;
+    ADS1115Channel * channels[MAX_CHANNEL_COUNT];
+
+    /* configuration for the ADS1115 Device*/
+    ADS1115_Address address;
+    ADS1115_Config_t configRegister;
+
+        /**
+     * @brief Sets the low threshold value for the ADS1115 comparator.
+     *
+     * This method configures the ADS1115 device to use the specified low threshold value
+     * for comparator operations. The comparator will trigger when the measured value falls
+     * below this threshold, according to the comparator mode and configuration.
+     *
+     * @param threshold The low threshold value to set (signed 16-bit integer).
+     * @return Status_t Returns the status of the threshold set operation.
+     */
+    Status_t setLowThreshold(int16_t threshold);
+
+    /**
+     * @brief Sets the high threshold value for the ADS1115 comparator.
+     *
+     * This method configures the ADS1115 device to use the specified high threshold value
+     * for comparator operations. The comparator will trigger when the measured value exceeds
+     * this threshold, according to the comparator mode and configuration.
+     *
+     * @param threshold The high threshold value to set (signed 16-bit integer).
+     * @return Status_t Returns the status of the threshold set operation.
+     */
+    Status_t setHighThreshold(int16_t threshold);
 };
 
 /*******************************************************************************

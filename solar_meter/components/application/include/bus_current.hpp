@@ -14,6 +14,8 @@
  * INCLUDES
 *******************************************************************************/
 #include "helper.h"
+#include "power_monitor.hpp"
+#include "ina219.hpp"
 
 /*******************************************************************************
  * MACROS AND DEFINES
@@ -22,11 +24,13 @@
 /*******************************************************************************
  * TYPEDEFS
 *******************************************************************************/
+class PowerMonitor;
+
 class BusCurrent
 {
-public:
-    BusCurrent() = default;
-    ~BusCurrent() = default;
+    public:
+    BusCurrent(INA219 & _ina219, PowerMonitor * _pm);
+    virtual ~BusCurrent();
     void init(void);
     Status_t getFilteredCurrent(float * value);
 

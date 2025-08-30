@@ -234,7 +234,7 @@ Status_t ADS1115::write_ads1115ConfigRegisters(ads1115ConfigRegister_t * configP
  * these are used to poppulate the local ads1115 object.
  * 
  */
-ADS1115::ADS1115()
+ADS1115::ADS1115(Gpio & _gpio) : alertPin(_gpio)
 {
     
     Status_t errRet = STATUS_OKAY;
