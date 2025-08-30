@@ -49,6 +49,8 @@
         "shared_mutex": "cpp",
         "stop_token": "cpp",
         "streambuf": "cpp",
-        "list": "cpp"
+        "list": "cpp",
+        "memory": "cpp",
+        "buffer": "cpp"
     }
 }
