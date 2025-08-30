@@ -42,6 +42,11 @@ public:
      */
     void notifyFromISR(void * arg);
 
+    /** @brief  Runs the power monitor task
+     *  This function is called to start the power monitor task.
+     */
+    virtual void taskRun();
+
 private:
     /**
      * @brief Stores the latest measured bus voltage value.
@@ -75,11 +80,6 @@ private:
     NetworkingMessage_t busVoltageMessage;
     NetworkingMessage_t busCurrentMessage;
     NetworkingMessage_t powerMessage;
-
-    /** @brief  Runs the power monitor task
-     *  This function is called to start the power monitor task.
-     */
-    virtual void taskRun();
     /**
      * @brief Queues the bus voltage message for transmission.
      */

@@ -77,7 +77,7 @@ Status_t Task::initTask(void)
     {
         if(!xPortInIsrContext())
         {
-            if (xTaskCreate ((TaskFunction_t)taskFunction, taskName, (uint16_t)stackSize, (void *)this, priority, &taskHandle) != pdPASS) 
+            if (xTaskCreate((TaskFunction_t)taskFunction, taskName, (uint16_t)stackSize, (void *)this, priority, &taskHandle) != pdPASS) 
             {
                 taskHandle = nullptr;
                 ret = STATUS_OS_ERROR;
@@ -92,8 +92,6 @@ Status_t Task::initTask(void)
 
     return ret;
 }
-
-void Task::runInCurrent() { taskRun(); }
 
 void Task::startTask(void *argument) { ((Task *)argument)->taskRun(); }
 
