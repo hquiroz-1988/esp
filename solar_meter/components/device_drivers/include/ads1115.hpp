@@ -256,6 +256,14 @@ public:
      */
     virtual void HAL_GPIO_EXTI_Callback(void * arg);
 
+    /**
+     * @brief Get alert pin state for the ADS1115 device
+     * 
+     * @param pinState - output parameter for reading pin state
+     * @return Status_t - returns error type or success
+     */
+    Status_t getAlertPinStatus(bool & pinState);
+
 
     /**
      * @brief Retrieves the latest reading from the ADS1115 device.

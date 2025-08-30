@@ -94,8 +94,10 @@ Status_t ADS1115Channel::getConversion(float & value)
     retVal = ads1115.startSingleConversion(*this);
 
     /* read conversion ready pin */
-    while (ads1115.read() == true)
+    bool pinState = true;
+    while ( retVal == STATUS_OKAY && pinState == true)
     {
+        retVal = ads1115.getAlertPinStatus(pinState);   
         //!TODO: add a timeout
         // Wait for conversion to complete
     }

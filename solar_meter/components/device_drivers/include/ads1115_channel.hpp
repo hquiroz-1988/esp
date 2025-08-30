@@ -99,7 +99,7 @@ class ADS1115Channel
      * @brief Gets high threshold value of the ADS1115 channel.
      * 
      * @param value - reference to store the high threshold value
-     * @return Status_t - high threshold value
+     * @return Status_t - returns error type or success
      */
     Status_t getHighThreshold(int16_t & value) const;
 
