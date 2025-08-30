@@ -1,6 +1,6 @@
 /**
  ********************************************************************************
- * @file    bus_voltage.h
+ * @file    bus_voltage.hpp
  * @author  Hugo Quiroz
  * @date    2024-09-27 10:24:18
  * @brief   description
@@ -10,9 +10,6 @@
 #ifndef BUS_VOLTAGE_H
 #define BUS_VOLTAGE_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /************************************
  * INCLUDES
@@ -69,8 +66,5 @@ public:
  * GLOBAL FUNCTION PROTOTYPES
  ************************************/
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif //BUS_VOLTAGE_H

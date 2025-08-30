@@ -13,11 +13,11 @@
 
 extern "C" 
 {
-    #include "esp_log.h"
+
 }
 
 #include "bus_voltage.hpp"
-
+#include "esp_log.h"
 
 /*******************************************************************************
  * EXTERN VARIABLES
