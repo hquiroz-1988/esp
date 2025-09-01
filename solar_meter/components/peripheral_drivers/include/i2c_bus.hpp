@@ -15,6 +15,9 @@
 *******************************************************************************/
 #include "i2c.h"
 #include "gpio.hpp"
+#include "typedefs.h"
+#include <vector>
+#include "i2c_device.hpp"
 
 /*******************************************************************************
  * MACROS AND DEFINES
@@ -29,9 +32,9 @@ class I2CBus
 
 public:
     static const int MAX_DEV_COUNT = 4;
-    I2CBus(Gpio & sda, Gpio & scl, uint32_t i2c_clock_speed);
+    I2CBus(Gpio & _sda, Gpio & _scl, uint32_t i2c_clock_speed);
     virtual ~I2CBus();
-    void initialize(std::vector<I2CDevice *> device_list);
+    void initialize(I2CDevice * device_list);
 
 protected:
     bool acquire(int dev_id, bool auto_cs = true);
@@ -42,13 +45,12 @@ protected:
     bool isReadyToSend();
 
 private:
-    I2C_HandleTypeDef &_hi2c;
+    Gpio & sda;
+    Gpio & scl;
     const uint32_t i2c_clk_freq;
     int cur_dev;
 
-    I2CDeviceInfo devices[MAX_DEV_COUNT];
-
-    // void HAL_I2C_TxCpltCallback(I2C_HandleTypeDef *hi2c);
+    I2CDevice * devices[MAX_DEV_COUNT];
 };
 
 /*******************************************************************************
