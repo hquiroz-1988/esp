@@ -34,7 +34,7 @@ public:
     static const int MAX_DEV_COUNT = 4;
     I2CBus(Gpio & _sda, Gpio & _scl, uint32_t i2c_clock_speed);
     virtual ~I2CBus();
-    void initialize(I2CDevice * device_list);
+    void initialize(I2CDevice * device);
 
 protected:
     bool acquire(int dev_id, bool auto_cs = true);
@@ -50,7 +50,7 @@ private:
     const uint32_t i2c_clk_freq;
     int cur_dev;
 
-    I2CDevice * devices[MAX_DEV_COUNT];
+    std::vector<I2CDevice *> devices(MAX_DEV_COUNT, nullptr);
 };
 
 /*******************************************************************************
