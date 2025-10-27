@@ -51,6 +51,8 @@
         "streambuf": "cpp",
         "list": "cpp",
         "memory": "cpp",
-        "buffer": "cpp"
+        "buffer": "cpp",
+        "vector": "cpp",
+        "internet": "cpp"
     }
 }
