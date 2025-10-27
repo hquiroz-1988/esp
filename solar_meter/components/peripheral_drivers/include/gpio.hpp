@@ -24,11 +24,32 @@
 /*******************************************************************************
  * TYPEDEFS
 *******************************************************************************/
+enum class GpioPin
+{
+    GPIO_PIN_NONE,
+    GPIO_0 = 0,
+    GPIO_1,
+    GPIO_2,
+    GPIO_3,
+    GPIO_4,
+    GPIO_5,
+    GPIO_6,
+    GPIO_7,
+    GPIO_8,
+    GPIO_9,
+    GPIO_10,
+    GPIO_11,
+    GPIO_12,
+    GPIO_13,
+    GPIO_14,
+    GPIO_15
+};
 
 class Gpio
 {
     public:
         Gpio(gpio_num_t _pin, gpio_mode_t _mode, gpio_pullup_t _pullup);
+        Gpio(GpioPin _pin);
         virtual ~Gpio();
         void set();
         void reset();
@@ -38,6 +59,7 @@ class Gpio
         gpio_pullup_t getPullup();
 
     private:
+        GpioPin gpioPin;
         gpio_num_t pin;
         gpio_mode_t mode;
         gpio_pullup_t pullup;
