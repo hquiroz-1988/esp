@@ -32,25 +32,39 @@ class I2CBus
 
 public:
     static const int MAX_DEV_COUNT = 4;
-    I2CBus(Gpio & _sda, Gpio & _scl, uint32_t i2c_clock_speed);
+    I2CBus(Gpio & _sda, Gpio & _scl, i2c_port_t _port);
     virtual ~I2CBus();
-    void initialize(I2CDevice * device);
+    /**
+     * @brief Initializes the I2C bus with the current configuration.
+     * 
+     * This method installs and initializes the i2c driver, and subsequent
+     * calls to this method will result in error.
+     * 
+     * @return Status_t
+     */
+    Status_t initialize(void);
+    Status_t updateConfig(void);
+    Status_t addDevice(I2CDevice *device);
+    Status_t setClockStretching(uint32_t ticks);
 
 protected:
-    bool acquire(int dev_id, bool auto_cs = true);
-    bool release(int dev_id, bool auto_cs = true);
-    bool transmit(uint8_t *data, uint16_t size, uint32_t timeout);
-    bool transceive(uint8_t *tx_data, uint8_t *rx_data, uint16_t size,
-                    uint32_t timeout);
+    Status_t acquire(int dev_id);
+    Status_t release(int dev_id);
+    Status_t write(uint8_t *data, size_t size);
+    Status_t read(uint8_t *data, size_t size);
+    Status_t readWrite(uint8_t *txData, size_t txSize, uint8_t *rxData, size_t rxSize);
     bool isReadyToSend();
 
 private:
     Gpio & sda;
     Gpio & scl;
-    const uint32_t i2c_clk_freq;
-    int cur_dev;
+    i2c_port_t port;
+    i2c_config_t conf;
+    /* clock speeds above 400khz must be performed using I2C High-Speed mode */
+    uint32_t clockStretching;
+    uint32_t devItr;
 
-    std::vector<I2CDevice *> devices(MAX_DEV_COUNT, nullptr);
+    std::vector<I2CDevice *> devices;
 };
 
 /*******************************************************************************
