@@ -63,7 +63,6 @@ private:
     /* clock speeds above 400khz must be performed using I2C High-Speed mode */
     uint32_t clockStretching;
     uint32_t devItr;
-
     std::vector<I2CDevice *> devices;
 };
 
