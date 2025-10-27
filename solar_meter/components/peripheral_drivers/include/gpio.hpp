@@ -15,6 +15,7 @@
 *******************************************************************************/
 #include "typedefs.h"
 #include "interrupt_base.hpp"
+#include "driver/gpio.h"
 
 /*******************************************************************************
  * MACROS AND DEFINES
@@ -23,41 +24,23 @@
 /*******************************************************************************
  * TYPEDEFS
 *******************************************************************************/
-enum class GpioPin : uint16_t
-{
-    GPIO_PIN_0,
-    GPIO_PIN_1,
-    GPIO_PIN_2,
-    GPIO_PIN_3,
-    GPIO_PIN_4,
-    GPIO_PIN_5,
-    GPIO_PIN_6,
-    GPIO_PIN_7,
-    GPIO_PIN_8,
-    GPIO_PIN_9,
-    GPIO_PIN_10,
-    GPIO_PIN_11,
-    GPIO_PIN_12,
-    GPIO_PIN_13,
-    GPIO_PIN_14,
-    GPIO_PIN_15,
-    GPIO_PIN_16,
-    GPIO_PIN_TOTAL,
-    GPIO_PIN_NONE = 0xFFFF
-};
 
 class Gpio
 {
     public:
-        Gpio(GpioPin _pin);
+        Gpio(gpio_num_t _pin, gpio_mode_t _mode, gpio_pullup_t _pullup);
         virtual ~Gpio();
         void set();
         void reset();
         bool read();
-        GpioPin getPin();
+        gpio_num_t getPin();
+        gpio_mode_t getMode();
+        gpio_pullup_t getPullup();
 
     private:
-        GpioPin pin;
+        gpio_num_t pin;
+        gpio_mode_t mode;
+        gpio_pullup_t pullup;
 };
 
 /*******************************************************************************
