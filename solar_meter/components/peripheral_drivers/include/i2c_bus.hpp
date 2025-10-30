@@ -18,6 +18,7 @@
 #include "typedefs.h"
 #include <vector>
 #include "i2c_device.hpp"
+#include "mutex.hpp"
 
 /*******************************************************************************
  * MACROS AND DEFINES
@@ -43,6 +44,8 @@ public:
      * @return Status_t
      */
     Status_t initialize(void);
+    Status_t installDriver(void);
+    Status_t configureDriver(void);
     Status_t updateConfig(void);
     Status_t addDevice(I2CDevice *device);
     Status_t setClockStretching(uint32_t ticks);
@@ -64,6 +67,7 @@ private:
     uint32_t clockStretching;
     uint32_t devItr;
     std::vector<I2CDevice *> devices;
+    Mutex busMutex;
 };
 
 /*******************************************************************************

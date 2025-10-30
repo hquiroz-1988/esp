@@ -61,9 +61,43 @@ I2CBus::~I2CBus()
 
 Status_t I2CBus::initialize(void)
 {
-    esp_err_t err = ESP_OK;
     Status_t status = STATUS_OKAY;
 
+    status = installDriver();
+
+    if(status == STATUS_OKAY)
+    {
+        status = configureDriver();
+    }
+        
+    if(status == STATUS_OKAY)
+    {
+        status = busMutex.create();
+    }
+
+    return status;
+}
+
+Status_t I2CBus::configureDriver(void)
+{
+    Status_t status = STATUS_OKAY;
+    esp_err_t err = ESP_OK;
+
+    // Implementation of configureDriver
+    if(i2c_param_config(port, &conf) != ESP_OK)
+    {
+        status = STATUS_HAL_ERROR;
+    }
+
+    return status;
+}
+
+Status_t I2CBus::installDriver(void)
+{
+    Status_t status = STATUS_OKAY;
+    esp_err_t err = ESP_OK;
+
+    // Implementation of installDriver
     conf.mode = I2C_MODE_MASTER;
     conf.sda_io_num = sda.getPin();
     conf.sda_pullup_en = sda.getPullup();
@@ -71,14 +105,7 @@ Status_t I2CBus::initialize(void)
     conf.scl_pullup_en = scl.getPullup();
     conf.clk_stretch_tick = clockStretching;
 
-    err = i2c_driver_install(port, conf.mode);
-
-    if(err == ESP_OK)
-    {
-        err = i2c_param_config(port, &conf);
-    }
-
-    if(err != ESP_OK)
+    if( i2c_driver_install(port, conf.mode) != ESP_OK)
     {
         status = STATUS_HAL_ERROR;
     }
@@ -107,5 +134,33 @@ Status_t I2CBus::addDevice(I2CDevice *device)
         status = STATUS_NULL_POINTER;
     }
 
+    return status;
+}
+
+
+Status_t I2CBus::acquire(int dev_id)
+{
+    Status_t status = STATUS_OKAY;
+
+    /* attempt to take device mutex */
+    status = busMutex.lock();
+
+    if(status == STATUS_OKAY)
+    {
+        if (currDevID == dev_id)
+        {
+            return true;
+        }
+        else if (cur_dev != -1)
+        {
+            return false;
+        }   
+        else 
+        {
+            cur_dev = dev_id;
+            return true;
+        }
+    }
+    
     return status;
 }
