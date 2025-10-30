@@ -53,6 +53,8 @@
         "memory": "cpp",
         "buffer": "cpp",
         "vector": "cpp",
-        "internet": "cpp"
+        "internet": "cpp",
+        "mutex.h": "c",
+        "*.inc": "cpp"
     }
 }
