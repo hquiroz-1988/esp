@@ -147,20 +147,48 @@ Status_t I2CBus::acquire(int dev_id)
 
     if(status == STATUS_OKAY)
     {
-        if (currDevID == dev_id)
+        if( currDevID == -1)
         {
-            return true;
+            /* bus free to acquire */
+            currDevID = dev_id;
         }
-        else if (cur_dev != -1)
+        else if (currDevID != dev_id)
         {
-            return false;
-        }   
-        else 
+            /* bus aquired by different device */
+            status = STATUS_BUSY;
+        }
+        else
         {
-            cur_dev = dev_id;
-            return true;
+            /* device is already acquired */
         }
     }
     
+    return status;
+}
+
+Status_t I2CBus::release(int dev_id)
+{
+    Status_t status = STATUS_OKAY;
+
+    if( currDevID == dev_id)
+    {
+        currDevID = -1;
+    }
+    else
+    {
+        status = STATUS_REQUEST_FAILED;
+    }
+
+    if(status == STATUS_OKAY)
+    {
+        /* release device mutex */
+        status = busMutex.unlock();
+
+        if(status != STATUS_OKAY)
+        {
+            currDevID = dev_id;
+        }
+    }
+
     return status;
 }
