@@ -68,6 +68,7 @@ private:
     uint32_t devItr;
     std::vector<I2CDevice *> devices;
     Mutex busMutex;
+    int currDevID = -1;
 };
 
 /*******************************************************************************
