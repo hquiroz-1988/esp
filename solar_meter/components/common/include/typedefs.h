@@ -30,6 +30,8 @@ extern "C" {
 typedef enum
 {
     STATUS_OKAY,
+    STATUS_BUSY,
+    STATUS_REQUEST_FAILED,
     STATUS_UNKNOWN,
     STATUS_OS_ERROR,
     STATUS_QUEUE_FAIL,
