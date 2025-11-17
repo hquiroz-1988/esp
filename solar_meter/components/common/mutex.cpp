@@ -69,11 +69,11 @@ Status_t Mutex::create()
     return status;
 }
 
-Status_t Mutex::lock()
+Status_t Mutex::lock(uint32_t timeout)
 {
-    Status_t status = STATUS_OS_ERROR;
+    Status_t status = STATUS_TIMEOUT;
 
-    if (xSemaphoreTake(mutex, portMAX_DELAY) == pdTRUE)
+    if (xSemaphoreTake(mutex, timeout) == pdTRUE)
     {
         status = STATUS_OKAY;
     }

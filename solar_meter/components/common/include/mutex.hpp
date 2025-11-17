@@ -30,7 +30,7 @@ public:
     Mutex();
     ~Mutex();
     Status_t create();
-    Status_t lock();
+    Status_t lock(uint32_t timeout = portMAX_DELAY);
     Status_t unlock();
 private:
     SemaphoreHandle_t mutex;
