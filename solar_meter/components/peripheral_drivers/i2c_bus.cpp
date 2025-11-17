@@ -3,13 +3,13 @@
  * @file    i2c_bus.cpp
  * @author  HQ
  * @date    2025-09-01 18:00:28
- * @brief   
+ * @brief
  *******************************************************************************
  */
 
 /*******************************************************************************
  * INCLUDES
-*******************************************************************************/
+ *******************************************************************************/
 #include "i2c_bus.hpp"
 
 /*******************************************************************************
@@ -43,13 +43,12 @@
 /*******************************************************************************
  * GLOBAL FUNCTIONS
  *******************************************************************************/
-I2CBus::I2CBus(Gpio & _sda, Gpio & _scl, i2c_port_t _port) : 
-    sda(_sda),
-    scl(_scl),
-    port(_port),
-    clockStretching(0),
-    devItr(0),
-    devices(MAX_DEV_COUNT)
+I2CBus::I2CBus(Gpio &_sda, Gpio &_scl, i2c_port_t _port) : sda(_sda),
+                                                           scl(_scl),
+                                                           port(_port),
+                                                           clockStretching(0),
+                                                           devItr(0),
+                                                           devices(MAX_DEV_COUNT)
 {
     // Constructor implementation
 }
@@ -65,12 +64,23 @@ Status_t I2CBus::initialize(void)
 
     status = installDriver();
 
-    if(status == STATUS_OKAY)
+    if (status == STATUS_OKAY)
     {
         status = configureDriver();
     }
-        
-    if(status == STATUS_OKAY)
+
+    if (status == STATUS_OKAY)
+    {
+        /* create I2C command link */
+        cmdHandle = i2c_cmd_link_create();
+
+        if (cmdHandle == nullptr)
+        {
+            status = STATUS_HAL_ERROR;
+        }
+    }
+
+    if (status == STATUS_OKAY)
     {
         status = busMutex.create();
     }
@@ -84,7 +94,7 @@ Status_t I2CBus::configureDriver(void)
     esp_err_t err = ESP_OK;
 
     // Implementation of configureDriver
-    if(i2c_param_config(port, &conf) != ESP_OK)
+    if (i2c_param_config(port, &conf) != ESP_OK)
     {
         status = STATUS_HAL_ERROR;
     }
@@ -105,7 +115,7 @@ Status_t I2CBus::installDriver(void)
     conf.scl_pullup_en = scl.getPullup();
     conf.clk_stretch_tick = clockStretching;
 
-    if( i2c_driver_install(port, conf.mode) != ESP_OK)
+    if (i2c_driver_install(port, conf.mode) != ESP_OK)
     {
         status = STATUS_HAL_ERROR;
     }
@@ -117,10 +127,10 @@ Status_t I2CBus::addDevice(I2CDevice *device)
 {
     Status_t status = STATUS_OKAY;
 
-    if(device != nullptr)
+    if (device != nullptr)
     {
         // Device is valid
-        if(devItr < MAX_DEV_COUNT)
+        if (devItr < MAX_DEV_COUNT)
         {
             devices[devItr++] = device;
         }
@@ -137,32 +147,33 @@ Status_t I2CBus::addDevice(I2CDevice *device)
     return status;
 }
 
-
-Status_t I2CBus::acquire(int dev_id)
+Status_t I2CBus::acquire(int dev_id, uint32_t timeout)
 {
     Status_t status = STATUS_OKAY;
 
     /* attempt to take device mutex */
     status = busMutex.lock();
 
-    if(status == STATUS_OKAY)
+    if (status == STATUS_OKAY)
     {
-        if( currDevID == -1)
+        if (currDevID == -1)
         {
-            /* bus free to acquire */
+            /* bus free to acquire, this should be the only acceptable case */
             currDevID = dev_id;
         }
         else if (currDevID != dev_id)
         {
-            /* bus aquired by different device */
+            /* bus aquired by different device, but not locked */
             status = STATUS_BUSY;
+            /* unlock and return */
+            busMutex.unlock();
         }
         else
         {
-            /* device is already acquired */
+            /* device is already acquired, but not locked, should be locked now*/
         }
     }
-    
+
     return status;
 }
 
@@ -170,7 +181,7 @@ Status_t I2CBus::release(int dev_id)
 {
     Status_t status = STATUS_OKAY;
 
-    if( currDevID == dev_id)
+    if (currDevID == dev_id)
     {
         currDevID = -1;
     }
@@ -179,14 +190,161 @@ Status_t I2CBus::release(int dev_id)
         status = STATUS_REQUEST_FAILED;
     }
 
-    if(status == STATUS_OKAY)
+    if (status == STATUS_OKAY)
     {
         /* release device mutex */
         status = busMutex.unlock();
 
-        if(status != STATUS_OKAY)
+        if (status != STATUS_OKAY)
         {
             currDevID = dev_id;
+        }
+    }
+
+    return status;
+}
+
+Status_t I2CBus::transmit(I2CTransfer_t &transfer)
+{
+    Status_t status = STATUS_OKAY;
+
+    /*  start i2c command     */
+    status = masterStart();
+
+    if (status == STATUS_OKAY)
+    {
+        /*  transmit all data */
+        status = masterWrite(transfer);
+    }
+
+    if (status == STATUS_OKAY)
+    {
+        /*  stop i2c command     */
+        status = masterStop();
+    }
+
+    return status;
+}
+
+Status_t I2CBus::receive(I2CTransfer_t &transfer)
+{
+    Status_t status = STATUS_OKAY;
+
+    /*  start i2c command     */
+    status = masterStart();
+
+    if (status == STATUS_OKAY)
+    {
+        /*  receive all data */
+        status = masterRead(transfer);
+    }
+
+    if (status == STATUS_OKAY)
+    {
+        /*  stop i2c command     */
+        status = masterStop();
+    }
+
+    return status;
+}
+
+Status_t I2CBus::masterStart(void)
+{
+    esp_err_t err = ESP_OK;
+    Status_t status = STATUS_OKAY;
+
+    if (cmdHandle == nullptr)
+    {
+        status = STATUS_NULL_POINTER;
+    }
+
+    if (status == STATUS_OKAY)
+    {
+        /*  start i2c command     */
+        err = i2c_master_start(cmdHandle);
+        if (err != ESP_OK)
+        {
+            status = STATUS_HAL_ERROR;
+        }
+    }
+
+    return status;
+}
+
+Status_t I2CBus::masterWrite(I2CTransfer_t &transfer)
+{
+    esp_err_t err = ESP_OK;
+    Status_t status = STATUS_OKAY;
+
+    if (transfer.data == nullptr || cmdHandle == nullptr)
+    {
+        status = STATUS_NULL_POINTER;
+    }
+
+    if (status == STATUS_OKAY && transfer.size == 0)
+    {
+        status = STATUS_OUT_OF_BOUNDS;
+    }
+
+    if (status == STATUS_OKAY)
+    {
+        /*  transmit all data */
+        err = i2c_master_write(cmdHandle, transfer.data, transfer.size, transfer.ackEn);
+
+        if (err != ESP_OK)
+        {
+            status = STATUS_HAL_ERROR;
+        }
+    }
+
+    return status;
+}
+
+Status_t I2CBus::masterRead(I2CTransfer_t &transfer)
+{
+    esp_err_t err = ESP_OK;
+    Status_t status = STATUS_OKAY;
+
+    if (transfer.data == nullptr || cmdHandle == nullptr)
+    {
+        status = STATUS_NULL_POINTER;
+    }
+
+    if (status == STATUS_OKAY && transfer.size == 0)
+    {
+        status = STATUS_OUT_OF_BOUNDS;
+    }
+
+    if (status == STATUS_OKAY)
+    {
+        /*  receive all data */
+        err = i2c_master_read(cmdHandle, transfer.data, transfer.size, static_cast<i2c_ack_type_t>(transfer.ackType));
+        if (err != ESP_OK)
+        {
+            status = STATUS_HAL_ERROR;
+        }
+    }
+
+    return status;
+}
+
+Status_t I2CBus::masterStop(void)
+{
+    esp_err_t err = ESP_OK;
+    Status_t status = STATUS_OKAY;
+
+    if (cmdHandle == nullptr)
+    {
+        status = STATUS_NULL_POINTER;
+    }
+
+    if (status == STATUS_OKAY)
+    {
+        /*  stop i2c command     */
+        err = i2c_master_stop(cmdHandle);
+        if (err != ESP_OK)
+        {
+            status = STATUS_HAL_ERROR;
         }
     }
 

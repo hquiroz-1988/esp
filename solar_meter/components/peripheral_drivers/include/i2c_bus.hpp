@@ -27,6 +27,27 @@
 /*******************************************************************************
  * TYPEDEFS
 *******************************************************************************/
+
+/**
+ * @brief I2C transfer acknowledgment type
+ */
+enum class I2CTransferAckType_t 
+{
+    MASTER_ACK          = I2C_MASTER_ACK,                /*!< I2C ack for each byte read */
+    MASTER_NACK         = I2C_MASTER_NACK,              /*!< I2C nack for each byte read */
+    MASTER_LAST_NACK    = I2C_MASTER_LAST_NACK,    /*!< I2C nack for the last byte*/
+    MASTER_ACK_MAX      = I2C_MASTER_ACK_MAX,
+};
+
+typedef struct
+{
+    uint8_t * data;
+    size_t size;
+    bool ackEn;
+    I2CTransferAckType_t ackType;
+} I2CTransfer_t;
+
+
 class I2CBus
 {
     friend class I2CDevice;
@@ -51,11 +72,11 @@ public:
     Status_t setClockStretching(uint32_t ticks);
 
 protected:
-    Status_t acquire(int dev_id);
+    Status_t acquire(int dev_id, uint32_t timeout);
     Status_t release(int dev_id);
-    Status_t write(uint8_t *data, size_t size);
-    Status_t read(uint8_t *data, size_t size);
-    Status_t readWrite(uint8_t *txData, size_t txSize, uint8_t *rxData, size_t rxSize);
+    Status_t transmit(I2CTransfer_t & transfer);
+    Status_t receive(I2CTransfer_t & transfer);
+
     bool isReadyToSend();
 
 private:
@@ -69,6 +90,12 @@ private:
     std::vector<I2CDevice *> devices;
     Mutex busMutex;
     int currDevID = -1;
+    i2c_cmd_handle_t cmdHandle = nullptr;
+
+    Status_t masterStart(void);
+    Status_t masterWrite(I2CTransfer_t & transfer);
+    Status_t masterRead(I2CTransfer_t & transfer);
+    Status_t masterStop(void);
 };
 
 /*******************************************************************************
