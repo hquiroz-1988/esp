@@ -55,6 +55,8 @@
         "vector": "cpp",
         "internet": "cpp",
         "mutex.h": "c",
-        "*.inc": "cpp"
+        "*.inc": "cpp",
+        "condition_variable": "cpp",
+        "mutex": "cpp"
     }
 }
