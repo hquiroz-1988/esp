@@ -65,8 +65,6 @@ public:
      * @return Status_t
      */
     Status_t initialize(void);
-    Status_t installDriver(void);
-    Status_t configureDriver(void);
     Status_t updateConfig(void);
     Status_t addDevice(I2CDevice *device);
     Status_t setClockStretching(uint32_t ticks);
@@ -92,10 +90,14 @@ private:
     int currDevID = -1;
     i2c_cmd_handle_t cmdHandle = nullptr;
 
+    Status_t installDriver(void);
+    Status_t configureDriver(void); 
+    Status_t createLink(void);
     Status_t masterStart(void);
     Status_t masterWrite(I2CTransfer_t & transfer);
     Status_t masterRead(I2CTransfer_t & transfer);
     Status_t masterStop(void);
+    
 };
 
 /*******************************************************************************
