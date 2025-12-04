@@ -40,6 +40,55 @@
  * STATIC FUNCTIONS
  *******************************************************************************/
 
+
+Status_t I2CBus::createLink(void)
+{
+    Status_t status = STATUS_OKAY;
+
+    /* create I2C command link */
+    cmdHandle = i2c_cmd_link_create();
+
+    if (cmdHandle == nullptr)
+    {
+        status = STATUS_HAL_ERROR;
+    }
+
+    return status;
+}
+
+Status_t I2CBus::configureDriver(void)
+{
+    Status_t status = STATUS_OKAY;
+
+    // Implementation of configureDriver
+    if (i2c_param_config(port, &conf) != ESP_OK)
+    {
+        status = STATUS_HAL_ERROR;
+    }
+
+    return status;
+}
+
+Status_t I2CBus::installDriver(void)
+{
+    Status_t status = STATUS_OKAY;
+
+    // Implementation of installDriver
+    conf.mode = I2C_MODE_MASTER;
+    conf.sda_io_num = sda.getPin();
+    conf.sda_pullup_en = sda.getPullup();
+    conf.scl_io_num = scl.getPin();
+    conf.scl_pullup_en = scl.getPullup();
+    conf.clk_stretch_tick = clockStretching;
+
+    if (i2c_driver_install(port, conf.mode) != ESP_OK)
+    {
+        status = STATUS_HAL_ERROR;
+    }
+
+    return status;
+}
+
 /*******************************************************************************
  * GLOBAL FUNCTIONS
  *******************************************************************************/
@@ -71,13 +120,7 @@ Status_t I2CBus::initialize(void)
 
     if (status == STATUS_OKAY)
     {
-        /* create I2C command link */
-        cmdHandle = i2c_cmd_link_create();
-
-        if (cmdHandle == nullptr)
-        {
-            status = STATUS_HAL_ERROR;
-        }
+        status = createLink();
     }
 
     if (status == STATUS_OKAY)
@@ -88,40 +131,6 @@ Status_t I2CBus::initialize(void)
     return status;
 }
 
-Status_t I2CBus::configureDriver(void)
-{
-    Status_t status = STATUS_OKAY;
-    esp_err_t err = ESP_OK;
-
-    // Implementation of configureDriver
-    if (i2c_param_config(port, &conf) != ESP_OK)
-    {
-        status = STATUS_HAL_ERROR;
-    }
-
-    return status;
-}
-
-Status_t I2CBus::installDriver(void)
-{
-    Status_t status = STATUS_OKAY;
-    esp_err_t err = ESP_OK;
-
-    // Implementation of installDriver
-    conf.mode = I2C_MODE_MASTER;
-    conf.sda_io_num = sda.getPin();
-    conf.sda_pullup_en = sda.getPullup();
-    conf.scl_io_num = scl.getPin();
-    conf.scl_pullup_en = scl.getPullup();
-    conf.clk_stretch_tick = clockStretching;
-
-    if (i2c_driver_install(port, conf.mode) != ESP_OK)
-    {
-        status = STATUS_HAL_ERROR;
-    }
-
-    return status;
-}
 
 Status_t I2CBus::addDevice(I2CDevice *device)
 {
