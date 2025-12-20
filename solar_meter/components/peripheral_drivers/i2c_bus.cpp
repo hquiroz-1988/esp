@@ -96,8 +96,7 @@ I2CBus::I2CBus(Gpio &_sda, Gpio &_scl, i2c_port_t _port) : sda(_sda),
                                                            scl(_scl),
                                                            port(_port),
                                                            clockStretching(0),
-                                                           devItr(0),
-                                                           devices(MAX_DEV_COUNT)
+                                                           devItr(0)
 {
     // Constructor implementation
 }

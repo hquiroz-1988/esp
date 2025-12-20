@@ -75,8 +75,6 @@ protected:
     Status_t transmit(I2CTransfer_t & transfer);
     Status_t receive(I2CTransfer_t & transfer);
 
-    bool isReadyToSend();
-
 private:
     Gpio & sda;
     Gpio & scl;
@@ -85,7 +83,7 @@ private:
     /* clock speeds above 400khz must be performed using I2C High-Speed mode */
     uint32_t clockStretching;
     uint32_t devItr;
-    std::vector<I2CDevice *> devices;
+    I2CDevice * devices[MAX_DEV_COUNT];
     Mutex busMutex;
     int currDevID = -1;
     i2c_cmd_handle_t cmdHandle = nullptr;
