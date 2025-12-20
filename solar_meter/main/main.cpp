@@ -17,8 +17,9 @@
 #include "driver/i2c.h"
 #include "esp_log.h"
 
-#include "i2c_task.h"
+
 #include "gpio.hpp"
+#include "i2c_bus.hpp"
 #include "ads1115.hpp"
 #include "bus_voltage.hpp"
 
@@ -33,8 +34,13 @@ extern "C" void app_main()
     // NetworkingModule networkingModule;
 
     /*  initialize bus voltage module   */
+    Gpio sdaPin(GPIO_NUM_4, GPIO_MODE_OUTPUT_OD, GPIO_PULLUP_ENABLE);
+    Gpio sclPin(GPIO_NUM_5, GPIO_MODE_OUTPUT_OD, GPIO_PULLUP_ENABLE);
+    // I2CBus i2cBus(sdaPin, sclPin, I2C_NUM_0);
     // Gpio ads1115AlertPin(GpioPin::GPIO_PIN_NONE);
     // ADS1115 ads1115(ads1115AlertPin);
+    
+
     // BusVoltage busVoltage(ads1115);
 
     // /* initialize bus current module */
