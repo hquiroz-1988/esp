@@ -40,7 +40,6 @@
  * STATIC FUNCTIONS
  *******************************************************************************/
 
-
 Status_t I2CBus::createLink(void)
 {
     Status_t status = STATUS_OKAY;
@@ -54,6 +53,15 @@ Status_t I2CBus::createLink(void)
     }
 
     return status;
+}
+
+Status_t I2CBus::deleteLink(void)
+{
+
+    /* delete I2C command link */
+    i2c_cmd_link_delete(cmdHandle);
+
+    return STATUS_OKAY;
 }
 
 Status_t I2CBus::configureDriver(void)
@@ -115,11 +123,6 @@ Status_t I2CBus::initialize(void)
     if (status == STATUS_OKAY)
     {
         status = configureDriver();
-    }
-
-    if (status == STATUS_OKAY)
-    {
-        status = createLink();
     }
 
     if (status == STATUS_OKAY)
@@ -212,51 +215,81 @@ Status_t I2CBus::release(int dev_id)
     return status;
 }
 
-Status_t I2CBus::transmit(I2CTransfer_t &transfer)
+Status_t I2CBus::write(I2CTransfer_t &transfer)
 {
     Status_t status = STATUS_OKAY;
 
-    /*  start i2c command     */
-    status = masterStart();
+    /* create link */
+    status = createLink();
+
+    if (status == STATUS_OKAY)
+    {
+        /*  start i2c command     */
+        status = cmdStart();
+    }
 
     if (status == STATUS_OKAY)
     {
         /*  transmit all data */
-        status = masterWrite(transfer);
+        status = cmdBuild(transfer, true);
     }
 
     if (status == STATUS_OKAY)
     {
         /*  stop i2c command     */
-        status = masterStop();
+        status = cmdEnd();
     }
+
+    if(status == STATUS_OKAY)
+    {
+        /*  send i2c command     */
+        status = cmdSend();
+    }
+
+    /* delete link */
+    deleteLink();
 
     return status;
 }
 
-Status_t I2CBus::receive(I2CTransfer_t &transfer)
+Status_t I2CBus::read(I2CTransfer_t &transfer)
 {
     Status_t status = STATUS_OKAY;
 
-    /*  start i2c command     */
-    status = masterStart();
+    /* create link */
+    status = createLink();
 
     if (status == STATUS_OKAY)
     {
-        /*  receive all data */
-        status = masterRead(transfer);
+        /*  start i2c command     */
+        status = cmdStart();
+    }
+
+    if (status == STATUS_OKAY)
+    {
+        /*  transmit all data */
+        status = cmdBuild(transfer, false);
     }
 
     if (status == STATUS_OKAY)
     {
         /*  stop i2c command     */
-        status = masterStop();
+        status = cmdEnd();
     }
+
+    if(status == STATUS_OKAY)
+    {
+        /*  send i2c command     */
+        status = cmdSend();
+    }
+
+    /* delete link */
+    deleteLink();
 
     return status;
 }
 
-Status_t I2CBus::masterStart(void)
+Status_t I2CBus::cmdStart(void)
 {
     esp_err_t err = ESP_OK;
     Status_t status = STATUS_OKAY;
@@ -279,9 +312,8 @@ Status_t I2CBus::masterStart(void)
     return status;
 }
 
-Status_t I2CBus::masterWrite(I2CTransfer_t &transfer)
+Status_t I2CBus::cmdBuild(I2CTransfer_t &transfer, bool write)
 {
-    esp_err_t err = ESP_OK;
     Status_t status = STATUS_OKAY;
 
     if (transfer.data == nullptr || cmdHandle == nullptr)
@@ -296,10 +328,26 @@ Status_t I2CBus::masterWrite(I2CTransfer_t &transfer)
 
     if (status == STATUS_OKAY)
     {
-        /*  transmit all data */
-        err = i2c_master_write(cmdHandle, transfer.data, transfer.size, transfer.ackEn);
+        /*  transmit device address*/
+        if (i2c_master_write_byte(cmdHandle, ((transfer.devAddr << 1) & ( (write) ? I2C_MASTER_WRITE : I2C_MASTER_READ) ), transfer.ackEn) != ESP_OK)
+        {
+            status = STATUS_HAL_ERROR;
+        }
+    }
 
-        if (err != ESP_OK)
+    if (status == STATUS_OKAY)
+    {
+        /*  transmit register address*/
+        if (i2c_master_write_byte(cmdHandle, transfer.regAddr, transfer.ackEn) != ESP_OK)
+        {
+            status = STATUS_HAL_ERROR;
+        }
+    }
+
+    if (status == STATUS_OKAY)
+    {
+        /*  transmit all data */
+        if (i2c_master_write(cmdHandle, transfer.data, transfer.size, transfer.ackEn) != ESP_OK)
         {
             status = STATUS_HAL_ERROR;
         }
@@ -336,7 +384,30 @@ Status_t I2CBus::masterRead(I2CTransfer_t &transfer)
     return status;
 }
 
-Status_t I2CBus::masterStop(void)
+Status_t I2CBus::cmdSend(void)
+{
+    esp_err_t err = ESP_OK;
+    Status_t status = STATUS_OKAY;
+
+    if (cmdHandle == nullptr)
+    {
+        status = STATUS_NULL_POINTER;
+    }
+
+    if (status == STATUS_OKAY)
+    {
+        /*  stop i2c command     */
+        err = i2c_master_cmd_begin(port, cmdHandle, 0);
+        if (err != ESP_OK)
+        {
+            status = STATUS_HAL_ERROR;
+        }
+    }
+
+    return status;
+}
+
+Status_t I2CBus::cmdEnd(void)
 {
     esp_err_t err = ESP_OK;
     Status_t status = STATUS_OKAY;
