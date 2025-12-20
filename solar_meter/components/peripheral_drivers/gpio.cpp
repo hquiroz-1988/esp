@@ -44,8 +44,8 @@
  * GLOBAL FUNCTIONS
  *******************************************************************************/
 
- Gpio::Gpio(gpio_num_t _pin, gpio_mode_t _mode, gpio_pullup_t _pullup)
- : pin(_pin), mode(_mode), pullup(_pullup)
+ Gpio::Gpio(gpio_num_t _pin, gpio_mode_t _mode, gpio_pullup_t _pullup, gpio_pulldown_t _pulldown)
+ : pin(_pin), mode(_mode), pullup(_pullup), pulldown(_pulldown)
  {
 
  }
