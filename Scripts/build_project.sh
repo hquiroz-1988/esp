@@ -11,6 +11,6 @@ make -C  ./solar_meter clean || exit 1
 # build the project
 make -C  ./solar_meter all || exit 1
 
-# clean the project
-make -C  ./solar_meter clean || exit 1
+# # clean the project
+# make -C  ./solar_meter clean || exit 1
 
