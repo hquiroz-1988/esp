@@ -34,10 +34,10 @@ extern "C" void app_main()
     // NetworkingModule networkingModule;
 
     /*  initialize bus voltage module   */
-    Gpio sdaPin(GPIO_NUM_4, GPIO_MODE_OUTPUT_OD, GPIO_PULLUP_ENABLE);
-    Gpio sclPin(GPIO_NUM_5, GPIO_MODE_OUTPUT_OD, GPIO_PULLUP_ENABLE);
+    Gpio sdaPin(GpioPin::GPIO_4, GpioMode::OutputOpenDrain, GpioPullup::Enable);
+    Gpio sclPin(GpioPin::GPIO_5, GpioMode::OutputOpenDrain, GpioPullup::Enable);
     I2CBus i2cBus(sdaPin, sclPin, I2C_NUM_0);
-    Gpio ads1115AlertPin(GPIO_NUM_6, GPIO_MODE_INPUT, GPIO_PULLUP_DISABLE);
+    Gpio ads1115AlertPin(GpioPin::GPIO_6, GpioMode::Input, GpioPullup::Disable);
     // ADS1115 ads1115(ads1115AlertPin);
     
 
