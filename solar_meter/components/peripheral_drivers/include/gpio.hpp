@@ -45,19 +45,19 @@ enum class GpioPin
     GPIO_15
 };
 
-enum class Pullup
+enum class GpioPullup
 {
     Disable,
     Enable
 };
 
-enum class Pulldown
+enum class GpioPulldown
 {
     Disable,
     Enable
 };
 
-enum class Mode
+enum class GpioMode
 {
     Disable,
     Input,
@@ -68,11 +68,7 @@ enum class Mode
 class Gpio
 {
     public:
-        Gpio(GpioPin _pin, Mode _mode, Pullup _pullup = Pullup::Disable, Pulldown _pulldown = Pulldown::Disable);
-        Gpio(GpioPin _pin, Mode _mode, Pullup _pullup = Pullup::Disable);
-        Gpio(GpioPin _pin, Mode _mode, Pulldown _pulldown = Pulldown::Disable);
-        Gpio(GpioPin _pin, Mode _mode);
-        Gpio(GpioPin _pin);
+        Gpio(GpioPin _pin, GpioMode _mode, GpioPullup _pullup = GpioPullup::Disable, GpioPulldown _pulldown = GpioPulldown::Disable);
         virtual ~Gpio();
         void set();
         void reset();
@@ -84,9 +80,9 @@ class Gpio
     private:
         GpioPin gpioPin;
         gpio_num_t pin;
-        gpio_mode_t mode;
-        Pullup pullup;
-        Pulldown pulldown;
+        GpioMode mode;
+        GpioPullup pullup;
+        GpioPulldown pulldown;
 };
 
 /*******************************************************************************
