@@ -26,63 +26,86 @@
 *******************************************************************************/
 enum class GpioPin
 {
-    GPIO_PIN_NONE,
-    GPIO_0 = 0,
-    GPIO_1,
-    GPIO_2,
-    GPIO_3,
-    GPIO_4,
-    GPIO_5,
-    GPIO_6,
-    GPIO_7,
-    GPIO_8,
-    GPIO_9,
-    GPIO_10,
-    GPIO_11,
-    GPIO_12,
-    GPIO_13,
-    GPIO_14,
-    GPIO_15
+    GPIO_PIN_NONE   = -1,
+    GPIO_0          = GPIO_NUM_0,
+    GPIO_1          = GPIO_NUM_1,
+    GPIO_2          = GPIO_NUM_2,
+    GPIO_3          = GPIO_NUM_3,
+    GPIO_4          = GPIO_NUM_4,
+    GPIO_5          = GPIO_NUM_5,
+    GPIO_6          = GPIO_NUM_6,
+    GPIO_7          = GPIO_NUM_7,
+    GPIO_8          = GPIO_NUM_8,
+    GPIO_9          = GPIO_NUM_9,
+    GPIO_10         = GPIO_NUM_10,
+    GPIO_11         = GPIO_NUM_11,
+    GPIO_12         = GPIO_NUM_12,
+    GPIO_13         = GPIO_NUM_13,
+    GPIO_14         = GPIO_NUM_14,
+    GPIO_15         = GPIO_NUM_15,
+    GPIO_16         = GPIO_NUM_16,
+    NUM_GPIO_PINS   = GPIO_NUM_MAX
+
 };
 
 enum class GpioPullup
 {
-    Disable,
-    Enable
+    Disable         = GPIO_PULLUP_DISABLE,
+    Enable          = GPIO_PULLUP_ENABLE
 };
 
 enum class GpioPulldown
 {
-    Disable,
-    Enable
+    Disable         = GPIO_PULLDOWN_DISABLE,
+    Enable          = GPIO_PULLDOWN_ENABLE
 };
 
 enum class GpioMode
 {
-    Disable,
-    Input,
-    Output,
-    OutputOpenDrain
+    Disable         = GPIO_MODE_DISABLE,
+    Input           = GPIO_MODE_INPUT,
+    Output          = GPIO_MODE_OUTPUT,
+    OutputOpenDrain = GPIO_MODE_OUTPUT_OD
+};
+
+enum class GpioState
+{
+    Low             = 0,
+    High            = 1
+};
+
+enum class GpioIntrType
+{
+    Disable         = GPIO_INTR_DISABLE,
+    RisingEdge      = GPIO_INTR_POSEDGE,
+    FallingEdge     = GPIO_INTR_NEGEDGE,
+    AnyEdge         = GPIO_INTR_ANYEDGE,
+    LowLevel        = GPIO_INTR_LOW_LEVEL,
+    HighLevel       = GPIO_INTR_HIGH_LEVEL
 };
 
 class Gpio
 {
     public:
-        Gpio(GpioPin _pin, GpioMode _mode, GpioPullup _pullup = GpioPullup::Disable, GpioPulldown _pulldown = GpioPulldown::Disable);
+        Gpio(   GpioPin _pin, 
+                GpioMode _mode, 
+                GpioPullup _pullup = GpioPullup::Disable, 
+                GpioPulldown _pulldown = GpioPulldown::Disable,
+                GpioIntrType _intrType = GpioIntrType::Disable);
         virtual ~Gpio();
-        void set();
-        void reset();
-        bool read();
-        gpio_num_t getPin();
-        gpio_mode_t getMode();
-        gpio_pullup_t getPullup();
+        Status_t set();
+        Status_t reset();
+        GpioState get();
 
     private:
         GpioPin gpioPin;
-        gpio_num_t pin;
         GpioMode mode;
         GpioPullup pullup;
         GpioPulldown pulldown;
+        GpioIntrType intrType;
+
+        gpio_num_t gpioNum;
+        gpio_config_t config;
 };
 
 /*******************************************************************************
