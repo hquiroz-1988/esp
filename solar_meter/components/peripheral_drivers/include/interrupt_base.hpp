@@ -27,23 +27,12 @@ public:
     InterruptBase();
     virtual ~InterruptBase();
     // pure virtual Callbacks
-    virtual void HAL_TIM_PeriodElapsedCallback(void * arg){};
-    virtual void HAL_GPIO_EXTI_Callback(void * arg){};
+    virtual void gpio_isr_handler(void *arg){};
 
 protected:
     enum class IntType {
-        HAL_TIM_IC_CaptureCallback,
-        HAL_TIM_PeriodElapsedCallback,
-        HAL_GPIO_EXTI_Callback,
-        HAL_ADC_ConvCpltCallback,
-        HAL_TIM_PWM_PulseFinishedCallback,
-        HAL_TIM_OC_DelayElapsedCallback,
-        HAL_UART_RxHalfCpltCallback,
-        HAL_UART_RxCpltCallback,
-        HAL_UART_TxCpltCallback,
-        HAL_SPI_TxHalfCpltCallback,
-        HAL_SPI_TxCpltCallback,
-        HAL_UART_ErrorCallback
+        gpio_isr_handler,
+        NumberOfIntTypes
     };
     bool registerCallback(IntType type);
     bool removeCallback(IntType type);
