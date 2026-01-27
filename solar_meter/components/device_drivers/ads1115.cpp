@@ -380,3 +380,12 @@ Status_t ADS1115::getLatestReading(ads1115ConversionRegister_t * regPtr)
 }
 
 
+void ADS1115::gpio_isr_handler(void * arg)
+{
+    uint16_t GPIO_Pin = (uint16_t)arg;
+    if (GPIO_Pin == (uint16_t)alertPin.getPin())
+    {
+
+        ESP_LOGI(TAG, "ADS1115 Interrupt on Pin: %d", GPIO_Pin);
+    }
+}
