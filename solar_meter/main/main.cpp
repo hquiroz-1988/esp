@@ -40,7 +40,7 @@ extern "C" void app_main()
 
     /* initialize ads1115 */
     Gpio ads1115AlertPin(GpioPin::GPIO_6, GpioMode::Input, GpioPullup::Disable);
-    // ADS1115 ads1115(ads1115AlertPin);
+    ADS1115 ads1115(ads1115AlertPin);
     
 
     // BusVoltage busVoltage(ads1115);
