@@ -26,7 +26,6 @@
 *******************************************************************************/
 enum class GpioPin : uint8_t
 {
-    GPIO_PIN_NONE   = -1,
     GPIO_0          = GPIO_NUM_0,
     GPIO_1          = GPIO_NUM_1,
     GPIO_2          = GPIO_NUM_2,
@@ -44,7 +43,9 @@ enum class GpioPin : uint8_t
     GPIO_14         = GPIO_NUM_14,
     GPIO_15         = GPIO_NUM_15,
     GPIO_16         = GPIO_NUM_16,
-    NUM_GPIO_PINS   = GPIO_NUM_MAX
+    NUM_GPIO_PINS   = GPIO_NUM_MAX,
+
+    GPIO_PIN_NONE   = 0xFF,
 
 };
 
@@ -96,6 +97,7 @@ class Gpio
         Status_t set();
         Status_t reset();
         GpioState get();
+        GpioPin getPin() { return gpioPin; }
 
     private:
         GpioPin gpioPin;
