@@ -129,10 +129,6 @@ void Gpio::gpio_isr_handler(void *arg)
     uint32_t gpio = (uint32_t) arg;
     if (gpio == gpioNum)
     {
-        // ESP_LOGI(TAG, "GPIO Interrupt on Pin: %d", gpio);
-        if(isrHandler != nullptr)
-        {
-            isrHandler(gpioPin);
-        }
+        /* gpio can handle the isr however it might be more useful to have this handler elsewhere*/
     }
 }

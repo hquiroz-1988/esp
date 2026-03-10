@@ -116,7 +116,6 @@ class Gpio : public InterruptBase
         GpioMode getMode() { return mode; }
         GpioPullup getPullup() { return pullup; }
         GpioPulldown getPulldown() { return pulldown; }
-        void set_isr_handler(void (*handler)(GpioPin pin)) { isrHandler = handler; }
 
     private:
         GpioPin gpioPin;
@@ -127,11 +126,8 @@ class Gpio : public InterruptBase
 
         gpio_num_t gpioNum;
         gpio_config_t config;
-
         virtual void gpio_isr_handler(void *arg) override;
         static bool isrHandlerRegistered;
-
-        void (*isrHandler)(GpioPin pin) = nullptr;
 };
 
 /*******************************************************************************

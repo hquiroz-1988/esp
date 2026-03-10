@@ -269,6 +269,8 @@ public:
 
     private:
 
+    virtual void gpio_isr_handler(void *arg) override;
+
     /**
      * @brief Sets the address pointer registerm for the ADS1115 device.
      * @brief Sets the address pointer register for the ADS1115 device.

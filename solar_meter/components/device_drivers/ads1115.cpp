@@ -384,3 +384,16 @@ Status_t ADS1115::getLatestReading(ads1115ConversionRegister_t * regPtr)
 
     return errRet;
 }
+
+void ADS1115::gpio_isr_handler(void *arg)
+{
+    /*
+        converting arg from void * to uint32_t big is a big no-no but 
+        this is what the lib requires
+    */
+    uint32_t gpio = (uint32_t) arg;
+    if (gpio == (uint32_t)alertPin.getPin())
+    {
+        //!TODO: add code to notify ADS1115 of conversion complete or alert
+    }
+}
