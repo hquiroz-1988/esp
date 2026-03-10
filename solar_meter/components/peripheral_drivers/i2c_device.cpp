@@ -50,3 +50,12 @@ extern "C"
 /*******************************************************************************
  * GLOBAL FUNCTIONS
  *******************************************************************************/
+I2CDevice::I2CDevice()
+{
+    // Constructor implementation (if needed)
+}
+
+I2CDevice::~I2CDevice()
+{
+    // Destructor implementation (if needed)
+}

@@ -27,6 +27,7 @@
 /*******************************************************************************
  * STATIC VARIABLES
  *******************************************************************************/
+bool Gpio::isrHandlerRegistered = false;
 
 /*******************************************************************************
  * GLOBAL VARIABLES
@@ -57,6 +58,20 @@
         config.intr_type = static_cast<gpio_int_type_t>(intrType);
 
         gpio_config(&config);
+
+        if(config.intr_type != GPIO_INTR_DISABLE)
+        {
+            /* install gpio isr service if it has been done already  */
+            if(!isrHandlerRegistered)
+            {
+                gpio_install_isr_service(0);
+                isrHandlerRegistered = true;
+            }
+            
+            /* register gpio for this pin  */
+            gpio_isr_handler_add(gpioNum, global_gpio_isr_handler, (void *) gpioNum);
+            
+        }
     }
     else
     {
@@ -73,9 +88,9 @@ Status_t Gpio::set()
 {
     Status_t status = STATUS_OKAY;
 
-    if(gpio_set_level(gpioNum, GpioState::High) != ESP_OK)
+    if(gpio_set_level(gpioNum, (uint32_t)GpioState::High) != ESP_OK)
     {
-        status = STATUS_ERROR;
+        status = STATUS_HAL_ERROR;
     }
 
     return status;
@@ -85,9 +100,9 @@ Status_t Gpio::reset()
 {
     Status_t status = STATUS_OKAY;
 
-    if(gpio_set_level(gpioNum, GpioState::Low) != ESP_OK)
+    if(gpio_set_level(gpioNum, (uint32_t)GpioState::Low) != ESP_OK)
     {
-        status = STATUS_ERROR;
+        status = STATUS_HAL_ERROR;
     }
 
     return status;
@@ -102,4 +117,22 @@ GpioState Gpio::get()
         state = GpioState::High;
     }
     return state;
+}
+
+
+void Gpio::gpio_isr_handler(void *arg)
+{
+    /*
+        converting arg from void * to uint32_t big is a big no-no but 
+        this is what the lib requires
+    */
+    uint32_t gpio = (uint32_t) arg;
+    if (gpio == gpioNum)
+    {
+        // ESP_LOGI(TAG, "GPIO Interrupt on Pin: %d", gpio);
+        if(isrHandler != nullptr)
+        {
+            isrHandler(gpioPin);
+        }
+    }
 }

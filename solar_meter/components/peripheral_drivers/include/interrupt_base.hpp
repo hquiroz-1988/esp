@@ -27,7 +27,7 @@ public:
     InterruptBase();
     virtual ~InterruptBase();
     // pure virtual Callbacks
-    virtual void gpio_isr_handler(void *arg){};
+    virtual void gpio_isr_handler(void * arg){};
 
 protected:
     enum class IntType {
@@ -45,6 +45,7 @@ protected:
 /*******************************************************************************
  * GLOBAL FUNCTION PROTOTYPES
 *******************************************************************************/
+extern "C" void global_gpio_isr_handler(void *arg);
 
 
 #endif // INTERRUPT_BASE_HPP

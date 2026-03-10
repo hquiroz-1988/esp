@@ -126,16 +126,6 @@ public:
      * Cleans up resources used by the ADS1115 instance.
      */
     virtual ~ADS1115();
-    
-    /**
-     * @brief GPIO interrupt service routine handler for the ADS1115 device.
-     * 
-     * This method is called when a GPIO interrupt occurs for the ADS1115 device.
-     * It overrides the base class method to provide specific handling logic.
-     * 
-     * @param arg Pointer to user-defined argument passed during interrupt registration.
-     */
-    virtual void gpio_isr_handler(void * arg) override;
 
     /**
      * @brief Initializes the ADS1115 device channels.

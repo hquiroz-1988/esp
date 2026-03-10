@@ -83,10 +83,10 @@ Status_t I2CBus::installDriver(void)
 
     // Implementation of installDriver
     conf.mode = I2C_MODE_MASTER;
-    conf.sda_io_num = sda.getPin();
-    conf.sda_pullup_en = sda.getPullup();
-    conf.scl_io_num = scl.getPin();
-    conf.scl_pullup_en = scl.getPullup();
+    conf.sda_io_num = (gpio_num_t)(sda.getPin());
+    conf.sda_pullup_en = (gpio_pullup_t)(sda.getPullup());
+    conf.scl_io_num = (gpio_num_t)(scl.getPin());
+    conf.scl_pullup_en = (gpio_pullup_t)(scl.getPullup());
     conf.clk_stretch_tick = clockStretching;
 
     if (i2c_driver_install(port, conf.mode) != ESP_OK)

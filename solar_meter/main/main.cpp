@@ -39,8 +39,8 @@ extern "C" void app_main()
     I2CBus i2cBus(sdaPin, sclPin, I2C_NUM_0);
 
     /* initialize ads1115 */
-    Gpio ads1115AlertPin(GpioPin::GPIO_6, GpioMode::Input, GpioPullup::Disable);
-    // ADS1115 ads1115(ads1115AlertPin);
+    Gpio ads1115AlertPin(GpioPin::GPIO_6, GpioMode::Input, GpioPullup::Disable, GpioIntrType::FallingEdge);
+    ADS1115 ads1115(ads1115AlertPin);
     
 
     // BusVoltage busVoltage(ads1115);

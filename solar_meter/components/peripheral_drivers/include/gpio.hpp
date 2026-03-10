@@ -85,19 +85,38 @@ enum class GpioIntrType
     HighLevel       = GPIO_INTR_HIGH_LEVEL
 };
 
-class Gpio
+class Gpio : public InterruptBase
 {
     public:
+        /* full constructor */
         Gpio(   GpioPin _pin, 
                 GpioMode _mode, 
-                GpioPullup _pullup = GpioPullup::Disable, 
-                GpioPulldown _pulldown = GpioPulldown::Disable,
-                GpioIntrType _intrType = GpioIntrType::Disable);
+                GpioPullup _pullup, 
+                GpioPulldown _pulldown,
+                GpioIntrType _intrType);
+        
+        
+        /* delegated constructors */
+        Gpio(   GpioPin _pin, 
+                GpioMode _mode, 
+                GpioPullup _pullup, 
+                GpioIntrType _intrType) :
+        Gpio(_pin, _mode, _pullup, GpioPulldown::Disable, _intrType) {};
+
+        Gpio(   GpioPin _pin, 
+                GpioMode _mode, 
+                GpioPullup _pullup ) :
+        Gpio(_pin, _mode, _pullup, GpioPulldown::Disable, GpioIntrType::Disable) {};
+
         virtual ~Gpio();
         Status_t set();
         Status_t reset();
         GpioState get();
         GpioPin getPin() { return gpioPin; }
+        GpioMode getMode() { return mode; }
+        GpioPullup getPullup() { return pullup; }
+        GpioPulldown getPulldown() { return pulldown; }
+        void set_isr_handler(void (*handler)(GpioPin pin)) { isrHandler = handler; }
 
     private:
         GpioPin gpioPin;
@@ -108,6 +127,11 @@ class Gpio
 
         gpio_num_t gpioNum;
         gpio_config_t config;
+
+        virtual void gpio_isr_handler(void *arg) override;
+        static bool isrHandlerRegistered;
+
+        void (*isrHandler)(GpioPin pin) = nullptr;
 };
 
 /*******************************************************************************
@@ -117,5 +141,6 @@ class Gpio
 /*******************************************************************************
  * GLOBAL FUNCTION PROTOTYPES
 *******************************************************************************/
+
 
 #endif // GPIO_HPP

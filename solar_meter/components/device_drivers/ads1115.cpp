@@ -258,6 +258,12 @@ void ADS1115::init_ads1115(void)
 {
     // static ADS1115 ads1115_instance;
     // Optionally, add further initialization or configuration here if needed
+
+    /* 
+        register the ISR callback here, since we want the ISR to have accesss to
+        ADS1115 context.
+     */
+    registerCallback(IntType::gpio_isr_handler);
 }
 
 Status_t ADS1115::getConfiguration(ads1115ConfigRegister_t * configPtr)
@@ -377,15 +383,4 @@ Status_t ADS1115::getLatestReading(ads1115ConversionRegister_t * regPtr)
     i2c_cmd_link_delete(i2cObj.cmd);
 
     return errRet;
-}
-
-
-void ADS1115::gpio_isr_handler(void * arg)
-{
-    uint16_t GPIO_Pin = (uint16_t)arg;
-    if (GPIO_Pin == (uint16_t)alertPin.getPin())
-    {
-
-        ESP_LOGI(TAG, "ADS1115 Interrupt on Pin: %d", GPIO_Pin);
-    }
 }
