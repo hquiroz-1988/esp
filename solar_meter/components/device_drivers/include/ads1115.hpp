@@ -263,11 +263,18 @@ public:
      */
     Status_t getLatestReading(ads1115ConversionRegister_t * regPtr);
 
-    void init_ads1115(void);
+    void initialize(void);
     Status_t getConfiguration(ads1115ConfigRegister_t * configPtr);
     Status_t setConfiguration(ads1115ConfigRegister_t * configPtr);
 
     private:
+
+    Gpio & alertPin;
+    I2CTransfer_t transferObj;
+    ADS1115Channel * channels[MAX_CHANNEL_COUNT];
+    ADS1115_Address address;
+    
+    ADS1115_Config_t configRegister;
 
     virtual void gpio_isr_handler(void *arg) override;
 
@@ -287,14 +294,6 @@ public:
     Status_t read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr);
     Status_t write_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr);
     Status_t queueWait_ads1115I2cObject( i2c_handler_t ** i2cObjPtr);
-
-
-    Gpio & alertPin;
-    ADS1115Channel * channels[MAX_CHANNEL_COUNT];
-
-    /* configuration for the ADS1115 Device*/
-    ADS1115_Address address;
-    ADS1115_Config_t configRegister;
 
         /**
      * @brief Sets the low threshold value for the ADS1115 comparator.

@@ -236,17 +236,8 @@ Status_t ADS1115::write_ads1115ConfigRegisters(ads1115ConfigRegister_t * configP
  */
 ADS1115::ADS1115(Gpio & _gpio) : alertPin(_gpio)
 {
-    
-    Status_t errRet = STATUS_OKAY;
-    /*! - read config registers object */
-    errRet = read_ads1115ConfigRegisters(&ads1115CfgObj.configReg);
+    /* constructor implementation*/
 
-    //TODO: determing if writing a default configuration is needed
-
-    if(STATUS_OKAY != errRet)
-    {
-        ESP_LOGI(TAG, "Config Reg Read Fail: %i", errRet);   
-    }
 }
 
 ADS1115::~ADS1115()
@@ -254,10 +245,22 @@ ADS1115::~ADS1115()
     // Destructor implementation
 }
 
-void ADS1115::init_ads1115(void)
+void ADS1115::initialize(void)
 {
-    // static ADS1115 ads1115_instance;
-    // Optionally, add further initialization or configuration here if needed
+    Status_t errRet = STATUS_OKAY;
+
+    /* set configuration */
+    I2CTransfer_t transfer;
+    transferObj.devAddr = ADS1115_ADDRESS;
+    transferObj.regAddr = ADS1115_CONFIG_REGISTER;
+    transferObj.data = ads1115CfgObj.configReg.bytes;
+    transferObj.size = ADS1115_CONFIG_REGISTER_SIZE;
+    transferObj.ackEn = ADS1115_ACK_CHECK_STATUS;
+    transferObj.ackType = I2CTransferAckType_t::MASTER_ACK;
+
+    write(transferObj);
+
+    /* read back configuration to verify */
 
     /* 
         register the ISR callback here, since we want the ISR to have accesss to
