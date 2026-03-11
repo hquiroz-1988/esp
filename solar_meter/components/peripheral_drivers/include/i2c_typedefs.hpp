@@ -1,20 +1,20 @@
 /**
  *******************************************************************************
- * @file    i2c_device.hpp
+ * @file    i2c_typedefs.hpp
  * @author  HQ
- * @date    2025-08-22 13:22:36
+ * @date    2026-03-10 23:40:27
  * @brief   
  *******************************************************************************
  */
 
-#ifndef I2C_DEVICE_HPP
-#define I2C_DEVICE_HPP
+#ifndef I2C_TYPEDEFS_HPP
+#define I2C_TYPEDEFS_HPP
 
 /*******************************************************************************
  * INCLUDES
 *******************************************************************************/
-#include "i2c_typedefs.hpp"
-#include "i2c_bus.hpp"
+#include "typedefs.h"
+#include "driver/i2c.h"
 
 /*******************************************************************************
  * MACROS AND DEFINES
@@ -24,34 +24,26 @@
  * TYPEDEFS
 *******************************************************************************/
 
-/* forward declaration of I2CBus */
-class I2CBus;
-
-class I2CDevice
+/**
+ * @brief I2C transfer acknowledgment type
+ */
+enum class I2CTransferAckType_t
 {
-    friend class I2CBus;
-
-    public:
-    I2CDevice();
-    virtual ~I2CDevice();
-
-
-    protected:
-    /* accessible by inherited classes */
-    Status_t write(I2CTransfer_t &transfer);
-    Status_t read(I2CTransfer_t &transfer);
-
-    private:
-    I2CBus *i2cBus{nullptr};
-    int deviceId{-1};
-    bool busAcquired{false};
-
-    Status_t addBus(I2CBus *_i2cBus, int _deviceId);
-    Status_t acquireBus(void);
-    Status_t releaseBus(void);
-    Status_t writeToBus(I2CTransfer_t &transfer);
-    Status_t readFromBus(I2CTransfer_t &transfer);
+    MASTER_ACK = I2C_MASTER_ACK,             /*!< I2C ack for each byte read */
+    MASTER_NACK = I2C_MASTER_NACK,           /*!< I2C nack for each byte read */
+    MASTER_LAST_NACK = I2C_MASTER_LAST_NACK, /*!< I2C nack for the last byte*/
+    MASTER_ACK_MAX = I2C_MASTER_ACK_MAX,
 };
+
+typedef struct
+{
+    uint8_t *data;
+    size_t size;
+    uint8_t devAddr;
+    uint8_t regAddr;
+    bool ackEn;
+    I2CTransferAckType_t ackType;
+} I2CTransfer_t;
 
 /*******************************************************************************
  * EXPORTED VARIABLES
@@ -62,4 +54,4 @@ class I2CDevice
 *******************************************************************************/
 
 
-#endif // I2C_DEVICE_HPP
+#endif // I2C_TYPEDEFS_HPP

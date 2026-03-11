@@ -27,7 +27,6 @@
 /*******************************************************************************
  * INCLUDES
 *******************************************************************************/
-#include "typedefs.h"
 #include "i2c_task.h"
 #include "i2c_device.hpp"
 #include "ads1115_regs.hpp"
@@ -273,7 +272,7 @@ public:
     I2CTransfer_t transferObj;
     ADS1115Channel * channels[MAX_CHANNEL_COUNT];
     ADS1115_Address address;
-    
+
     ADS1115_Config_t configRegister;
 
     virtual void gpio_isr_handler(void *arg) override;
