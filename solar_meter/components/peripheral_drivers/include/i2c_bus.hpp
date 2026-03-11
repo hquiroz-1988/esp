@@ -49,6 +49,9 @@ typedef struct
     I2CTransferAckType_t ackType;
 } I2CTransfer_t;
 
+/* forward declaration of I2C Device*/
+class I2CDevice;
+
 class I2CBus
 {
     friend class I2CDevice;
@@ -66,15 +69,9 @@ public:
      * @return Status_t
      */
     Status_t initialize(void);
-    Status_t updateConfig(void);
     Status_t addDevice(I2CDevice *device);
-    Status_t setClockStretching(uint32_t ticks);
-
-protected:
-    Status_t acquire(int dev_id, uint32_t timeout);
-    Status_t release(int dev_id);
-    Status_t write(I2CTransfer_t &transfer);
-    Status_t read(I2CTransfer_t &transfer);
+    // Status_t setClockStretching(uint32_t ticks);
+    // Status_t updateConfig(void);
 
 private:
     Gpio &sda;
@@ -88,6 +85,11 @@ private:
     Mutex busMutex;
     int currDevID = -1;
     i2c_cmd_handle_t cmdHandle = nullptr;
+
+    Status_t acquire(int dev_id, uint32_t timeout);
+    Status_t release(int dev_id);
+    Status_t write(I2CTransfer_t &transfer);
+    Status_t read(I2CTransfer_t &transfer);
 
     Status_t installDriver(void);
     Status_t configureDriver(void);

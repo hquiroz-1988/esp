@@ -143,7 +143,16 @@ Status_t I2CBus::addDevice(I2CDevice *device)
         // Device is valid
         if (devItr < MAX_DEV_COUNT)
         {
-            devices[devItr++] = device;
+            /* once device is added to devices list, initialize  */
+            status = device->addBus(this, devItr);
+
+            if(status == STATUS_OKAY)
+            {
+                /* add device to devices list  */
+                devices[devItr] = device;
+
+                devItr++;
+            }
         }
         else
         {
