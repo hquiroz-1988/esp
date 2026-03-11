@@ -13,6 +13,7 @@
 /*******************************************************************************
  * INCLUDES
 *******************************************************************************/
+#include "i2c_bus.hpp"
 
 /*******************************************************************************
  * MACROS AND DEFINES
@@ -21,14 +22,34 @@
 /*******************************************************************************
  * TYPEDEFS
 *******************************************************************************/
+
+/* forward declaration of I2CBus */
+class I2CBus;
+
 class I2CDevice
 {
+    friend class I2CBus;
+
     public:
     I2CDevice();
     virtual ~I2CDevice();
 
+
+    protected:
+    /* accessible by inherited classes */
+    Status_t write(I2CTransfer_t &transfer);
+    Status_t read(I2CTransfer_t &transfer);
+
     private:
-    
+    I2CBus *i2cBus{nullptr};
+    int deviceId{-1};
+    bool busAcquired{false};
+
+    Status_t addBus(I2CBus *_i2cBus, int _deviceId);
+    Status_t acquireBus(void);
+    Status_t releaseBus(void);
+    Status_t writeToBus(I2CTransfer_t &transfer);
+    Status_t readFromBus(I2CTransfer_t &transfer);
 };
 
 /*******************************************************************************
