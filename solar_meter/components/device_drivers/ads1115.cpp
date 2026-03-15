@@ -250,7 +250,6 @@ void ADS1115::initialize(void)
     Status_t errRet = STATUS_OKAY;
 
     /* set configuration */
-    I2CTransfer_t transfer;
     transferObj.devAddr = ADS1115_ADDRESS;
     transferObj.regAddr = ADS1115_CONFIG_REGISTER;
     transferObj.data = ads1115CfgObj.configReg.bytes;
@@ -258,9 +257,10 @@ void ADS1115::initialize(void)
     transferObj.ackEn = ADS1115_ACK_CHECK_STATUS;
     transferObj.ackType = I2CTransferAckType_t::MASTER_ACK;
 
-    write(transferObj);
+    errRet = write(transferObj);
 
     /* read back configuration to verify */
+    //!TODO: add code to read back and verify configuration
 
     /* 
         register the ISR callback here, since we want the ISR to have accesss to
