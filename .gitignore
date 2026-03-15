@@ -14,3 +14,5 @@ bin/
 xtensa-lx106-elf/
 *.bkp
 docker-build.log
+build/**
+solar_meter/build/*
