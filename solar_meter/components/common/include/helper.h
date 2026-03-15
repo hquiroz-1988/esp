@@ -33,6 +33,8 @@ extern "C" {
 /************************************
  * TYPEDEFS
  ************************************/
+
+ //!TODO: just make helper.c with these functions
 #ifdef UNIT_TEST
 bool FOREVER(void);
 bool CHECK_POINTER_VALID(void *ptr);

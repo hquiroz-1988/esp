@@ -15,10 +15,15 @@ echo "Testing BusVoltage"
 # Clean project and test ads1115 module
 make -C ./unit_test gcov TEST_BUS_VOLTAGE=true || exit 1
 
-# echo "Testing ADS1115"
-# # Clean project and test ads1115 module
-# make -C  ./unit_test clean || exit 1
-# make -C ./unit_test all TEST_ADS1115=true || exit 1
+echo "Testing ADS1115"
+# Clean project and test ads1115 module
+make -C  ./unit_test clean || exit 1
+make -C ./unit_test all TEST_ADS1115=true || exit 1
+
+echo "Testing I2C Bus"
+# Clean project and test I2C Bus
+make -C  ./unit_test clean || exit 1
+make -C ./unit_test gcov TEST_I2C_BUS=true || exit 1
 
 echo "Running gcovr to generate coverage report..." 
 

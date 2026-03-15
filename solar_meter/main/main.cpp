@@ -17,8 +17,9 @@
 #include "driver/i2c.h"
 #include "esp_log.h"
 
-#include "i2c_task.h"
+
 #include "gpio.hpp"
+#include "i2c_bus.hpp"
 #include "ads1115.hpp"
 #include "bus_voltage.hpp"
 
@@ -32,9 +33,24 @@ extern "C" void app_main()
 
     // NetworkingModule networkingModule;
 
-    /*  initialize bus voltage module   */
-    // Gpio ads1115AlertPin(GpioPin::GPIO_PIN_NONE);
-    // ADS1115 ads1115(ads1115AlertPin);
+    /*  initialize i2c bus   */
+    Gpio sdaPin(GpioPin::GPIO_4, GpioMode::OutputOpenDrain, GpioPullup::Enable);
+    Gpio sclPin(GpioPin::GPIO_5, GpioMode::OutputOpenDrain, GpioPullup::Enable);
+    I2CBus i2cBus(sdaPin, sclPin, I2C_NUM_0);
+
+    /* create alert pin for ads1115 */
+    Gpio ads1115AlertPin(GpioPin::GPIO_6, GpioMode::Input, GpioPullup::Disable, GpioIntrType::FallingEdge);
+
+    /* create ads1115 instance */
+    ADS1115 ads1115(ads1115AlertPin);
+
+    /* add ads1115 to list of I2C devices */
+    //!TODO: add status check to see if device was added successfully 
+    i2cBus.addDevice(&ads1115);
+
+    /* once ads1115 to list of devices we can initialize registers */
+    ads1115.initialize();
+
     // BusVoltage busVoltage(ads1115);
 
     // /* initialize bus current module */

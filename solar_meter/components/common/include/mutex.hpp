@@ -1,18 +1,20 @@
 /**
  *******************************************************************************
- * @file    interrupt_base.hpp
+ * @file    mutex.hpp
  * @author  HQ
- * @date    2025-08-22 12:08:27
+ * @date    2025-10-29 22:34:03
  * @brief   
  *******************************************************************************
  */
 
-#ifndef INTERRUPT_BASE_HPP
-#define INTERRUPT_BASE_HPP
+#ifndef MUTEX_HPP
+#define MUTEX_HPP
 
 /*******************************************************************************
  * INCLUDES
 *******************************************************************************/
+#include <freertos/FreeRTOS.h>
+#include "freertos/semphr.h"
 #include "typedefs.h"
 
 /*******************************************************************************
@@ -22,20 +24,16 @@
 /*******************************************************************************
  * TYPEDEFS
 *******************************************************************************/
-class InterruptBase {
+class Mutex
+{
 public:
-    InterruptBase();
-    virtual ~InterruptBase();
-    // pure virtual Callbacks
-    virtual void gpio_isr_handler(void * arg){};
-
-protected:
-    enum class IntType {
-        gpio_isr_handler,
-        NumberOfIntTypes
-    };
-    bool registerCallback(IntType type);
-    bool removeCallback(IntType type);
+    Mutex();
+    ~Mutex();
+    Status_t create();
+    Status_t lock(uint32_t timeout = portMAX_DELAY);
+    Status_t unlock();
+private:
+    SemaphoreHandle_t mutex;
 };
 
 /*******************************************************************************
@@ -45,7 +43,6 @@ protected:
 /*******************************************************************************
  * GLOBAL FUNCTION PROTOTYPES
 *******************************************************************************/
-extern "C" void global_gpio_isr_handler(void *arg);
 
 
-#endif // INTERRUPT_BASE_HPP
+#endif // MUTEX_HPP

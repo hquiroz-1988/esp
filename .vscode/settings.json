@@ -51,6 +51,14 @@
         "streambuf": "cpp",
         "list": "cpp",
         "memory": "cpp",
-        "buffer": "cpp"
-    }
+        "buffer": "cpp",
+        "vector": "cpp",
+        "internet": "cpp",
+        "mutex.h": "c",
+        "*.inc": "cpp",
+        "condition_variable": "cpp",
+        "mutex": "cpp",
+        "future": "cpp"
+    },
+    "cmake.sourceDirectory": "/home/huqui/repos/esp/solar_meter"
 }

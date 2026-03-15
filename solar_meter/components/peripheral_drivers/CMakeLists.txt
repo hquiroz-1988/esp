@@ -1,4 +1,4 @@
-set(COMPONENT_SRCS "i2c_task.c")
+set(COMPONENT_SRCS "gpio.cpp" INCLUDE_DIRS "include")
 
 
-register_component()
+register_component() 
