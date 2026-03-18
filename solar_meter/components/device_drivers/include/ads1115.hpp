@@ -101,7 +101,7 @@ typedef union
 /* forward declaration of ADS1115Channel */
 class ADS1115Channel;
 
-class ADS1115 : public I2CDevice, private InterruptBase
+class ADS1115 : public I2CDevice, public InterruptBase
 {
 public:
     /**
@@ -167,7 +167,7 @@ public:
      * @param convObj Reference to an ADS1115_Conversion_t structure to hold the conversion result and channel.
      * @return Status_t Returns the status of the read operation.
      */
-    Status_t startSingleConversion(ADS1115Channel & channel);
+    Status_t startSingleConversion(ADS1115_Config_t & configObj);
 
     /**
      * @brief Performs a differential ADC measurement using the provided conversion object.
@@ -265,6 +265,13 @@ public:
     void initialize(void);
     Status_t getConfiguration(ads1115ConfigRegister_t * configPtr);
     Status_t setConfiguration(ads1115ConfigRegister_t * configPtr);
+    Status_t waitForConversionComplete(void);
+    Status_t setNotificationTaskHandle(TaskHandle_t taskHdl);
+    Status_t configObjToBytes(const ADS1115_Config_t & configObj, uint8_t * bytes);
+    /* add a static wrapper function that will be based as arg to caller */
+    static void staticWrapper(void* context, void * arg);
+    void alertPinISR(void * arg);
+
 
     private:
 
@@ -272,10 +279,8 @@ public:
     I2CTransfer_t transferObj;
     ADS1115Channel * channels[MAX_CHANNEL_COUNT];
     ADS1115_Address address;
-
     ADS1115_Config_t configRegister;
-
-    virtual void gpio_isr_handler(void *arg) override;
+    TaskHandle_t notificationTaskHandle;
 
     /**
      * @brief Sets the address pointer registerm for the ADS1115 device.
@@ -291,7 +296,9 @@ public:
     
 
     Status_t read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr);
-    Status_t write_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr);
+    Status_t writeConfigRegister(ADS1115_Config_t & configObj);
+    /* write to register */
+
     Status_t queueWait_ads1115I2cObject( i2c_handler_t ** i2cObjPtr);
 
         /**

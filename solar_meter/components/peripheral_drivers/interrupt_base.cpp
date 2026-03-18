@@ -117,3 +117,33 @@ void global_gpio_isr_handler(void *arg)
         (*it)->gpio_isr_handler(arg);
     }
 }
+
+
+Status_t InterruptBase::setCallback(void (*callback)(void*, void *), void* context)
+{
+    Status_t statusRet = STATUS_OKAY;
+    
+    if( callback != nullptr
+        && context != nullptr)
+    {
+        this->callback = callback;
+        this->callbackContext = context;
+    }
+    else
+    {
+        statusRet = STATUS_NULL_POINTER;
+    }
+
+    return statusRet;
+}
+
+Status_t InterruptBase::clearCallback()
+{
+    Status_t statusRet = STATUS_OKAY;
+
+    this->callback = nullptr;
+    this->callbackContext = nullptr;
+
+    return statusRet;
+}
+

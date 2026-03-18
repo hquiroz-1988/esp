@@ -51,8 +51,8 @@ static const char *TAG = "BusVoltage";
 /*******************************************************************************
  * GLOBAL FUNCTIONS
  *******************************************************************************/
-BusVoltage::BusVoltage(ADS1115 & _ads1115) 
-    : ADS1115Channel(_ads1115), pm(nullptr)
+BusVoltage::BusVoltage(ADS1115 & _ads1115, ADS1115Mux_t _channel) 
+    : ADS1115Channel(_ads1115, _channel)
 {
     // Constructor implementation
 }
@@ -62,19 +62,10 @@ BusVoltage::~BusVoltage()
     // Destructor implementation
 }
 
-Status_t BusVoltage::initialize(PowerMonitor * _pm)
+Status_t BusVoltage::initialize(void)
 {
     /* check that pm is not nullptr */
     Status_t retVal = STATUS_OKAY;
-
-    if(_pm != nullptr)
-    {
-        pm = _pm;
-    }
-    else
-    {
-        retVal = STATUS_NULL_POINTER;
-    }
 
     /* configure ADS1115 module */
     if(retVal == STATUS_OKAY)
@@ -132,17 +123,27 @@ Status_t BusVoltage::initialize(PowerMonitor * _pm)
 /*******************************************************************************
  * INTERRUPT SERVICE ROUTINES
  *******************************************************************************/
-
- void BusVoltage::runAlertISR(void * arg)
+ void BusVoltage::alertPinISR(void * arg)
  {
-    if(pm != nullptr)
+
+    /* perform any necessary actions for the alert pin ISR */
+
+    /* call any registered callbacks */
+    if(callback != nullptr
+       && callbackContext != nullptr)
     {
-        PowerMonitor & powerMonitor = (*pm);
-        powerMonitor.notifyFromISR(arg);
+        /* in the case of bus voltage we want to pass in the notification bit */
+        callback(callbackContext, arg);
     }
     else
     {
         /* perform something if we have nullptr */
-        ESP_LOGE(TAG,"PowerMonitor is nullptr\n");
+        ESP_LOGE(TAG,"Pointer to BusVoltage::callback is nullptr\n");
     }
+
+    //!TODO: after alert has been performed for this channel we might want to 
+    //clear the ads1115 callback so that other channels can use it
  }
+
+ //!TODO: we might not need to override the default since we could probably make the
+ //channel identifying info in the base class and then base class isr can call with those args....

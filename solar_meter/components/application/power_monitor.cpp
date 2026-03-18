@@ -45,9 +45,41 @@ static const char *TAG = "PowerMonitor";
 /*******************************************************************************
  * STATIC FUNCTIONS
  *******************************************************************************/
+Status_t PowerMonitor::startAndWaitForVoltage(float & value)
+{
+    Status_t status = busVoltage.startConversion();
+
+    /* after starting conversion, set the callback to call our static wrapper */
+    //!TODO: add a third argument to the setCallback function for BusVoltage class, this is the notification bit
+    //that will be returned once the ISR is called.
+    busVoltage.setCallback(PowerMonitor::staticWrapper, this);
+
+    /* start voltage conversion  */
+    if (xTaskNotifyWait(0, CLEAR_ALL_BITS, &notificationValue, portMAX_DELAY) != pdTRUE)
+    {
+        status = STATUS_OS_ERROR;
+    }
+
+    /* make sure we have the correct notification value */
+    if (    status == STATUS_OKAY 
+            && (notificationValue & GET_VOLTAGE_NOTIFY_BIT))
+    {
+        status = busVoltage.getConversion(latestBusVoltage);
+    }
+
+    /* whether or not we received the correct notification, clear the callback */
+    busVoltage.clearCallback();
+
+    return status;
+}
+
+
+
 Status_t PowerMonitor::queueBusVoltageMessage()
 {
-    Status_t status = busVoltage.getFilteredVoltage(&latestBusVoltage);
+
+    Status_t status = startAndWaitForVoltage(latestBusVoltage);
+
     if (status == STATUS_OKAY)
     {
         busVoltageMessage.name = "BusVoltage";
@@ -100,6 +132,7 @@ PowerMonitor::PowerMonitor(NetworkingModule &_networkingModule,
                                                       networkingModule(_networkingModule)
 {
     // Constructor implementation
+    
 }
 
 PowerMonitor::~PowerMonitor()
@@ -116,7 +149,7 @@ void PowerMonitor::taskRun()
     while (FOREVER())
     {
         Status_t status = STATUS_OKAY;
-        static uint32_t notificationValue = 0;
+        
 
         if (xTaskNotifyWait(0, CLEAR_ALL_BITS, &notificationValue, portMAX_DELAY) != pdTRUE)
         {
@@ -149,3 +182,21 @@ void PowerMonitor::taskRun()
         vTaskDelay(pdMS_TO_TICKS(100)); // Delay for 100 milliseconds
     }
 }
+
+void PowerMonitor::staticWrapper(void* context, void * arg) 
+{
+    //!TODO: pass notification but as argument to callback
+    PowerMonitor * instance = static_cast<PowerMonitor*>(context);
+    instance->notifyFromISR(arg/* and pass the arg here, this needs to be notification bit*/);
+}
+
+void PowerMonitor::notifyFromISR(void * arg/* this arg needs to be the notification bit */)
+{
+    uint32_t notifyBit = 0xFFFFFFFF;
+
+    /* notify the task from ISR */
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    xTaskNotifyFromISR(this->getTaskHandle(), notifyBit, eSetBits, &xHigherPriorityTaskWoken);
+    portYIELD_FROM_ISR();
+}
+

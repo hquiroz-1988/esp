@@ -22,6 +22,8 @@
  * MACROS AND DEFINES
 *******************************************************************************/
 #define GET_POWER_NOTIFY_BIT    (0x01)
+#define GET_VOLTAGE_NOTIFY_BIT  (0x02)
+#define GET_CURRENT_NOTIFY_BIT  (0x04)
 
 /*******************************************************************************
  * TYPEDEFS
@@ -40,6 +42,7 @@ public:
     /**
      * @brief Notifies the power monitor task from an ISR context.
      */
+    static void staticWrapper(void* context, void * arg);
     void notifyFromISR(void * arg);
 
     /** @brief  Runs the power monitor task
@@ -80,10 +83,14 @@ private:
     NetworkingMessage_t busVoltageMessage;
     NetworkingMessage_t busCurrentMessage;
     NetworkingMessage_t powerMessage;
+    uint32_t notificationValue = 0;
     /**
      * @brief Queues the bus voltage message for transmission.
      */
     Status_t queueBusVoltageMessage(void);
+
+    Status_t startAndWaitForVoltage(float & value);
+
     /**
      * @brief Queues the bus current message for transmission.
      */

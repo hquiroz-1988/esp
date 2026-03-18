@@ -51,13 +51,14 @@ extern "C" void app_main()
     /* once ads1115 to list of devices we can initialize registers */
     ads1115.initialize();
 
-    // BusVoltage busVoltage(ads1115);
+    /* initialize bus voltage module */
+    BusVoltage busVoltage(ads1115, ADS1115Mux_t::AIN0_GND);
 
     // /* initialize bus current module */
     // INA219 ina219;
     // BusCurrent busCurrent(ina219);
 
-    // PowerMonitor pm(networkingModule, busVoltage, busCurrent);
+    PowerMonitor pm(networkingModule, busVoltage, busCurrent);
 
     while (1) 
     {   

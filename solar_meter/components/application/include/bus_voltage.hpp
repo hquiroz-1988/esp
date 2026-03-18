@@ -35,7 +35,7 @@ class PowerMonitor;
 class BusVoltage : public ADS1115Channel
 {
 public:
-    BusVoltage(ADS1115 & _ads1115);
+    BusVoltage(ADS1115 & _ads1115, ADS1115Mux_t _channel);
     virtual ~BusVoltage();
 
     /** @brief  Initializes Bus Voltage which is an ADS1115 channel type.
@@ -43,19 +43,13 @@ public:
      *  @param void 
      *  @return void
      */
-    virtual Status_t initialize(PowerMonitor * _pm);
+    virtual Status_t initialize(void);
 
-    /**
-     * @brief  Runs the alert ISR for the BusVoltage.
-     * 
-     * @param arg - pointer to any arguments needed for the ISR
-     * @return void
-     */
-    virtual void runAlertISR(void * arg);
+    /* override the default alert pin ISR */
+    virtual void alertPinISR(void * arg) override;
+
 
     private:
-    // Add private members if needed
-    PowerMonitor *pm;
 };
 
 /************************************

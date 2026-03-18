@@ -24,10 +24,10 @@
 *******************************************************************************/
 class ADS1115;
 
-class ADS1115Channel
+class ADS1115Channel : public InterruptBase
 {
     public:
-    ADS1115Channel(ADS1115 & _ads1115);
+    ADS1115Channel(ADS1115 & _ads1115, ADS1115Mux_t _channel);
     virtual ~ADS1115Channel();
 
     /** @brief  Initializes ADS1115 module including registers, thresholds,
@@ -63,13 +63,8 @@ class ADS1115Channel
     virtual Status_t getFilteredVoltage(float * value);
     //!TODO: change to startAndWaitForConversion(float & value)
 
-     /**
-     * @brief  Runs the alert ISR for the ADS1115 device.
-     * 
-     * @param arg - pointer to any arguments needed for the ISR
-     * @return void
-     */
-    virtual void runAlertISR(void * arg);
+
+    virtual void alertPinISR(void * arg);
 
     /**
      * @brief Sets the low threshold value of the ADS1115 channel.
@@ -103,14 +98,14 @@ class ADS1115Channel
      */
     Status_t getHighThreshold(int16_t & value) const;
 
+    /* static wrapper to be called by interrupt handler from ADS1115 */
+    static void staticWrapper(void* context, void * arg);
+
     private:
-    
 
     protected:
     ADS1115 & ads1115;
-    ADS1115_PointerRegister addressPtrRegister;
-    ADS1115_Config_t configRegister;
-    Conversion_t type;
+    ADS1115_Config_t channelConfig;
     ADS1115Mux_t channel;
     int16_t conversionValue;
     int16_t lowThreshold;

@@ -29,6 +29,10 @@ public:
     // pure virtual Callbacks
     virtual void gpio_isr_handler(void * arg){};
 
+    /* make setCallback virtual so that each derived class can override with their own args */
+    virtual Status_t setCallback(void (*callback)(void*, void *), void* context);
+    
+    Status_t clearCallback();
 protected:
     enum class IntType {
         gpio_isr_handler,
@@ -36,6 +40,15 @@ protected:
     };
     bool registerCallback(IntType type);
     bool removeCallback(IntType type);
+
+    /*  add the option to have isr's call other callbacks
+        protected so that inherited classes can access. 
+    */
+    void (*callback)(void*, void *) = nullptr;
+    void* callbackContext = nullptr;
+
+private:
+    
 };
 
 /*******************************************************************************
