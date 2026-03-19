@@ -98,10 +98,11 @@ class ADS1115Channel : public InterruptBase
      */
     Status_t getHighThreshold(int16_t & value) const;
 
+    /* overload set callback function to pass in more parameters */
+    void setCallback(void (*callback)(void*, uint32_t), void* context, uint32_t value);
+
     /* static wrapper to be called by interrupt handler from ADS1115 */
     static void staticWrapper(void* context, void * arg);
-
-    private:
 
     protected:
     ADS1115 & ads1115;
@@ -110,6 +111,14 @@ class ADS1115Channel : public InterruptBase
     int16_t conversionValue;
     int16_t lowThreshold;
     int16_t highThreshold;
+
+    //!TODO: there must be a better to create a new callback template....todo
+    void (*callback2)(void*, uint32_t);
+    uint32_t callbackValue;
+
+    private:
+
+    
 };
 
 /*******************************************************************************

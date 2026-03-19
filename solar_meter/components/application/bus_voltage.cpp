@@ -71,28 +71,28 @@ Status_t BusVoltage::initialize(void)
     if(retVal == STATUS_OKAY)
     {
         /* for configuration we are not trying to trigger a conversion+ */
-        configRegister.opStatus = ADS1115_OperationalStatus_t::Write_No_Effect;
+        channelConfig.opStatus = ADS1115_OperationalStatus_t::Write_No_Effect;
         /* busvoltage measurement will be single ended at AIN0  */
-        configRegister.mux = ADS1115Mux_t::AIN0_GND;
+        channelConfig.mux = ADS1115Mux_t::AIN0_GND;
         /*  range 2.048 will be used since device VDD will be 3.3V, 2.048 is the
             next largest value    */
-        configRegister.pga = ADS1115PGA_t::FSR_2_048V;
+        channelConfig.pga = ADS1115PGA_t::FSR_2_048V;
         /* all measurements are requested not automatic, continuous would drain power */
-        configRegister.mode = ADS1115Mode_t::SingleShot;
+        channelConfig.mode = ADS1115Mode_t::SingleShot;
         /*  sampling rate will be high but actual sampling will be much lower rate
             this is to save power, lower device sampling rates require device to be on much
             longer hence consuming more power */
-        configRegister.dataRate = ADS1115DataRate_t::SPS_860;
+        channelConfig.dataRate = ADS1115DataRate_t::SPS_860;
         /*  comparator mode might need to window when measuring battery voltage to ensure
             batteries stay above and below thresholds    */
-        configRegister.compMode = ADS1115CompMode_t::Window;
+        channelConfig.compMode = ADS1115CompMode_t::Window;
         /* comparator polarity will be active low */
-        configRegister.compPolarity = ADS1115CompPolarity_t::ActiveLow;
+        channelConfig.compPolarity = ADS1115CompPolarity_t::ActiveLow;
         /* comparator is latching, in case we want to poll signal   */
-        configRegister.compLatch = ADS1115CompLatch_t::Latching;
+        channelConfig.compLatch = ADS1115CompLatch_t::Latching;
         /* asserting alert/rdy pin after four coversions to filter out sporadic measurements */
-        configRegister.compQueue = ADS1115CompQueue_t::AssertAfterFourConversions;
-        retVal = ads1115.configure(configRegister);
+        channelConfig.compQueue = ADS1115CompQueue_t::AssertAfterFourConversions;
+        retVal = ads1115.configure(channelConfig);
     }
 
     /*  set low and high thresholds for bus voltage, these will be 
@@ -110,11 +110,6 @@ Status_t BusVoltage::initialize(void)
         retVal = setHighThreshold(ADS1115_CONVERSION_COMPLETE_HI);
     }
 
-    /* init conversion object */
-    type = Conversion_t::SingleEnded;
-    channel = ADS1115Mux_t::AIN0_GND;
-    conversionValue = 0;
-
     return retVal;
 }
 
@@ -123,27 +118,3 @@ Status_t BusVoltage::initialize(void)
 /*******************************************************************************
  * INTERRUPT SERVICE ROUTINES
  *******************************************************************************/
- void BusVoltage::alertPinISR(void * arg)
- {
-
-    /* perform any necessary actions for the alert pin ISR */
-
-    /* call any registered callbacks */
-    if(callback != nullptr
-       && callbackContext != nullptr)
-    {
-        /* in the case of bus voltage we want to pass in the notification bit */
-        callback(callbackContext, arg);
-    }
-    else
-    {
-        /* perform something if we have nullptr */
-        ESP_LOGE(TAG,"Pointer to BusVoltage::callback is nullptr\n");
-    }
-
-    //!TODO: after alert has been performed for this channel we might want to 
-    //clear the ads1115 callback so that other channels can use it
- }
-
- //!TODO: we might not need to override the default since we could probably make the
- //channel identifying info in the base class and then base class isr can call with those args....

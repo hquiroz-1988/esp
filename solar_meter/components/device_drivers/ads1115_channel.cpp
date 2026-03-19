@@ -47,14 +47,6 @@ ADS1115Channel::ADS1115Channel(ADS1115 & _ads1115, ADS1115Mux_t _channel)
     : ads1115(_ads1115), channel(_channel), lowThreshold(0), highThreshold(0)
 {
 
-    //!TODO: adding this here but this will actually be called whenever a conversion is requested, 
-    //so that each channel can temporarily set the callback
-    /* add callback for alert pin */
-    ads1115.setCallback(ADS1115Channel::staticWrapper, this);
-
-    //!TODO: this is the clear callback it must be called at the end of the conversion 
-    // so as not to leave any traces back to this channel.
-    ads1115.clearCallback();
 }
 
 
@@ -62,7 +54,8 @@ ADS1115Channel::ADS1115Channel(ADS1115 & _ads1115, ADS1115Mux_t _channel)
 {
     Status_t retVal = STATUS_OKAY;
 
-    //!TODO: implement start of conversion
+    /* start single conversion */
+    ads1115.startSingleConversion(this->channelConfig);
 
     return retVal;
 }
@@ -71,7 +64,8 @@ Status_t ADS1115Channel::getConversion(float & value)
 {
     Status_t retVal = STATUS_OKAY;
 
-    //!TODO: implement get conversion
+    /* get conversion value from ADS1115 */
+    ads1115.getLatestConversion(value);
 
     return retVal;
 }
@@ -81,42 +75,19 @@ Status_t ADS1115Channel::getConversion(float & value)
 {
     Status_t retVal = STATUS_UNKNOWN;
 
-    /* grab current latch configuration */
-    ADS1115CompLatch_t compConfig = configRegister.compLatch;
-
-    /* in order to read pin, it needs to latch */
-    configRegister.compLatch = ADS1115CompLatch_t::Latching;
-
-    /* start conversion */
-    retVal = ads1115.startSingleConversion();
-
-    /* read conversion ready pin */
-    bool pinState = true;
-    //!TODO: should this be notify wait from isr??
-    if(retVal == STATUS_OKAY)
-    {
-        retVal = ads1115.waitForConversionComplete();
-    }
-
-    if(retVal == STATUS_OKAY)
-    {
-        /* pass in self argument to read ADC */
-        retVal = ads1115.readADC_SingleEnded(*this);
-    }
-
-    /* reassign original latch configuration */
-    configRegister.compLatch = compConfig;
-    
-    if (retVal == STATUS_OKAY)
-    {
-        *value = conversionValue;
-    }
-    else
-    {
-        *value = 0.0f;
-    }
 
     return retVal;
+}
+
+void ADS1115Channel::setCallback(void (*callback)(void*, uint32_t), void* context, uint32_t value)
+{
+    /* set the callback and context for this channel */
+    this->callback2 = callback;
+    this->callbackContext = context;
+    this->callbackValue = value;
+
+    /* register the callback with the base class */
+    registerCallback(IntType::gpio_isr_handler);
 }
 
 void ADS1115Channel::staticWrapper(void* context, void * arg) 
@@ -132,6 +103,16 @@ void ADS1115Channel::alertPinISR(void *arg)
         this is the default callback for any ADS1115 channel, we expect each channel instance 
         to override this instance and create a more meaningful callback.
     */
-   //!TODO: add a log to indicate the default ISR is being called
+    if (    callback2 != nullptr
+         && callbackContext != nullptr)
+    {
+        callback2(callbackContext, callbackValue);
+    }
+    else
+    {
+        /* perform something if we have nullptr */
+        //!TODO: add logging
+        // ESP_LOGE("ADS1115Channel","Pointer to callback2 is nullptr\n");
+    }
 }
 

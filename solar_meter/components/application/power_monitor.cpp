@@ -24,7 +24,6 @@ extern "C"
 /*******************************************************************************
  * PRIVATE MACROS AND DEFINES
  *******************************************************************************/
-#define CLEAR_ALL_BITS (0xFFFFFFFF)
 
 /*******************************************************************************
  * PRIVATE TYPEDEFS
@@ -48,21 +47,20 @@ static const char *TAG = "PowerMonitor";
 Status_t PowerMonitor::startAndWaitForVoltage(float & value)
 {
     Status_t status = busVoltage.startConversion();
+    uint32_t notifyBit = static_cast<uint32_t>(NotifyBits::GET_VOLTAGE);
 
     /* after starting conversion, set the callback to call our static wrapper */
-    //!TODO: add a third argument to the setCallback function for BusVoltage class, this is the notification bit
-    //that will be returned once the ISR is called.
-    busVoltage.setCallback(PowerMonitor::staticWrapper, this);
+    busVoltage.setCallback(PowerMonitor::staticWrapper, this, notifyBit);
 
     /* start voltage conversion  */
-    if (xTaskNotifyWait(0, CLEAR_ALL_BITS, &notificationValue, portMAX_DELAY) != pdTRUE)
+    if (xTaskNotifyWait(0, static_cast<uint32_t>(NotifyBits::CLEAR_ALL_BITS), &notificationValue, portMAX_DELAY) != pdTRUE)
     {
         status = STATUS_OS_ERROR;
     }
 
     /* make sure we have the correct notification value */
     if (    status == STATUS_OKAY 
-            && (notificationValue & GET_VOLTAGE_NOTIFY_BIT))
+            && (notificationValue & notifyBit) )
     {
         status = busVoltage.getConversion(latestBusVoltage);
     }
@@ -72,6 +70,36 @@ Status_t PowerMonitor::startAndWaitForVoltage(float & value)
 
     return status;
 }
+
+Status_t PowerMonitor::startAndWaitForCurrent(float & value)
+{
+    Status_t status = STATUS_OKAY;
+    //!TODO: uncomment this once bus current is implemented
+    // status = busCurrent.startConversion();
+    // uint32_t notifyBit = static_cast<uint32_t>(NotifyBits::GET_CURRENT);
+
+    // /* after starting conversion, set the callback to call our static wrapper */
+    // busCurrent.setCallback(PowerMonitor::staticWrapper, this, notifyBit);
+
+    // /* start current conversion  */
+    // if (xTaskNotifyWait(0, static_cast<uint32_t>(NotifyBits::CLEAR_ALL_BITS), &notificationValue, portMAX_DELAY) != pdTRUE)
+    // {
+    //     status = STATUS_OS_ERROR;
+    // }
+
+    // /* make sure we have the correct notification value */
+    // if (    status == STATUS_OKAY 
+    //         && (notificationValue & notifyBit) )
+    // {
+    //     status = busCurrent.getConversion(latestBusCurrent);
+    // }
+
+    // /* whether or not we received the correct notification, clear the callback */
+    // busCurrent.clearCallback();
+
+    return status;
+}
+
 
 
 
@@ -94,7 +122,8 @@ Status_t PowerMonitor::queueBusVoltageMessage()
 
 Status_t PowerMonitor::queueBusCurrentMessage()
 {
-    Status_t status = busCurrent.getFilteredCurrent(&latestBusCurrent);
+    Status_t status = startAndWaitForCurrent(latestBusCurrent);
+
     if (status == STATUS_OKAY)
     {
         busCurrentMessage.name = "BusCurrent";
@@ -151,14 +180,14 @@ void PowerMonitor::taskRun()
         Status_t status = STATUS_OKAY;
         
 
-        if (xTaskNotifyWait(0, CLEAR_ALL_BITS, &notificationValue, portMAX_DELAY) != pdTRUE)
+        if (xTaskNotifyWait(0, static_cast<uint32_t>(NotifyBits::CLEAR_ALL_BITS), &notificationValue, portMAX_DELAY) != pdTRUE)
         {
             status = STATUS_OS_ERROR;
         }
 
         /*   send the voltage, current, and power packets to telemetry module */
         if (    status == STATUS_OKAY 
-                && notificationValue & GET_POWER_NOTIFY_BIT)
+                && notificationValue & static_cast<uint32_t>(NotifyBits::GET_POWER))
         {
             status = queueBusVoltageMessage();
 
@@ -183,16 +212,16 @@ void PowerMonitor::taskRun()
     }
 }
 
-void PowerMonitor::staticWrapper(void* context, void * arg) 
+void PowerMonitor::staticWrapper(void* context, uint32_t arg) 
 {
     //!TODO: pass notification but as argument to callback
     PowerMonitor * instance = static_cast<PowerMonitor*>(context);
-    instance->notifyFromISR(arg/* and pass the arg here, this needs to be notification bit*/);
+    instance->notifyFromISR(arg);
 }
 
-void PowerMonitor::notifyFromISR(void * arg/* this arg needs to be the notification bit */)
+void PowerMonitor::notifyFromISR(uint32_t arg)
 {
-    uint32_t notifyBit = 0xFFFFFFFF;
+    uint32_t notifyBit = arg;
 
     /* notify the task from ISR */
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;

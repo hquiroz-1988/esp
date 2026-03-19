@@ -127,14 +127,6 @@ public:
     virtual ~ADS1115();
 
     /**
-     * @brief Initializes the ADS1115 device channels.
-     *
-     * This method performs any necessary setup for the ADS1115 device channels.
-     * @return Status_t Returns the status of the initialization operation.
-     */
-    Status_t initializeChannels(ADS1115Channel * channels[]);
-
-    /**
      * @brief Configures the ADS1115 device with the specified settings.
      *
      * This method applies the provided configuration object to the ADS1115 device.
@@ -168,6 +160,8 @@ public:
      * @return Status_t Returns the status of the read operation.
      */
     Status_t startSingleConversion(ADS1115_Config_t & configObj);
+
+    Status_t getLatestConversion(float & value);
 
     /**
      * @brief Performs a differential ADC measurement using the provided conversion object.
@@ -294,7 +288,7 @@ public:
      */
     Status_t setAddressPointerRegister(ADS1115_PointerRegister reg);
     
-
+    Status_t readConversionRegister(float & value);
     Status_t read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr);
     Status_t writeConfigRegister(ADS1115_Config_t & configObj);
     /* write to register */

@@ -45,9 +45,7 @@ public:
      */
     virtual Status_t initialize(void);
 
-    /* override the default alert pin ISR */
-    virtual void alertPinISR(void * arg) override;
-
+    protected:
 
     private:
 };
