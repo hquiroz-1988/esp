@@ -49,6 +49,11 @@ ADS1115Channel::ADS1115Channel(ADS1115 & _ads1115, ADS1115Mux_t _channel)
 
 }
 
+ADS1115Channel::~ADS1115Channel()
+{
+    
+}
+
 
  Status_t ADS1115Channel::startConversion(void)
 {
@@ -70,13 +75,39 @@ Status_t ADS1115Channel::getConversion(float & value)
     return retVal;
 }
 
-//!TODO: change float * to reference
  Status_t ADS1115Channel::getFilteredVoltage(float * value)
 {
     Status_t retVal = STATUS_UNKNOWN;
 
 
     return retVal;
+}
+
+
+Status_t ADS1115Channel::setLowThreshold(int16_t value)
+{
+    Status_t retStatus = STATUS_OKAY;
+
+    /* update local threshold */
+    lowThreshold = value;
+
+    /* update the threshold in the ADS1115 */
+    ads1115.setLowThreshold(value);
+
+    return retStatus;
+}
+
+Status_t ADS1115Channel::setHighThreshold(int16_t value)
+{
+    Status_t retStatus = STATUS_OKAY;
+
+    /* update local threshold */
+    highThreshold = value;
+
+    /* update the threshold in the ADS1115 */
+    ads1115.setHighThreshold(value);
+
+    return retStatus;
 }
 
 void ADS1115Channel::setCallback(void (*callback)(void*, uint32_t), void* context, uint32_t value)

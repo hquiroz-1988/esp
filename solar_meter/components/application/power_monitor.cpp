@@ -214,7 +214,6 @@ void PowerMonitor::taskRun()
 
 void PowerMonitor::staticWrapper(void* context, uint32_t arg) 
 {
-    //!TODO: pass notification but as argument to callback
     PowerMonitor * instance = static_cast<PowerMonitor*>(context);
     instance->notifyFromISR(arg);
 }

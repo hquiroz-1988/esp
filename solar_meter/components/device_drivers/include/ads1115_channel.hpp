@@ -29,15 +29,7 @@ class ADS1115Channel : public InterruptBase
     public:
     ADS1115Channel(ADS1115 & _ads1115, ADS1115Mux_t _channel);
     virtual ~ADS1115Channel();
-
-    /** @brief  Initializes ADS1115 module including registers, thresholds,
-     *  and other necessary configurations.
-     *
-     *  @param void 
-     *  @return void 
-     */
-    virtual Status_t init(void);    
-
+    
     /**
      * @brief  Starts an ADS1115 conversion and returns to caller, non-blocking.
      * 

@@ -248,14 +248,9 @@ public:
      */
     Status_t getAlertPinStatus(bool & pinState);
 
-
-    /**
-     * @brief Retrieves the latest reading from the ADS1115 device.
-     * 
-     * This method fetches the most recent analog-to-digital conversion result.
-     */
     Status_t getLatestReading(ads1115ConversionRegister_t * regPtr);
-
+    Status_t setLowThreshold(int16_t threshold);
+    Status_t setHighThreshold(int16_t threshold);
     void initialize(void);
     Status_t getConfiguration(ads1115ConfigRegister_t * configPtr);
     Status_t setConfiguration(ads1115ConfigRegister_t * configPtr);
@@ -295,29 +290,7 @@ public:
 
     Status_t queueWait_ads1115I2cObject( i2c_handler_t ** i2cObjPtr);
 
-        /**
-     * @brief Sets the low threshold value for the ADS1115 comparator.
-     *
-     * This method configures the ADS1115 device to use the specified low threshold value
-     * for comparator operations. The comparator will trigger when the measured value falls
-     * below this threshold, according to the comparator mode and configuration.
-     *
-     * @param threshold The low threshold value to set (signed 16-bit integer).
-     * @return Status_t Returns the status of the threshold set operation.
-     */
-    Status_t setLowThreshold(int16_t threshold);
-
-    /**
-     * @brief Sets the high threshold value for the ADS1115 comparator.
-     *
-     * This method configures the ADS1115 device to use the specified high threshold value
-     * for comparator operations. The comparator will trigger when the measured value exceeds
-     * this threshold, according to the comparator mode and configuration.
-     *
-     * @param threshold The high threshold value to set (signed 16-bit integer).
-     * @return Status_t Returns the status of the threshold set operation.
-     */
-    Status_t setHighThreshold(int16_t threshold);
+   
 };
 
 /*******************************************************************************
