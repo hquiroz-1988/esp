@@ -75,15 +75,6 @@ Status_t ADS1115Channel::getConversion(float & value)
     return retVal;
 }
 
- Status_t ADS1115Channel::getFilteredVoltage(float * value)
-{
-    Status_t retVal = STATUS_UNKNOWN;
-
-
-    return retVal;
-}
-
-
 Status_t ADS1115Channel::setLowThreshold(int16_t value)
 {
     Status_t retStatus = STATUS_OKAY;

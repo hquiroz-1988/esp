@@ -46,16 +46,6 @@ class ADS1115Channel : public InterruptBase
      */
     virtual Status_t getConversion(float & value);
 
-    /** @brief  Starts, waits, and returns for ADS1115 conversion, blocking.
-     *
-     *  @param value - pointer to a float value that will return
-     *  the voltage value
-     *  @return Status_t - returns error type or success
-     */
-    virtual Status_t getFilteredVoltage(float * value);
-    //!TODO: change to startAndWaitForConversion(float & value)
-
-
     virtual void alertPinISR(void * arg);
 
     /**
