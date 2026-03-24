@@ -28,14 +28,7 @@ extern "C"
 /*******************************************************************************
  * PRIVATE TYPEDEFS
  *******************************************************************************/
-typedef struct
-{
-    uint8_t pointerReg[ADS1115_POINTER_REGISTER_SIZE];    /**< pointer register is write only     */
-    ads1115ConversionRegister_t conversionReg;            /**< conversion register is read only   */
-    ads1115ConfigRegister_t configReg;                    /**< config register is read and write  */
-    uint8_t loThreshReg[ADS1115_LO_THRESH_REGISTER_SIZE]; /**< loThresh register is read and write   */
-    uint8_t hiThreshReg[ADS1115_HI_THRESH_REGISTER_SIZE]; /**< hiThresh is read and write   */
-} ads1115_RegisterMap_t;
+
 
 /*******************************************************************************
  * STATIC VARIABLES
@@ -52,29 +45,6 @@ static const char *TAG = "ads1115";
 /*******************************************************************************
  * PRIVATE FUNCTIONS
  *******************************************************************************/
-
-Status_t ADS1115::writeConfigRegister(ADS1115_Config_t &configObj)
-{
-    Status_t statusRet;
-
-    I2CTransfer_t transferObj;
-    transferObj.devAddr = ADS1115_ADDRESS;
-    transferObj.regAddr = ADS1115_CONFIG_REGISTER;
-    transferObj.size = ADS1115_CONFIG_REGISTER_SIZE;
-    transferObj.ackEn = ADS1115_ACK_CHECK_STATUS;
-    transferObj.ackType = I2CTransferAckType_t::MASTER_ACK;
-    transferObj.data = new uint8_t[ADS1115_CONFIG_REGISTER_SIZE];
-
-    statusRet = configObjToBytes(configObj, transferObj.data);
-
-    if (statusRet == STATUS_OKAY)
-    {
-        statusRet = write(transferObj);
-    }
-
-    return statusRet;
-}
-
 Status_t ADS1115::configObjToBytes(const ADS1115_Config_t &configObj, uint8_t *bytes)
 {
     Status_t statusRet = STATUS_OKAY;
@@ -101,27 +71,21 @@ Status_t ADS1115::configObjToBytes(const ADS1115_Config_t &configObj, uint8_t *b
     return statusRet;
 }
 
-Status_t ADS1115::readConversionRegister(float &value)
+Status_t ADS1115::cachedRegisterToTransferObj(const ADS1115_Transfer_t & configObj, I2CTransfer_t & transferObj)
 {
-    Status_t statusRet = STATUS_OKAY;
+    Status_t retVal = STATUS_OKAY;
 
-    I2CTransfer_t transferObj;
-    transferObj.devAddr = ADS1115_ADDRESS;
-    transferObj.regAddr = ADS1115_CONVERSION_REGISTER;
-    transferObj.size = ADS1115_CONVERSION_REGISTER_SIZE;
-    transferObj.ackEn = ADS1115_ACK_CHECK_STATUS;
-    transferObj.ackType = I2CTransferAckType_t::MASTER_ACK;
+    /* copy the relevant fields from the cached register object to the transfer object for i2c communication */
+    transferObj.devAddr = static_cast<uint8_t>(configObj.devAddr);
+    transferObj.regAddr = static_cast<uint8_t>(configObj.regAddr);
+    transferObj.size = static_cast<size_t>(configObj.size);
+    transferObj.ackEn = configObj.ackEn;
+    transferObj.ackType = configObj.ackType;
+    transferObj.data = configObj.data;
 
-    statusRet = read(transferObj);
-
-    if (statusRet == STATUS_OKAY)
-    {
-        /* convert bytes to float value, this will depend on the gain setting and data rate */
-        //! TODO: implement conversion based on gain and data rate settings
-    }
-
-    return statusRet;
+    return retVal;
 }
+
 
 /*******************************************************************************
  * PUBLIC FUNCTIONS
@@ -138,6 +102,35 @@ ADS1115::ADS1115(Gpio &_gpio) : alertPin(_gpio)
     /* constructor implementation*/
     //! TODO: set callback for gpio alert pin, either here or initialize function
     alertPin.setCallback(staticWrapper, this);
+
+    /* initialize the cached registers */
+    configRegisterObj.devAddr = ADS1115_Address::Device1;
+    configRegisterObj.regAddr = ADS1115_Register::Config;
+    configRegisterObj.size = ADS1115_RegisterSize::Config;
+    configRegisterObj.ackEn = ADS1115_ACK_CHECK_STATUS;
+    configRegisterObj.ackType = I2CTransferAckType_t::MASTER_ACK;
+    configRegisterObj.data = new uint8_t[static_cast<size_t>(ADS1115_RegisterSize::Config)];
+
+    conversionRegisterObj.devAddr = ADS1115_Address::Device1;
+    conversionRegisterObj.regAddr = ADS1115_Register::Conversion;
+    conversionRegisterObj.size = ADS1115_RegisterSize::Conversion;
+    conversionRegisterObj.ackEn = ADS1115_ACK_CHECK_STATUS;
+    conversionRegisterObj.ackType = I2CTransferAckType_t::MASTER_ACK;
+    conversionRegisterObj.data = new uint8_t[static_cast<size_t>(ADS1115_RegisterSize::Conversion)];
+
+    loThresholdRegisterObj.devAddr = ADS1115_Address::Device1;
+    loThresholdRegisterObj.regAddr = ADS1115_Register::Lo_Threshold;
+    loThresholdRegisterObj.size = ADS1115_RegisterSize::Threshold;
+    loThresholdRegisterObj.ackEn = ADS1115_ACK_CHECK_STATUS;
+    loThresholdRegisterObj.ackType = I2CTransferAckType_t::MASTER_ACK;
+    loThresholdRegisterObj.data = new uint8_t[static_cast<size_t>(ADS1115_RegisterSize::Threshold)];
+
+    hiThresholdRegisterObj.devAddr = ADS1115_Address::Device1;
+    hiThresholdRegisterObj.regAddr = ADS1115_Register::Hi_Threshold;
+    hiThresholdRegisterObj.size = ADS1115_RegisterSize::Threshold;
+    hiThresholdRegisterObj.ackEn = ADS1115_ACK_CHECK_STATUS;
+    hiThresholdRegisterObj.ackType = I2CTransferAckType_t::MASTER_ACK;
+    hiThresholdRegisterObj.data = new uint8_t[static_cast<size_t>(ADS1115_RegisterSize::Threshold)];
 }
 
 ADS1115::~ADS1115()
@@ -154,28 +147,20 @@ Status_t ADS1115::configure(const ADS1115_Config_t &configObj)
     Status_t retVal = STATUS_OKAY;
 
     /* write to configuration register */
-    retVal = writeConfigRegister(const_cast<ADS1115_Config_t &>(configObj));
+    retVal = setConfigRegister(const_cast<ADS1115_Config_t &>(configObj));
 
     return retVal;
 }
 
-Status_t ADS1115::startSingleConversion(ADS1115_Config_t &configObj)
+Status_t ADS1115::startSingleConversion(ADS1115_Config_t & configObj)
 {
     Status_t retVal = STATUS_OKAY;
 
-    /* write to address pointer register */
-    retVal = setAddressPointerRegister(ADS1115_PointerRegister::Config);
+    /*  change config object to start single conversion */
+    configObj.opStatus = ADS1115_OperationalStatus_t::Write_StartSingleConversion;
 
-
-    if (retVal == STATUS_OKAY)
-    {
-        /* Update operation status to initiate single conversion */
-        configObj.opStatus = ADS1115_OperationalStatus_t::Write_StartSingleConversion;
-
-        /* then write to configuration register */
-        retVal = writeConfigRegister(configObj);
-    }
-    
+    /* write to configuration register to start conversion */
+    retVal = setConfigRegister(configObj);
 
     return retVal;
 }
@@ -184,55 +169,95 @@ Status_t ADS1115::getLatestConversion(float &value)
 {
     Status_t retVal = STATUS_OKAY;
 
-    /* write to pointer register */
-    retVal = setAddressPointerRegister(ADS1115_PointerRegister::Conversion);
+    /* read latest conversion */
+    retVal = readConversionRegister(value);
 
-    if (retVal == STATUS_OKAY)
+    return retVal;
+}
+
+
+Status_t ADS1115::setConfigRegister(ADS1115_Config_t &configObj)
+{
+    Status_t statusRet;
+
+    /* convert config object to bytes for i2c transfer */
+    //!TODO: determine if config obj should be its own data structure
+    configObjToBytes(configObj, configRegisterObj.data);
+
+    /* convert cached register object to I2C transfer object */
+    statusRet = cachedRegisterToTransferObj(configRegisterObj, txObj);
+
+    if (statusRet == STATUS_OKAY)
     {
-        /* read conversion register */
-        retVal = readConversionRegister(value);
+        /* write to I2C bus */
+        statusRet = write(txObj);
     }
 
-    return retVal;
+    return statusRet;
 }
 
-Status_t ADS1115::getAlertPinStatus(bool &pinState)
+
+Status_t ADS1115::getConfigRegister(ADS1115_Config_t &configObj)
 {
-    Status_t retVal = STATUS_OKAY;
+    Status_t statusRet;
 
-    /* read gpio status of pin */
-    // pinState = alertPin.get();
+    /* convert cached register object to I2C transfer object */
+    statusRet = cachedRegisterToTransferObj(configRegisterObj, rxObj);
 
-    return retVal;
-}
+    if (statusRet == STATUS_OKAY)
+    {
+        /* read from I2C bus */
+        statusRet = read(rxObj);
 
-Status_t ADS1115::setConfiguration(ads1115ConfigRegister_t *configPtr)
-{
-    Status_t statusRet = STATUS_OKAY;
+        if (statusRet == STATUS_OKAY)
+        {
+            /* convert bytes to config object */
+            bytesToConfigObj(rxObj.data, configObj);
+        }
+    }
 
     return statusRet;
 }
 
-Status_t ADS1115::getLatestReading(ads1115ConversionRegister_t *regPtr)
-{
-    /* write conversion addy to the pointer register    */
-    Status_t statusRet = STATUS_OKAY;
-
-    return statusRet;
-}
-
-Status_t ADS1115::waitForConversionComplete(void)
-{
-    Status_t retVal = STATUS_OKAY;
-
-    return retVal;
-}
 
 Status_t ADS1115::setLowThreshold(int16_t threshold)
 {
     Status_t retVal = STATUS_OKAY;
 
-    //! TODO: implement
+    /* set low threshold */
+    loThresholdRegisterObj.data[0] = (threshold >> 8) & 0xFF;
+    loThresholdRegisterObj.data[1] = threshold & 0xFF;
+
+    /* convert cached register to I2C transfer object */
+    retVal = cachedRegisterToTransferObj(loThresholdRegisterObj, txObj); 
+
+    if(retVal == STATUS_OKAY)
+    {
+        /* write to I2C bus */
+        retVal = write(txObj);
+    }
+    
+    return retVal;
+}
+
+Status_t ADS1115::getLowThreshold(int16_t &threshold)
+{
+    Status_t retVal = STATUS_OKAY;
+
+    /* convert cached register object to I2C transfer object */
+    retVal = cachedRegisterToTransferObj(loThresholdRegisterObj, rxObj);
+
+    if (retVal == STATUS_OKAY)
+    {
+        /* read from I2C bus */
+        retVal = read(rxObj);
+
+        if (retVal == STATUS_OKAY)
+        {
+            /* convert bytes to threshold value */
+            threshold = (static_cast<int16_t>(rxObj.data[0]) << 8) | static_cast<int16_t>(rxObj.data[1]);
+        }
+    }
 
     return retVal;
 }
@@ -241,20 +266,67 @@ Status_t ADS1115::setHighThreshold(int16_t threshold)
 {
     Status_t retVal = STATUS_OKAY;
 
+    /* set high threshold */
+    hiThresholdRegisterObj.data[0] = (threshold >> 8) & 0xFF;
+    hiThresholdRegisterObj.data[1] = threshold & 0xFF;
 
-    //!TODO: implement
+    /* convert cached register to I2C transfer object */
+    retVal = cachedRegisterToTransferObj(hiThresholdRegisterObj, txObj); 
 
+    if(retVal == STATUS_OKAY)
+    {
+        /* write to I2C bus */
+        retVal = write(txObj);
+    }
+    
     return retVal;
 }
 
-Status_t ADS1115::setAddressPointerRegister(ADS1115_PointerRegister reg)
+Status_t ADS1115::getHighThreshold(int16_t &threshold)
 {
     Status_t retVal = STATUS_OKAY;
 
-    //!TODO: implement
+    /* convert cached register object to I2C transfer object */
+    retVal = cachedRegisterToTransferObj(hiThresholdRegisterObj, rxObj);
+
+    if (retVal == STATUS_OKAY)
+    {
+        /* read from I2C bus */
+        retVal = read(rxObj);
+
+        if (retVal == STATUS_OKAY)
+        {
+            /* convert bytes to threshold value */
+            threshold = (static_cast<int16_t>(rxObj.data[0]) << 8) | static_cast<int16_t>(rxObj.data[1]);
+        }
+    }
 
     return retVal;
 }
+
+Status_t ADS1115::readConversionRegister(float &value)
+{
+    Status_t statusRet = STATUS_OKAY;
+
+    I2CTransfer_t transferObj;
+    transferObj.devAddr = static_cast<uint8_t>(ADS1115_Address::Device1);
+    transferObj.regAddr = static_cast<uint8_t>(ADS1115_Register::Conversion);
+    transferObj.size = static_cast<uint8_t>(ADS1115_RegisterSize::Conversion);
+    transferObj.ackEn = static_cast<bool>(ADS1115_AckCheck::Disable);
+    transferObj.ackType = I2CTransferAckType_t::MASTER_ACK;
+    transferObj.data = new uint8_t[ADS1115_CONVERSION_REGISTER_SIZE];
+
+    statusRet = read(transferObj);
+
+    if (statusRet == STATUS_OKAY)
+    {
+        /* convert bytes to float value, this will depend on the gain setting and data rate */
+        //! TODO: implement conversion based on gain and data rate settings
+    }
+
+    return statusRet;
+}
+
 
 /*******************************************************************************
  * ISR AND CALLBACK FUNCTIONS

@@ -102,12 +102,12 @@ Status_t BusVoltage::initialize(void)
         different channels might actually use the threshold values  */
     if(retVal == STATUS_OKAY)
     {
-        retVal = setLowThreshold(ADS1115_CONVERSION_COMPLETE_LO);
+        retVal = setLowThreshold(static_cast<int16_t>(ADS1115_ThresholdValues::Max));
     }
 
     if(retVal == STATUS_OKAY)
     {
-        retVal = setHighThreshold(ADS1115_CONVERSION_COMPLETE_HI);
+        retVal = setHighThreshold(static_cast<int16_t>(ADS1115_ThresholdValues::Min));
     }
 
     return retVal;

@@ -19,21 +19,6 @@
 /************************************
  * MACROS AND DEFINES
  ************************************/
-#define GND_ADDR_PIN                                    (0x48)              /* ADDR PIN connected to GND Pin */
-#define VDD_ADDR_PIN                                    (0x49)              /* ADDR PIN connected to VDD Pin */
-#define SDA_ADDR_PIN                                    (0x4A)              /* ADDR PIN connected to SDA Pin */
-#define SCL_ADDR_PIN                                    (0x4B)              /* ADDR PIN connected to SCL Pin */
-#define ADS1115_ADDRESS_SHIFT                           (1u)
-#define ADS1115_ADDRESS_MASK                            (0x7)
-#define ADS1115_ADDRESS                                 ((GND_ADDR_PIN & ADS1115_ADDRESS_MASK) << ADS1115_ADDRESS_SHIFT)
-
-#define ADS1115_WRITE_BIT                               (0x0)
-#define ADS1115_READ_BIT                                (0x1)
-
-#define ADS1115_CONVERSION_REGISTER                     (0x00)
-#define ADS1115_CONFIG_REGISTER                         (0x01)
-#define ADS1115_LO_THRESH_REGISTER                      (0x02)
-#define ADS1115_HI_THRESH_REGISTER                      (0x03)
 
 #define ADS1115_POINTER_REGISTER_SIZE                   (1u)
 #define ADS1115_CONVERSION_REGISTER_SIZE                (2u)
@@ -61,12 +46,11 @@
 #define ADS1115_COMP_LATCH_CFG_MASK                     (1u)
 #define ADS1115_COMP_QUEUE_CFG_MASK                     (2u)
 
+
 #define I2C_ACK_CHECK_DISABLE                           (false)
 #define I2C_ACK_CHECK_ENABLE                            (true)
-#define ADS1115_ACK_CHECK_STATUS                        (I2C_ACK_CHECK_DISABLE)//TODO: enable checking when ready to connect to device
-
-#define ADS1115_WRITE                                   (ADS1115_ADDRESS & ~(ADS1115_WRITE_BIT))
-#define ADS1115_READ                                    (ADS1115_ADDRESS | (ADS1115_READ_BIT))
+//TODO: enable checking when ready to connect to device
+#define ADS1115_ACK_CHECK_STATUS                        (I2C_ACK_CHECK_DISABLE)
 
 
 /************************************
@@ -76,18 +60,31 @@
 // To use a specific address, connect the ADDR pin of the ADS1115 to the corresponding pin.
 enum class ADS1115_Address : uint8_t
 {
-    Device1 = (0b1001000 << 1), // ADDR connected to GND
-    Device2 = (0b1001001 << 1), // ADDR connected to VDD
-    Device3 = (0b1001010 << 1), // ADDR connected to SDA
-    Device4 = (0b1001011 << 1)  // ADDR connected to SCL
+    Device1 = (0x48), // ADDR connected to GND
+    Device2 = (0x49), // ADDR connected to VDD
+    Device3 = (0x4A), // ADDR connected to SDA
+    Device4 = (0x4B)  // ADDR connected to SCL
 };
 
-enum class ADS1115_PointerRegister : uint8_t
+enum class ADS1115_Register : uint8_t
 {
-    Conversion    = 0b00, // Conversion register
-    Config        = 0b01, // Config register
-    Lo_Threshold  = 0b10, // Lo_thresh register
-    Hi_Threshold  = 0b11  // Hi_thresh register
+    Conversion    = 0x00, // Conversion register
+    Config        = 0x01, // Config register
+    Lo_Threshold  = 0x02, // Lo_thresh register
+    Hi_Threshold  = 0x03  // Hi_thresh register
+};
+
+enum class ADS1115_RegisterSize : uint8_t
+{
+    Conversion = 2,
+    Config = 2,
+    Threshold = 2// Lo_thresh and Hi_thresh registers are the same size
+};
+
+enum class ADS1115_AckCheck : bool
+{
+    Disable = false,
+    Enable = true
 };
 
 enum class ADS1115_OperationalStatus_t : uint8_t
@@ -196,6 +193,12 @@ enum class Channel_t
     AIN2_AIN3
 };
 
+enum class ADS1115_ThresholdValues
+{
+    Min = 0x8000, // Minimum threshold value - negative full-scale voltage
+    Max = 0x7FFF  // Maximum threshold value - positive full-scale voltage
+};
+
 struct ADS1115_Conversion
 {
     Conversion_t type;
@@ -212,6 +215,19 @@ struct ADS1115_Comparator
     Channel_t channel;
 };
 using ADS1115_Comparator_t = struct ADS1115_Comparator;
+
+
+typedef struct
+{
+    uint8_t *data;
+    ADS1115_RegisterSize size;
+    ADS1115_Address devAddr;
+    ADS1115_Register regAddr;
+    bool ackEn;
+    I2CTransferAckType_t ackType;
+} ADS1115_Transfer_t;
+
+
 
 
 /************************************
