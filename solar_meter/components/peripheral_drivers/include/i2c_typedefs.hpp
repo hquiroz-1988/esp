@@ -29,10 +29,10 @@
  */
 enum class I2CTransferAckType_t
 {
-    MASTER_ACK = I2C_MASTER_ACK,             /*!< I2C ack for each byte read */
-    MASTER_NACK = I2C_MASTER_NACK,           /*!< I2C nack for each byte read */
+    MASTER_ACK       = I2C_MASTER_ACK,             /*!< I2C ack for each byte read */
+    MASTER_NACK      = I2C_MASTER_NACK,           /*!< I2C nack for each byte read */
     MASTER_LAST_NACK = I2C_MASTER_LAST_NACK, /*!< I2C nack for the last byte*/
-    MASTER_ACK_MAX = I2C_MASTER_ACK_MAX,
+    MASTER_ACK_MAX   = I2C_MASTER_ACK_MAX,
 };
 
 typedef struct

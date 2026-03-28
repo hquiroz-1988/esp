@@ -43,82 +43,98 @@
 /*******************************************************************************
  * GLOBAL FUNCTIONS
  *******************************************************************************/
+ADS1115Channel::ADS1115Channel(ADS1115 & _ads1115, ADS1115Mux_t _channel) 
+    : ads1115(_ads1115), channel(_channel), lowThreshold(0), highThreshold(0)
+{
+
+}
+
+ADS1115Channel::~ADS1115Channel()
+{
+    
+}
+
 
  Status_t ADS1115Channel::startConversion(void)
 {
-    Status_t retVal = STATUS_UNKNOWN;
+    Status_t retVal = STATUS_OKAY;
 
-    if (retVal == STATUS_OKAY)
-    {
-        /* pass in self argument to start ADC conversion */
-        retVal = ads1115.startSingleConversion(*this);
-    }
+    /* start single conversion */
+    ads1115.startSingleConversion(this->channelConfig);
 
     return retVal;
 }
 
 Status_t ADS1115Channel::getConversion(float & value)
 {
-    Status_t retVal = STATUS_UNKNOWN;
+    Status_t retVal = STATUS_OKAY;
 
-    if (retVal == STATUS_OKAY)
-    {
-        /* pass in self argument to read ADC */
-        retVal = ads1115.readADC_SingleEnded(*this);
-    }
-
-    if (retVal == STATUS_OKAY)
-    {
-        value = conversionValue;
-    }
-    else
-    {
-        value = 0.0f;
-    }
+    /* get conversion value from ADS1115 */
+    ads1115.getLatestConversion(value);
 
     return retVal;
 }
 
-//!TODO: change float * to reference
- Status_t ADS1115Channel::getFilteredVoltage(float * value)
+Status_t ADS1115Channel::setLowThreshold(int16_t value)
 {
-    Status_t retVal = STATUS_UNKNOWN;
+    Status_t retStatus = STATUS_OKAY;
 
-    /* grab current latch configuration */
-    ADS1115CompLatch_t compConfig = configRegister.compLatch;
+    /* update local threshold */
+    lowThreshold = value;
 
-    /* in order to read pin, it needs to latch */
-    configRegister.compLatch = ADS1115CompLatch_t::Latching;
+    /* update the threshold in the ADS1115 */
+    ads1115.setLowThreshold(value);
 
-    /* start conversion */
-    retVal = ads1115.startSingleConversion(*this);
+    return retStatus;
+}
 
-    /* read conversion ready pin */
-    bool pinState = true;
-    while ( retVal == STATUS_OKAY && pinState == true)
+Status_t ADS1115Channel::setHighThreshold(int16_t value)
+{
+    Status_t retStatus = STATUS_OKAY;
+
+    /* update local threshold */
+    highThreshold = value;
+
+    /* update the threshold in the ADS1115 */
+    ads1115.setHighThreshold(value);
+
+    return retStatus;
+}
+
+void ADS1115Channel::setCallback(void (*callback)(void*, uint32_t), void* context, uint32_t value)
+{
+    /* set the callback and context for this channel */
+    this->callback2 = callback;
+    this->callbackContext = context;
+    this->callbackValue = value;
+
+    /* register the callback with the base class */
+    registerCallback(IntType::gpio_isr_handler);
+}
+
+void ADS1115Channel::staticWrapper(void* context, void * arg) 
+{
+    ADS1115Channel * instance = static_cast<ADS1115Channel*>(context);
+    instance->alertPinISR(arg);
+}
+
+
+void ADS1115Channel::alertPinISR(void *arg)
+{
+    /*
+        this is the default callback for any ADS1115 channel, we expect each channel instance 
+        to override this instance and create a more meaningful callback.
+    */
+    if (    callback2 != nullptr
+         && callbackContext != nullptr)
     {
-        retVal = ads1115.getAlertPinStatus(pinState);   
-        //!TODO: add a timeout
-        // Wait for conversion to complete
-    }
-
-    if(retVal == STATUS_OKAY)
-    {
-        /* pass in self argument to read ADC */
-        retVal = ads1115.readADC_SingleEnded(*this);
-    }
-
-    /* reassign original latch configuration */
-    configRegister.compLatch = compConfig;
-    
-    if (retVal == STATUS_OKAY)
-    {
-        *value = conversionValue;
+        callback2(callbackContext, callbackValue);
     }
     else
     {
-        *value = 0.0f;
+        /* perform something if we have nullptr */
+        //!TODO: add logging
+        // ESP_LOGE("ADS1115Channel","Pointer to callback2 is nullptr\n");
     }
-
-    return retVal;
 }
+

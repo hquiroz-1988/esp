@@ -51,8 +51,8 @@ static const char *TAG = "BusVoltage";
 /*******************************************************************************
  * GLOBAL FUNCTIONS
  *******************************************************************************/
-BusVoltage::BusVoltage(ADS1115 & _ads1115) 
-    : ADS1115Channel(_ads1115), pm(nullptr)
+BusVoltage::BusVoltage(ADS1115 & _ads1115, ADS1115Mux_t _channel) 
+    : ADS1115Channel(_ads1115, _channel)
 {
     // Constructor implementation
 }
@@ -62,46 +62,37 @@ BusVoltage::~BusVoltage()
     // Destructor implementation
 }
 
-Status_t BusVoltage::initialize(PowerMonitor * _pm)
+Status_t BusVoltage::initialize(void)
 {
     /* check that pm is not nullptr */
     Status_t retVal = STATUS_OKAY;
-
-    if(_pm != nullptr)
-    {
-        pm = _pm;
-    }
-    else
-    {
-        retVal = STATUS_NULL_POINTER;
-    }
 
     /* configure ADS1115 module */
     if(retVal == STATUS_OKAY)
     {
         /* for configuration we are not trying to trigger a conversion+ */
-        configRegister.opStatus = ADS1115_OperationalStatus_t::Write_No_Effect;
+        channelConfig.opStatus = ADS1115_OperationalStatus_t::Write_No_Effect;
         /* busvoltage measurement will be single ended at AIN0  */
-        configRegister.mux = ADS1115Mux_t::AIN0_GND;
+        channelConfig.mux = ADS1115Mux_t::AIN0_GND;
         /*  range 2.048 will be used since device VDD will be 3.3V, 2.048 is the
             next largest value    */
-        configRegister.pga = ADS1115PGA_t::FSR_2_048V;
+        channelConfig.pga = ADS1115PGA_t::FSR_2_048V;
         /* all measurements are requested not automatic, continuous would drain power */
-        configRegister.mode = ADS1115Mode_t::SingleShot;
+        channelConfig.mode = ADS1115Mode_t::SingleShot;
         /*  sampling rate will be high but actual sampling will be much lower rate
             this is to save power, lower device sampling rates require device to be on much
             longer hence consuming more power */
-        configRegister.dataRate = ADS1115DataRate_t::SPS_860;
+        channelConfig.dataRate = ADS1115DataRate_t::SPS_860;
         /*  comparator mode might need to window when measuring battery voltage to ensure
             batteries stay above and below thresholds    */
-        configRegister.compMode = ADS1115CompMode_t::Window;
+        channelConfig.compMode = ADS1115CompMode_t::Window;
         /* comparator polarity will be active low */
-        configRegister.compPolarity = ADS1115CompPolarity_t::ActiveLow;
+        channelConfig.compPolarity = ADS1115CompPolarity_t::ActiveLow;
         /* comparator is latching, in case we want to poll signal   */
-        configRegister.compLatch = ADS1115CompLatch_t::Latching;
+        channelConfig.compLatch = ADS1115CompLatch_t::Latching;
         /* asserting alert/rdy pin after four coversions to filter out sporadic measurements */
-        configRegister.compQueue = ADS1115CompQueue_t::AssertAfterFourConversions;
-        retVal = ads1115.configure(configRegister);
+        channelConfig.compQueue = ADS1115CompQueue_t::AssertAfterFourConversions;
+        retVal = ads1115.configure(channelConfig);
     }
 
     /*  set low and high thresholds for bus voltage, these will be 
@@ -111,18 +102,13 @@ Status_t BusVoltage::initialize(PowerMonitor * _pm)
         different channels might actually use the threshold values  */
     if(retVal == STATUS_OKAY)
     {
-        retVal = setLowThreshold(ADS1115_CONVERSION_COMPLETE_LO);
+        retVal = setLowThreshold(static_cast<int16_t>(ADS1115_ThresholdValues::Max));
     }
 
     if(retVal == STATUS_OKAY)
     {
-        retVal = setHighThreshold(ADS1115_CONVERSION_COMPLETE_HI);
+        retVal = setHighThreshold(static_cast<int16_t>(ADS1115_ThresholdValues::Min));
     }
-
-    /* init conversion object */
-    type = Conversion_t::SingleEnded;
-    channel = ADS1115Mux_t::AIN0_GND;
-    conversionValue = 0;
 
     return retVal;
 }
@@ -132,17 +118,3 @@ Status_t BusVoltage::initialize(PowerMonitor * _pm)
 /*******************************************************************************
  * INTERRUPT SERVICE ROUTINES
  *******************************************************************************/
-
- void BusVoltage::runAlertISR(void * arg)
- {
-    if(pm != nullptr)
-    {
-        PowerMonitor & powerMonitor = (*pm);
-        powerMonitor.notifyFromISR(arg);
-    }
-    else
-    {
-        /* perform something if we have nullptr */
-        ESP_LOGE(TAG,"PowerMonitor is nullptr\n");
-    }
- }

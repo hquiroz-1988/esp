@@ -35,6 +35,9 @@ public:
     Status_t suspend(void);
     Status_t resume(void);
 
+protected:
+    TaskHandle_t getTaskHandle() const { return taskHandle; }
+
 private:
     TaskHandle_t taskHandle;
     static void startTask(void *argument);

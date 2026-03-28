@@ -24,20 +24,12 @@
 *******************************************************************************/
 class ADS1115;
 
-class ADS1115Channel
+class ADS1115Channel : public InterruptBase
 {
     public:
-    ADS1115Channel(ADS1115 & _ads1115);
+    ADS1115Channel(ADS1115 & _ads1115, ADS1115Mux_t _channel);
     virtual ~ADS1115Channel();
-
-    /** @brief  Initializes ADS1115 module including registers, thresholds,
-     *  and other necessary configurations.
-     *
-     *  @param void 
-     *  @return void 
-     */
-    virtual Status_t init(void);    
-
+    
     /**
      * @brief  Starts an ADS1115 conversion and returns to caller, non-blocking.
      * 
@@ -54,22 +46,7 @@ class ADS1115Channel
      */
     virtual Status_t getConversion(float & value);
 
-    /** @brief  Starts, waits, and returns for ADS1115 conversion, blocking.
-     *
-     *  @param value - pointer to a float value that will return
-     *  the voltage value
-     *  @return Status_t - returns error type or success
-     */
-    virtual Status_t getFilteredVoltage(float * value);
-    //!TODO: change to startAndWaitForConversion(float & value)
-
-     /**
-     * @brief  Runs the alert ISR for the ADS1115 device.
-     * 
-     * @param arg - pointer to any arguments needed for the ISR
-     * @return void
-     */
-    virtual void runAlertISR(void * arg);
+    virtual void alertPinISR(void * arg);
 
     /**
      * @brief Sets the low threshold value of the ADS1115 channel.
@@ -103,18 +80,27 @@ class ADS1115Channel
      */
     Status_t getHighThreshold(int16_t & value) const;
 
-    private:
-    
+    /* overload set callback function to pass in more parameters */
+    void setCallback(void (*callback)(void*, uint32_t), void* context, uint32_t value);
+
+    /* static wrapper to be called by interrupt handler from ADS1115 */
+    static void staticWrapper(void* context, void * arg);
 
     protected:
     ADS1115 & ads1115;
-    ADS1115_PointerRegister addressPtrRegister;
-    ADS1115_Config_t configRegister;
-    Conversion_t type;
+    ADS1115_Config_t channelConfig;
     ADS1115Mux_t channel;
     int16_t conversionValue;
     int16_t lowThreshold;
     int16_t highThreshold;
+
+    //!TODO: there must be a better to create a new callback template....todo
+    void (*callback2)(void*, uint32_t);
+    uint32_t callbackValue;
+
+    private:
+
+    
 };
 
 /*******************************************************************************

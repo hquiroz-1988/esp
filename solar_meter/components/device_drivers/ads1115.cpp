@@ -3,16 +3,16 @@
  * @file    ads1115.cpp
  * @author  hugo
  * @date    2025-06-04 23:22:04
- * @brief   
+ * @brief
  ********************************************************************************
  */
 
 /*******************************************************************************
  * INCLUDES
-*******************************************************************************/
-extern "C" 
+ *******************************************************************************/
+extern "C"
 {
-    #include "esp_log.h"
+#include "esp_log.h"
 }
 
 #include "ads1115.hpp"
@@ -28,216 +28,109 @@ extern "C"
 /*******************************************************************************
  * PRIVATE TYPEDEFS
  *******************************************************************************/
-typedef struct
-{
-    uint8_t pointerReg[ADS1115_POINTER_REGISTER_SIZE];                  /**< pointer register is write only     */
-    ads1115ConversionRegister_t conversionReg;                          /**< conversion register is read only   */
-    ads1115ConfigRegister_t configReg;                                  /**< config register is read and write  */
-    uint8_t loThreshReg[ADS1115_LO_THRESH_REGISTER_SIZE];               /**< loThresh register is read and write   */
-    uint8_t hiThreshReg[ADS1115_HI_THRESH_REGISTER_SIZE];               /**< hiThresh is read and write   */
-}ads1115_RegisterMap_t;
+
 
 /*******************************************************************************
  * STATIC VARIABLES
  *******************************************************************************/
-static ads1115_RegisterMap_t ads1115CfgObj;
 static const char *TAG = "ads1115";
 /*******************************************************************************
  * GLOBAL VARIABLES
  *******************************************************************************/
 
 /*******************************************************************************
- * STATIC FUNCTION PROTOTYPES
+ * PROTECTED FUNCTIONS
  *******************************************************************************/
 
 /*******************************************************************************
- * STATIC FUNCTIONS
+ * PRIVATE FUNCTIONS
  *******************************************************************************/
-
-/*!
- * \brief Queues i2c object and waits for its return
- *  
- * Function takes a pointer to an i2c object pointer so that it can be sent to
- * the i2c task queue, function then waits for a notification from the queue to
- * continue.
- *
- * \param i2cObjPtr -Even if there is only one possible unified theory. it is just a
- *               set of rules and equations.
- * \return return value is NO_ERROR, NULL_POINTER, QUEUE_FAIL, or NOTIFY_TIMEOUT.
- */
-Status_t ADS1115::queueWait_ads1115I2cObject( i2c_handler_t ** i2cObjPtr)
+Status_t ADS1115::configObjToBytes(const ADS1115_Config_t &configObj, uint8_t *bytes)
 {
-    Status_t errRet = STATUS_UNKNOWN;
+    Status_t statusRet = STATUS_OKAY;
 
-    /*! - check i2c Queue Handle and i2c object pointer are not null*/
-    if( NULL == i2cQueueHdl && NULL != i2cObjPtr)
+    if (bytes != nullptr)
     {
-        errRet = STATUS_NULL_POINTER;
-    }
+        /* convert config object to bytes for i2c transfer */
+        bytes[0] = ((static_cast<uint8_t>(configObj.opStatus) & 0x01) << 7) |
+                   ((static_cast<uint8_t>(configObj.mux) & 0x07) << 4) |
+                   ((static_cast<uint8_t>(configObj.pga) & 0x07) << 1) |
+                   ((static_cast<uint8_t>(configObj.mode) & 0x01) << 0);
 
-    /*! - send i2c object pointer to queue  */
-    if(STATUS_OKAY == errRet && pdTRUE != xQueueSendToBack( i2cQueueHdl, ( void *) i2cObjPtr , ( TickType_t ) 10 ))// TODO: replace literals with macro or const
-    {
-        /*! - if message fails to queue after 10 ticks, return queue fail */
-        errRet = STATUS_QUEUE_FAIL;
-    }
-
-    /*! - Wait for i2c task to notify of completion    */
-    if(STATUS_OKAY == errRet && 0u == ulTaskNotifyTake(pdFALSE, ( TickType_t ) 1000)) // TODO: replace literals with macro or const
-    {
-        /* - if i2c task fails to notify within timeout return notify timeout fail*/
-        errRet = STATUS_NOTIFY_TIMEOUT;
-    }
-
-    return errRet;
-}
-
-/*!
- * \brief reads ads1115 configuration registers
- * 
- * Function creates an i2c handler object, builds the the i2c command
- * then queues and waits for the command then deletes the object.
- * 
- * \param configPtr - pointer to configuration register struct that will be poppulated with
- * configuration register data after read.
- * \return Status_t - returns succces or reason for failure of the function.
- */
-Status_t ADS1115::read_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr)
-{
-    Status_t errRet = STATUS_OKAY;
-
-    /*! - create i2c object handler */
-    i2c_handler_t i2cObj;
-    i2c_handler_t * i2cObjPtr = &i2cObj;
-
-    /*! - create command link an  */
-    i2cObj.cmd = i2c_cmd_link_create();
-    i2cObj.taskHdl = xTaskGetCurrentTaskHandle();
-
-    /*! - check for null pointers */
-    if(NULL == i2cObj.cmd)
-    {
-        errRet = STATUS_NULL_POINTER;
-    }
-
-    /*! - start i2c command     */
-    if(STATUS_OKAY == errRet && ESP_OK != i2c_master_start(i2cObj.cmd))
-    {
-        errRet = STATUS_HAL_ERROR;
-    }
-
-    /*!  address ads1115 device with intention to write     */
-    if( STATUS_OKAY == errRet && 
-        ESP_OK != i2c_master_write_byte(i2cObj.cmd, ADS1115_WRITE, ADS1115_ACK_CHECK_STATUS))
-    {
-        errRet = STATUS_HAL_ERROR;
-    }
-    
-    /*!  write config register address to pointer register       */
-    if( STATUS_OKAY == errRet && 
-        ESP_OK != i2c_master_write_byte(i2cObj.cmd, ADS1115_CONFIG_REGISTER, ADS1115_ACK_CHECK_STATUS))
-    {
-        errRet = STATUS_HAL_ERROR;
-    }
-
-    /*!  address ads1115 device with intention to read    */
-    if( STATUS_OKAY == errRet && 
-        ESP_OK != i2c_master_write_byte(i2cObj.cmd, ADS1115_READ, ADS1115_ACK_CHECK_STATUS))
-    {
-        errRet = STATUS_HAL_ERROR;
-    }
-
-    /*! read configuration register   */
-    if( STATUS_OKAY == errRet && 
-        ESP_OK != i2c_master_read(i2cObj.cmd, configPtr->bytes, ADS1115_CONFIG_REGISTER_SIZE, I2C_MASTER_ACK))
-    {
-        errRet = STATUS_HAL_ERROR;
-    }
-
-    /*! i2c command stop  */
-    if( STATUS_OKAY == errRet && 
-        ESP_OK != i2c_master_stop(i2cObj.cmd))
-    {
-        errRet = STATUS_HAL_ERROR;
-    }
-
-    if(STATUS_OKAY == errRet)
-    {
-        /*! queue commands    */
-        errRet = queueWait_ads1115I2cObject(&i2cObjPtr);
-    }
-
-    /*! delete command object */
-    i2c_cmd_link_delete(i2cObj.cmd);
-    
-    return errRet;
-}
-
-/*!
- * \brief writes to the ads1115 configuration registers
- * 
- * This function uses config register pointer passed as argument to
- * write to ads1115 config registers.
- * 
- * \param configPtr - pointer to configuration register that contains the ads1115
- * configuration to be written to the ads1115.
- * \return Status_t - returns succces or reason for failure of the function.
- */
-Status_t ADS1115::write_ads1115ConfigRegisters(ads1115ConfigRegister_t * configPtr)
-{
-    //TODO: refactor this function to perform retval checks
-
-    Status_t errRet;
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);
-
-    /*! - address ads1115 device with intention to write */
-    i2c_master_write_byte(cmd, ADS1115_ADDRESS | ADS1115_WRITE_BIT, ADS1115_ACK_CHECK_STATUS);
-    
-    /*! - write config register address to pointer register       */
-    i2c_master_write_byte(cmd, ADS1115_CONFIG_REGISTER, ADS1115_ACK_CHECK_STATUS);
-
-
-    /*! - address ads1115 device with intention to write again    */
-    i2c_master_write_byte(cmd, ADS1115_ADDRESS | ADS1115_WRITE_BIT, ADS1115_ACK_CHECK_STATUS);
-    
-    /*! - write to configuration registers   */
-    i2c_master_write(cmd, configPtr->bytes, ADS1115_CONFIG_REGISTER_SIZE, I2C_MASTER_ACK);
-
-    i2c_master_stop(cmd);
-
-    /*! - send to i2c handler */
-    if(ESP_OK == i2c_master_cmd_begin(I2C_NUM_0, cmd, 1000 / portTICK_RATE_MS))
-    {
-        errRet = STATUS_OKAY;
+        bytes[1] = ((static_cast<uint8_t>(configObj.dataRate) & 0x07) << 5) |
+                   ((static_cast<uint8_t>(configObj.compMode) & 0x01) << 4) |
+                   ((static_cast<uint8_t>(configObj.compPolarity) & 0x01) << 3) |
+                   ((static_cast<uint8_t>(configObj.compLatch) & 0x01) << 2) |
+                   ((static_cast<uint8_t>(configObj.compQueue) & 0x03) << 0);
     }
     else
     {
-        errRet = STATUS_HAL_ERROR;
+        statusRet = STATUS_NULL_POINTER;
     }
 
-    /*! - delete the i2c command handle   */
-    i2c_cmd_link_delete(cmd);
+    return statusRet;
+}
 
-    return errRet;
+Status_t ADS1115::cachedRegisterToTransferObj(const ADS1115_Transfer_t & configObj, I2CTransfer_t & transferObj)
+{
+    Status_t retVal = STATUS_OKAY;
+
+    /* copy the relevant fields from the cached register object to the transfer object for i2c communication */
+    transferObj.devAddr = static_cast<uint8_t>(configObj.devAddr);
+    transferObj.regAddr = static_cast<uint8_t>(configObj.regAddr);
+    transferObj.size = static_cast<size_t>(configObj.size);
+    transferObj.ackEn = configObj.ackEn;
+    transferObj.ackType = configObj.ackType;
+    transferObj.data = configObj.data;
+
+    return retVal;
 }
 
 
 /*******************************************************************************
- * GLOBAL FUNCTIONS
+ * PUBLIC FUNCTIONS
  *******************************************************************************/
 /*!
  * \brief initializes the ads1115 ADC Module
- * 
+ *
  * Function reads the configuration registers of the ads1115,
  * these are used to poppulate the local ads1115 object.
- * 
+ *
  */
-ADS1115::ADS1115(Gpio & _gpio) : alertPin(_gpio)
+ADS1115::ADS1115(Gpio &_gpio) : alertPin(_gpio)
 {
     /* constructor implementation*/
+    //! TODO: set callback for gpio alert pin, either here or initialize function
+    alertPin.setCallback(staticWrapper, this);
 
+    /* initialize the cached registers */
+    configRegisterObj.devAddr = ADS1115_Address::Device1;
+    configRegisterObj.regAddr = ADS1115_Register::Config;
+    configRegisterObj.size = ADS1115_RegisterSize::Config;
+    configRegisterObj.ackEn = ADS1115_ACK_CHECK_STATUS;
+    configRegisterObj.ackType = I2CTransferAckType_t::MASTER_ACK;
+    configRegisterObj.data = new uint8_t[static_cast<size_t>(ADS1115_RegisterSize::Config)];
+
+    conversionRegisterObj.devAddr = ADS1115_Address::Device1;
+    conversionRegisterObj.regAddr = ADS1115_Register::Conversion;
+    conversionRegisterObj.size = ADS1115_RegisterSize::Conversion;
+    conversionRegisterObj.ackEn = ADS1115_ACK_CHECK_STATUS;
+    conversionRegisterObj.ackType = I2CTransferAckType_t::MASTER_ACK;
+    conversionRegisterObj.data = new uint8_t[static_cast<size_t>(ADS1115_RegisterSize::Conversion)];
+
+    loThresholdRegisterObj.devAddr = ADS1115_Address::Device1;
+    loThresholdRegisterObj.regAddr = ADS1115_Register::Lo_Threshold;
+    loThresholdRegisterObj.size = ADS1115_RegisterSize::Threshold;
+    loThresholdRegisterObj.ackEn = ADS1115_ACK_CHECK_STATUS;
+    loThresholdRegisterObj.ackType = I2CTransferAckType_t::MASTER_ACK;
+    loThresholdRegisterObj.data = new uint8_t[static_cast<size_t>(ADS1115_RegisterSize::Threshold)];
+
+    hiThresholdRegisterObj.devAddr = ADS1115_Address::Device1;
+    hiThresholdRegisterObj.regAddr = ADS1115_Register::Hi_Threshold;
+    hiThresholdRegisterObj.size = ADS1115_RegisterSize::Threshold;
+    hiThresholdRegisterObj.ackEn = ADS1115_ACK_CHECK_STATUS;
+    hiThresholdRegisterObj.ackType = I2CTransferAckType_t::MASTER_ACK;
+    hiThresholdRegisterObj.data = new uint8_t[static_cast<size_t>(ADS1115_RegisterSize::Threshold)];
 }
 
 ADS1115::~ADS1115()
@@ -247,156 +140,228 @@ ADS1115::~ADS1115()
 
 void ADS1115::initialize(void)
 {
-    Status_t errRet = STATUS_OKAY;
-
-    /* set configuration */
-    transferObj.devAddr = ADS1115_ADDRESS;
-    transferObj.regAddr = ADS1115_CONFIG_REGISTER;
-    transferObj.data = ads1115CfgObj.configReg.bytes;
-    transferObj.size = ADS1115_CONFIG_REGISTER_SIZE;
-    transferObj.ackEn = ADS1115_ACK_CHECK_STATUS;
-    transferObj.ackType = I2CTransferAckType_t::MASTER_ACK;
-
-    errRet = write(transferObj);
-
-    /* read back configuration to verify */
-    //!TODO: add code to read back and verify configuration
-
-    /* 
-        register the ISR callback here, since we want the ISR to have accesss to
-        ADS1115 context.
-     */
-    registerCallback(IntType::gpio_isr_handler);
 }
 
-Status_t ADS1115::getConfiguration(ads1115ConfigRegister_t * configPtr)
+Status_t ADS1115::configure(const ADS1115_Config_t &configObj)
 {
-    Status_t errRet = STATUS_OKAY;
+    Status_t retVal = STATUS_OKAY;
 
-    if(configPtr != NULL)
-    {
-        /*  read value from registers to confirm write */
-        errRet = read_ads1115ConfigRegisters(configPtr);
-    }
-    else
-    {
-        /*   */
-        errRet = STATUS_NULL_POINTER;
-    }
+    /* write to configuration register */
+    retVal = setConfigRegister(const_cast<ADS1115_Config_t &>(configObj));
 
-    return errRet;
+    return retVal;
+}
+
+Status_t ADS1115::startSingleConversion(ADS1115_Config_t & configObj)
+{
+    Status_t retVal = STATUS_OKAY;
+
+    /*  change config object to start single conversion */
+    configObj.opStatus = ADS1115_OperationalStatus_t::Write_StartSingleConversion;
+
+    /* write to configuration register to start conversion */
+    retVal = setConfigRegister(configObj);
+
+    return retVal;
+}
+
+Status_t ADS1115::getLatestConversion(float &value)
+{
+    Status_t retVal = STATUS_OKAY;
+
+    /* read latest conversion */
+    retVal = readConversionRegister(value);
+
+    return retVal;
 }
 
 
-/*!
- * \brief Set the ads1115Configuration object
- * 
- * \param configPtr 
- * \return Status_t 
- */
-Status_t ADS1115::setConfiguration(ads1115ConfigRegister_t * configPtr)
+Status_t ADS1115::setConfigRegister(ADS1115_Config_t &configObj)
 {
-    Status_t errRet = STATUS_OKAY;
+    Status_t statusRet;
 
-    if(configPtr == NULL)
+    /* convert config object to bytes for i2c transfer */
+    //!TODO: determine if config obj should be its own data structure
+    configObjToBytes(configObj, configRegisterObj.data);
+
+    /* convert cached register object to I2C transfer object */
+    statusRet = cachedRegisterToTransferObj(configRegisterObj, txObj);
+
+    if (statusRet == STATUS_OKAY)
     {
-       /*   */
-        errRet = STATUS_NULL_POINTER;
+        /* write to I2C bus */
+        statusRet = write(txObj);
     }
 
-    if(errRet == STATUS_OKAY)
-    {
-        /*  copy config values into pointer */
-        errRet = write_ads1115ConfigRegisters(configPtr);
-    }
-
-    if(errRet == STATUS_OKAY)
-    {
-        /*  read value from registers to confirm write */
-        errRet = read_ads1115ConfigRegisters(&ads1115CfgObj.configReg);
-    }
+    return statusRet;
+}
 
 
-    if(errRet == STATUS_OKAY)
+Status_t ADS1115::getConfigRegister(ADS1115_Config_t &configObj)
+{
+    Status_t statusRet;
+
+    /* convert cached register object to I2C transfer object */
+    statusRet = cachedRegisterToTransferObj(configRegisterObj, rxObj);
+
+    if (statusRet == STATUS_OKAY)
     {
-        /* compare memory  */
-        if(0 != memcmp(&ads1115CfgObj.configReg, configPtr, sizeof(ads1115ConfigRegister_t)))
+        /* read from I2C bus */
+        statusRet = read(rxObj);
+
+        if (statusRet == STATUS_OKAY)
         {
-            errRet = STATUS_MEMCMP_FAIL;
+            /* convert bytes to config object */
+            bytesToConfigObj(rxObj.data, configObj);
         }
     }
 
-    return errRet;
+    return statusRet;
 }
 
-//TODO: document function
-Status_t ADS1115::getLatestReading(ads1115ConversionRegister_t * regPtr)
+
+Status_t ADS1115::setLowThreshold(int16_t threshold)
 {
-    /* write conversion addy to the pointer register    */
-    Status_t errRet = STATUS_OKAY;
-    i2c_handler_t i2cObj;
-    i2c_handler_t * i2cObjPtr = &i2cObj;
+    Status_t retVal = STATUS_OKAY;
 
-    i2cObj.cmd = i2c_cmd_link_create();
-    i2cObj.taskHdl = xTaskGetCurrentTaskHandle();
+    /* set low threshold */
+    loThresholdRegisterObj.data[0] = (threshold >> 8) & 0xFF;
+    loThresholdRegisterObj.data[1] = threshold & 0xFF;
 
-    /*  check for null pointers */
-    if(NULL == i2cObj.cmd)
+    /* convert cached register to I2C transfer object */
+    retVal = cachedRegisterToTransferObj(loThresholdRegisterObj, txObj); 
+
+    if(retVal == STATUS_OKAY)
     {
-        errRet = STATUS_NULL_POINTER;
-    }
-
-    /*  start i2c command     */
-    if(STATUS_OKAY == errRet && ESP_OK != i2c_master_start(i2cObj.cmd))
-    {
-        errRet = STATUS_HAL_ERROR;
-    }
-
-    /*  address ads1115 device with intention to write     */
-    if( STATUS_OKAY == errRet && 
-        ESP_OK != i2c_master_write_byte(i2cObj.cmd, ADS1115_WRITE, ADS1115_ACK_CHECK_STATUS))
-    {
-        errRet = STATUS_HAL_ERROR;
+        /* write to I2C bus */
+        retVal = write(txObj);
     }
     
-    /*  write conversion register address to pointer register       */
-    if( STATUS_OKAY == errRet && 
-        ESP_OK != i2c_master_write_byte(i2cObj.cmd, ADS1115_CONVERSION_REGISTER, ADS1115_ACK_CHECK_STATUS))
-    {
-        errRet = STATUS_HAL_ERROR;
-    }
-
-    /* read conversion register    */
-
-
-    /* i2c command stop  */
-    if( STATUS_OKAY == errRet && 
-        ESP_OK != i2c_master_stop(i2cObj.cmd))
-    {
-        errRet = STATUS_HAL_ERROR;
-    }
-
-    if(STATUS_OKAY == errRet)
-    {
-        /* queue commands    */
-        errRet = queueWait_ads1115I2cObject(&i2cObjPtr);
-    }
-
-    /* delete command object */
-    i2c_cmd_link_delete(i2cObj.cmd);
-
-    return errRet;
+    return retVal;
 }
 
-void ADS1115::gpio_isr_handler(void *arg)
+Status_t ADS1115::getLowThreshold(int16_t &threshold)
 {
-    /*
-        converting arg from void * to uint32_t big is a big no-no but 
-        this is what the lib requires
-    */
-    uint32_t gpio = (uint32_t) arg;
-    if (gpio == (uint32_t)alertPin.getPin())
+    Status_t retVal = STATUS_OKAY;
+
+    /* convert cached register object to I2C transfer object */
+    retVal = cachedRegisterToTransferObj(loThresholdRegisterObj, rxObj);
+
+    if (retVal == STATUS_OKAY)
     {
-        //!TODO: add code to notify ADS1115 of conversion complete or alert
+        /* read from I2C bus */
+        retVal = read(rxObj);
+
+        if (retVal == STATUS_OKAY)
+        {
+            /* convert bytes to threshold value */
+            threshold = (static_cast<int16_t>(rxObj.data[0]) << 8) | static_cast<int16_t>(rxObj.data[1]);
+        }
+    }
+
+    return retVal;
+}
+
+Status_t ADS1115::setHighThreshold(int16_t threshold)
+{
+    Status_t retVal = STATUS_OKAY;
+
+    /* set high threshold */
+    hiThresholdRegisterObj.data[0] = (threshold >> 8) & 0xFF;
+    hiThresholdRegisterObj.data[1] = threshold & 0xFF;
+
+    /* convert cached register to I2C transfer object */
+    retVal = cachedRegisterToTransferObj(hiThresholdRegisterObj, txObj); 
+
+    if(retVal == STATUS_OKAY)
+    {
+        /* write to I2C bus */
+        retVal = write(txObj);
+    }
+    
+    return retVal;
+}
+
+Status_t ADS1115::getHighThreshold(int16_t &threshold)
+{
+    Status_t retVal = STATUS_OKAY;
+
+    /* convert cached register object to I2C transfer object */
+    retVal = cachedRegisterToTransferObj(hiThresholdRegisterObj, rxObj);
+
+    if (retVal == STATUS_OKAY)
+    {
+        /* read from I2C bus */
+        retVal = read(rxObj);
+
+        if (retVal == STATUS_OKAY)
+        {
+            /* convert bytes to threshold value */
+            threshold = (static_cast<int16_t>(rxObj.data[0]) << 8) | static_cast<int16_t>(rxObj.data[1]);
+        }
+    }
+
+    return retVal;
+}
+
+Status_t ADS1115::readConversionRegister(float &value)
+{
+    Status_t statusRet = STATUS_OKAY;
+
+    I2CTransfer_t transferObj;
+    transferObj.devAddr = static_cast<uint8_t>(ADS1115_Address::Device1);
+    transferObj.regAddr = static_cast<uint8_t>(ADS1115_Register::Conversion);
+    transferObj.size = static_cast<uint8_t>(ADS1115_RegisterSize::Conversion);
+    transferObj.ackEn = static_cast<bool>(ADS1115_AckCheck::Disable);
+    transferObj.ackType = I2CTransferAckType_t::MASTER_ACK;
+    transferObj.data = new uint8_t[ADS1115_CONVERSION_REGISTER_SIZE];
+
+    statusRet = read(transferObj);
+
+    if (statusRet == STATUS_OKAY)
+    {
+        /* convert bytes to float value, this will depend on the gain setting and data rate */
+        //! TODO: implement conversion based on gain and data rate settings
+    }
+
+    return statusRet;
+}
+
+
+/*******************************************************************************
+ * ISR AND CALLBACK FUNCTIONS
+ *******************************************************************************/
+
+void ADS1115::staticWrapper(void *context, void *arg)
+{
+    //! TODO: pass notification but as argument to callback
+    ADS1115 *instance = static_cast<ADS1115 *>(context);
+    /* call teh alert pin ISR and pass any arg needed   */
+    instance->alertPinISR(arg);
+}
+
+void ADS1115::alertPinISR(void *arg)
+{
+    /* perform any actions we need to take if alert pin is triggered*/
+
+    //! TODO: do we need to clear pin or anything like that?
+
+    /* call any callbacks that might be registered for the specific channel or fault triggered */
+    //! TODO: determine if arg contributes any valuable information for the callback
+    // for now assume it came from a conversion complete but if we are using alert pin for
+    //  faults we need to check that configuration. In any case the most recent channel
+    // should have modified the callback function so we are going to call that if
+    //  it exists.
+    /* if callback exists, call that here */
+    if (callback != nullptr && callbackContext != nullptr)
+    {
+        /* call the callback and pass the context and an argument */
+        callback(callbackContext, arg);
+    }
+    else
+    {
+        /* perform something if we have nullptr */
+        //! TODO: add logging to this module
+        // ESP_LOGE("Gpio", "Pointer to Gpio::callback is nullptr\n");
     }
 }

@@ -129,6 +129,22 @@ void Gpio::gpio_isr_handler(void *arg)
     uint32_t gpio = (uint32_t) arg;
     if (gpio == gpioNum)
     {
-        /* gpio can handle the isr however it might be more useful to have this handler elsewhere*/
+        /* perform any gpio related duties here */
+        //!TODO: check if we need to clear interrupt or any
+        //other administrative tasks related to gpio interrupt handling
+
+        /* if callback exists, call that here */
+        if(callback != nullptr
+           && callbackContext != nullptr)
+        {
+            /* call the callback and pass the context and an argument */
+            callback(callbackContext, arg);
+        }
+        else
+        {
+            /* perform something if we have nullptr */
+            //!TODO: add logging to this module
+            // ESP_LOGE("Gpio", "Pointer to Gpio::callback is nullptr\n");
+        }
     }
 }
