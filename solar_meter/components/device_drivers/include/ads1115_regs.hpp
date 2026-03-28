@@ -15,6 +15,7 @@
  * INCLUDES
  ************************************/
 #include "typedefs.h"
+#include "i2c_typedefs.hpp" 
 
 /************************************
  * MACROS AND DEFINES
@@ -224,6 +225,7 @@ typedef struct
     ADS1115_Address devAddr;
     ADS1115_Register regAddr;
     bool ackEn;
+    //!TODO: how to address this here
     I2CTransferAckType_t ackType;
 } ADS1115_Transfer_t;
 
