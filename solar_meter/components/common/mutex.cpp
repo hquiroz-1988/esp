@@ -65,6 +65,11 @@ Status_t Mutex::create()
             status = STATUS_OKAY;
         }
     }
+    else
+    {
+        /* Mutex already created, return error or handle as needed */
+        status = STATUS_REINIT_ERROR;
+    }
     
     return status;
 }

@@ -12,6 +12,11 @@
 *******************************************************************************/
 #include "gpio.hpp"
 
+extern "C" 
+{
+    #include "esp_log.h"
+}
+
 /*******************************************************************************
  * EXTERN VARIABLES
  *******************************************************************************/
@@ -28,6 +33,7 @@
  * STATIC VARIABLES
  *******************************************************************************/
 bool Gpio::isrHandlerRegistered = false;
+static const char *TAG = "gpio";
 
 /*******************************************************************************
  * GLOBAL VARIABLES
@@ -48,7 +54,7 @@ bool Gpio::isrHandlerRegistered = false;
  Gpio::Gpio(GpioPin _pin, GpioMode _mode, GpioPullup _pullup, GpioPulldown _pulldown, GpioIntrType _intrType)
  : gpioPin(_pin), mode(_mode), pullup(_pullup), pulldown(_pulldown), intrType(_intrType)
  {
-    if(gpioPin > GpioPin::GPIO_PIN_NONE && gpioPin < GpioPin::NUM_GPIO_PINS)
+    if( (gpioPin >= GpioPin::GPIO_0) && (gpioPin < GpioPin::NUM_GPIO_PINS) )
     {
         gpioNum = static_cast<gpio_num_t>(gpioPin);
         config.pin_bit_mask = (1ULL << static_cast<gpio_num_t>(gpioPin));
@@ -72,10 +78,18 @@ bool Gpio::isrHandlerRegistered = false;
             gpio_isr_handler_add(gpioNum, global_gpio_isr_handler, (void *) gpioNum);
             
         }
+
+        ESP_LOGI(TAG, "Gpio Init Complete. Pin: %d, Mode: %d, Pullup: %d, Pulldown: %d, IntrType: %d\n", 
+                static_cast<uint8_t>(gpioPin), 
+                static_cast<uint8_t>(mode), 
+                static_cast<uint8_t>(pullup), 
+                static_cast<uint8_t>(pulldown), 
+                static_cast<uint8_t>(intrType));
     }
     else
     {
         /* throw error */
+        ESP_LOGE(TAG, "Invalid GPIO pin number: %d\n", static_cast<uint8_t>(gpioPin));
     }
  }
 

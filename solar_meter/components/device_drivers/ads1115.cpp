@@ -100,8 +100,10 @@ Status_t ADS1115::cachedRegisterToTransferObj(const ADS1115_Transfer_t & configO
 ADS1115::ADS1115(Gpio &_gpio) : alertPin(_gpio)
 {
     /* constructor implementation*/
-    //! TODO: set callback for gpio alert pin, either here or initialize function
-    alertPin.setCallback(staticWrapper, this);
+    if (alertPin.setCallback(staticWrapper, this) != STATUS_OKAY)
+    {
+        ESP_LOGE(TAG, "Failed to set callback for alert pin");
+    }
 
     /* initialize the cached registers */
     configRegisterObj.devAddr = ADS1115_Address::Device1;
@@ -131,6 +133,8 @@ ADS1115::ADS1115(Gpio &_gpio) : alertPin(_gpio)
     hiThresholdRegisterObj.ackEn = ADS1115_ACK_CHECK_STATUS;
     hiThresholdRegisterObj.ackType = I2CTransferAckType_t::MASTER_ACK;
     hiThresholdRegisterObj.data = new uint8_t[static_cast<size_t>(ADS1115_RegisterSize::Threshold)];
+
+    ESP_LOGI(TAG, "ADS1115 initialization complete");
 }
 
 ADS1115::~ADS1115()

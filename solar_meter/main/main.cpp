@@ -25,7 +25,7 @@
 
 
 /* static variables    */
-// static const char *TAG = "main";
+static const char *TAG = "main";
 
 
 extern "C" void app_main()
@@ -38,18 +38,18 @@ extern "C" void app_main()
     Gpio sclPin(GpioPin::GPIO_5, GpioMode::OutputOpenDrain, GpioPullup::Enable);
     I2CBus i2cBus(sdaPin, sclPin, I2C_NUM_0);
 
-    /* create alert pin for ads1115 */
-    Gpio ads1115AlertPin(GpioPin::GPIO_6, GpioMode::Input, GpioPullup::Disable, GpioIntrType::FallingEdge);
+    // /* create alert pin for ads1115 */
+    // Gpio ads1115AlertPin(GpioPin::GPIO_6, GpioMode::Input, GpioPullup::Disable, GpioIntrType::FallingEdge);
 
-    /* create ads1115 instance */
-    ADS1115 ads1115(ads1115AlertPin);
+    // /* create ads1115 instance */
+    // ADS1115 ads1115(ads1115AlertPin);
 
-    /* add ads1115 to list of I2C devices */
-    //!TODO: add status check to see if device was added successfully 
-    i2cBus.addDevice(&ads1115);
+    // /* add ads1115 to list of I2C devices */
+    // //!TODO: add status check to see if device was added successfully 
+    // i2cBus.addDevice(&ads1115);
 
-    /* initialize bus voltage module */
-    BusVoltage busVoltage(ads1115, ADS1115Mux_t::AIN0_GND);
+    // /* initialize bus voltage module */
+    // BusVoltage busVoltage(ads1115, ADS1115Mux_t::AIN0_GND);
 
     // /* initialize bus current module */
     // INA219 ina219;
@@ -58,9 +58,8 @@ extern "C" void app_main()
     // PowerMonitor pm(networkingModule, busVoltage, busCurrent);
 
     while (1) 
-    {   
-
-
+    {
+        ESP_LOGI(TAG, "Main...");
         vTaskDelay(1000 / portTICK_RATE_MS);
     }
 }
