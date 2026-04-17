@@ -18,6 +18,7 @@
 #include <string.h>
 
 #include "ads1115.hpp"
+#include "networking.hpp"
 #include "bus_voltage.hpp"
 #include "gpio.hpp"
 #include "i2c_bus.hpp"
@@ -45,12 +46,12 @@ extern "C" void app_main()
     BusVoltage busVoltage(ads1115, ADS1115Mux_t::AIN0_GND);
 
     // /* initialize bus current module */
-    // INA219 ina219;
-    // BusCurrent busCurrent(ina219);
+    INA219 ina219;
+    BusCurrent busCurrent(ina219);
 
-    // NetworkingModule networkingModule();
+    NetworkingModule networkingModule;
 
-    // PowerMonitor pm(networkingModule, busVoltage, busCurrent);
+    PowerMonitor pm(networkingModule, busVoltage, busCurrent);
 
     while (1)
     {
