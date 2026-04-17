@@ -1,4 +1,9 @@
 {
+    "C_Cpp.intelliSenseEngine": "disabled",
+    "C_Cpp.errorSquiggles": "disabled",
+    "clangd.arguments": [
+        "--query-driver=/home/huqui/repos/esp/xtensa-lx106-elf/bin/*,/home/huqui/.espressif/tools/**/xtensa-lx106-elf/bin/*"
+    ],
     "files.associations": {
         "*.tcc": "c",
         "portable.h": "c",

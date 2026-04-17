@@ -63,19 +63,41 @@ static const char *TAG = "gpio";
         config.pull_down_en = static_cast<gpio_pulldown_t>(pulldown);
         config.intr_type = static_cast<gpio_int_type_t>(intrType);
 
-        gpio_config(&config);
+        if(gpio_config(&config) != ESP_OK)
+        {
+            ESP_LOGE(TAG, "Failed to configure gpio");
+        }   
+        else
+        {
+            ESP_LOGI(TAG, "Gpio configured");
+        }
 
         if(config.intr_type != GPIO_INTR_DISABLE)
         {
-            /* install gpio isr service if it has been done already  */
+            ESP_LOGI(TAG, "Gpio interrupt type is not disable");
+            /* install gpio isr service if it has not been done already  */
             if(!isrHandlerRegistered)
             {
-                gpio_install_isr_service(0);
-                isrHandlerRegistered = true;
+                if(gpio_install_isr_service(0) != ESP_OK)
+                {
+                    ESP_LOGE(TAG, "Failed to install gpio isr service");
+                }
+                else
+                {
+                    ESP_LOGI(TAG, "Gpio isr service installed");
+                    isrHandlerRegistered = true;
+                }
             }
             
             /* register gpio for this pin  */
-            gpio_isr_handler_add(gpioNum, global_gpio_isr_handler, (void *) gpioNum);
+            if(gpio_isr_handler_add(gpioNum, global_gpio_isr_handler, (void *) gpioNum) != ESP_OK)
+            {
+                ESP_LOGE(TAG, "Failed to register isr handler for this pin");
+            }
+            else
+            {
+                ESP_LOGI(TAG, "Gpio isr handler registered for this pin");
+            }
             
         }
 

@@ -99,10 +99,16 @@ Status_t ADS1115::cachedRegisterToTransferObj(const ADS1115_Transfer_t & configO
  */
 ADS1115::ADS1115(Gpio &_gpio) : alertPin(_gpio)
 {
+
+    ESP_LOGI(TAG, "ADS1115 constructor called");
     /* constructor implementation*/
     if (alertPin.setCallback(staticWrapper, this) != STATUS_OKAY)
     {
         ESP_LOGE(TAG, "Failed to set callback for alert pin");
+    }
+    else 
+    {
+        ESP_LOGI(TAG, "Callback set for alert pin");
     }
 
     /* initialize the cached registers */

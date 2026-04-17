@@ -12,7 +12,8 @@
  *******************************************************************************/
 extern "C"
 {
-#include "driver/gpio.h"
+    #include "driver/gpio.h"
+    #include "esp_log.h"
 }
 
 #include "interrupt_base.hpp"
@@ -35,6 +36,7 @@ extern "C"
  *******************************************************************************/
 // GLOBAL list of registered objects that would like to receive callbacks
 static std::list<InterruptBase *> list_gpio_isr_handler;
+static const char *TAG = "interrupt_base";
 
 /*******************************************************************************
  * GLOBAL VARIABLES
@@ -132,6 +134,7 @@ Status_t InterruptBase::setCallback(void (*callback)(void*, void *), void* conte
     else
     {
         statusRet = STATUS_NULL_POINTER;
+        ESP_LOGE(TAG, "Callback or context is nullptr");
     }
 
     return statusRet;

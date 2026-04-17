@@ -4,13 +4,13 @@
 		{
 			"type": "cppbuild",
 			"label": "building project",
-			"command": "C:\\msys32\\usr\\bin\\make.exe",
+			"command": "make",
 			"options": {
 				"cwd": "${fileDirname}"
 			},
 			"args": ["all"],
 			"group": "build",
-			"detail": "compiler: C:\\msys32\\usr\\bin\\mingw32.exe"
+			"detail": "Run make all in the open file's directory"
 		},
 		{
 			"type": "make",
