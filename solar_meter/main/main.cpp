@@ -45,8 +45,8 @@ extern "C" void app_main()
     //!TODO: add status check to see if device was added successfully
     i2cBus.addDevice(&ads1115);
 
-    // /* initialize bus voltage module */
-    // BusVoltage busVoltage(ads1115, ADS1115Mux_t::AIN0_GND);
+    /* initialize bus voltage module */
+    BusVoltage busVoltage(ads1115, ADS1115Mux_t::AIN0_GND);
 
     // /* initialize bus current module */
     // INA219 ina219;
