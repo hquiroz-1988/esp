@@ -49,6 +49,10 @@ Task::~Task()
     }
 }
 
+/**
+ * @note This should be called in the most derived class constructor
+ *       to ensure the object is fully constructed before the task runs.
+ */
 Status_t Task::initTask(void)
 {
     Status_t ret = STATUS_OKAY;

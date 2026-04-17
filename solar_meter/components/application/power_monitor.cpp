@@ -160,8 +160,13 @@ PowerMonitor::PowerMonitor(NetworkingModule &_networkingModule,
                                                       busCurrent(_busCurrent),
                                                       networkingModule(_networkingModule)
 {
-    // Constructor implementation
-    
+    /*
+        initializing task here, its best to call here since this
+        should be the last constructor called in the construction
+        order, this or even after construction is when init task
+        should be called.
+    */
+    initTask();
 }
 
 PowerMonitor::~PowerMonitor()
