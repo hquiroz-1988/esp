@@ -8,7 +8,7 @@
             "cppStandard": "gnu++17",
             "intelliSenseMode": "gcc-x64",
             "forcedInclude": [
-                "${workspaceFolder}/solar_meter/build/config/sdkconfig.h"
+                "${workspaceFolder}/solar_meter/build/include/sdkconfig.h"
             ],
             "includePath": [
                 "${workspaceFolder}/ESP8266_RTOS_SDK/components/app_update/include",
@@ -101,12 +101,11 @@
                 "${workspaceFolder}/ESP8266_RTOS_SDK/components/wpa_supplicant/include/esp_supplicant",
                 "${workspaceFolder}/ESP8266_RTOS_SDK/components/wpa_supplicant/port/include",
                 "${workspaceFolder}/ESP8266_RTOS_SDK/components/wpa_supplicant/src",
-                "${workspaceFolder}/solar_meter/build/config",
+                "${workspaceFolder}/solar_meter/build/include",
                 "${workspaceFolder}/solar_meter/components/application/include",
                 "${workspaceFolder}/solar_meter/components/common/include",
                 "${workspaceFolder}/solar_meter/components/device_drivers/include",
                 "${workspaceFolder}/solar_meter/components/peripheral_drivers/include",
-                "${workspaceFolder}/solar_meter/main/include",
                 "${default}"
             ],
             "defines": [

@@ -1,9 +1,6 @@
 {
-    "C_Cpp.intelliSenseEngine": "disabled",
-    "C_Cpp.errorSquiggles": "disabled",
-    "clangd.arguments": [
-        "--query-driver=/home/huqui/repos/esp/xtensa-lx106-elf/bin/*,/home/huqui/.espressif/tools/**/xtensa-lx106-elf/bin/*"
-    ],
+    "C_Cpp.intelliSenseEngine": "default",
+    "C_Cpp.errorSquiggles": "enabled",
     "files.associations": {
         "*.tcc": "c",
         "portable.h": "c",
@@ -65,7 +62,7 @@
         "mutex": "cpp",
         "future": "cpp"
     },
-    "cmake.sourceDirectory": "/home/huqui/repos/esp/solar_meter",
+    "cmake.sourceDirectory": "${workspaceFolder}/solar_meter",
     "C_Cpp.clang_format_path": "/usr/bin/clang-format",
     "C_Cpp.clang_format_style": "file",
     "C_Cpp.clang_format_fallbackStyle": "Microsoft"
