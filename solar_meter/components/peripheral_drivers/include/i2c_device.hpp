@@ -32,7 +32,7 @@ class I2CDevice
     friend class I2CBus;
 
     public:
-    I2CDevice();
+    I2CDevice(I2CBus &_bus);
     virtual ~I2CDevice();
 
 
@@ -42,11 +42,10 @@ class I2CDevice
     Status_t read(I2CTransfer_t &transfer);
 
     private:
-    I2CBus *i2cBus{nullptr};
+    I2CBus &i2cBus;
     int deviceId{-1};
     bool busAcquired{false};
 
-    Status_t addBus(I2CBus *_i2cBus, int _deviceId);
     Status_t acquireBus(void);
     Status_t releaseBus(void);
     Status_t writeToBus(I2CTransfer_t &transfer);

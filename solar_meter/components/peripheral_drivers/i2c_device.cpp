@@ -49,9 +49,9 @@ extern "C"
 /*******************************************************************************
  * GLOBAL FUNCTIONS
  *******************************************************************************/
-I2CDevice::I2CDevice()
+I2CDevice::I2CDevice(I2CBus &_bus) : i2cBus(_bus)
 {
-    // Constructor implementation (if needed)
+    i2cBus.addDevice(this);
 }
 
 I2CDevice::~I2CDevice()
@@ -59,30 +59,6 @@ I2CDevice::~I2CDevice()
     // Destructor implementation (if needed)
 }
 
-Status_t I2CDevice::addBus(I2CBus *_i2cBus, int _deviceId) 
-{
-    Status_t status = STATUS_OKAY;
-
-    if(_i2cBus == nullptr)
-    {
-        status = STATUS_NULL_POINTER;
-    }
-
-    if( status == STATUS_OKAY 
-        && ( (_deviceId < 0) || (_deviceId >= I2CBus::MAX_DEV_COUNT) ) )
-    {
-        status = STATUS_OUT_OF_BOUNDS;
-    }
-
-    if(status == STATUS_OKAY)
-    {
-        /* add i2c bus and our device id to access the bus */
-        i2cBus = _i2cBus;
-        deviceId = _deviceId;
-    }
-
-    return status;
-}
 
 
 Status_t I2CDevice::write(I2CTransfer_t &transfer)
@@ -127,19 +103,12 @@ Status_t I2CDevice::acquireBus(void)
 {
     Status_t status = STATUS_OKAY;
 
-    if(i2cBus != nullptr)
-    {
-        /* acquire bus from i2c bus class */
-        status = i2cBus->acquire(deviceId, portMAX_DELAY);
+    /* acquire bus from i2c bus class */
+    status = i2cBus.acquire(deviceId, portMAX_DELAY);
 
-        if(status == STATUS_OKAY)
-        {
-            busAcquired = true;
-        }
-    }
-    else
+    if(status == STATUS_OKAY)
     {
-        status = STATUS_NULL_POINTER;
+        busAcquired = true;
     }
     
     return status;
@@ -149,15 +118,8 @@ Status_t I2CDevice::releaseBus(void)
 {
     Status_t status = STATUS_OKAY;
 
-    if(i2cBus != nullptr)
-    {
-        /* release bus from i2c bus class */
-        status = i2cBus->release(deviceId);
-    }
-    else
-    {
-        status = STATUS_NULL_POINTER;
-    }
+    /* release bus from i2c bus class */
+    status = i2cBus.release(deviceId);
 
     /* we either never had the bus or just released it*/
     busAcquired = false;
@@ -169,21 +131,14 @@ Status_t I2CDevice::writeToBus(I2CTransfer_t &transfer)
 {
     Status_t status = STATUS_OKAY;
 
-    if(i2cBus != nullptr)
+    if(busAcquired)
     {
-        if(busAcquired)
-        {
-            /* write to bus from i2c bus class */
-            status = i2cBus->write(transfer);
-        }
-        else
-        {
-            status = STATUS_BUSY;
-        }
+        /* write to bus from i2c bus class */
+        status = i2cBus.write(transfer);
     }
     else
     {
-        status = STATUS_NULL_POINTER;
+        status = STATUS_BUSY;
     }
     
     return status;
@@ -193,21 +148,14 @@ Status_t I2CDevice::readFromBus(I2CTransfer_t &transfer)
 {
     Status_t status = STATUS_OKAY;
 
-    if(i2cBus != nullptr)
+    if(busAcquired)
     {
-        if(busAcquired)
-        {
-            /* read from bus from i2c bus class */
-            status = i2cBus->read(transfer);
-        }
-        else
-        {
-            status = STATUS_BUSY;
-        }
+        /* read from bus from i2c bus class */
+        status = i2cBus.read(transfer);
     }
     else
     {
-        status = STATUS_NULL_POINTER;
+        status = STATUS_BUSY;
     }
 
     return status;

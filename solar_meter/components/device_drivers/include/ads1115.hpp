@@ -63,7 +63,7 @@ public:
      * 
      * Initializes the ADS1115 instance.
      */
-    ADS1115(Gpio & _gpio);
+    ADS1115(I2CBus & bus, Gpio & _gpio);
     virtual ~ADS1115();
     Status_t configure(const ADS1115_Config_t & configObj);
     Status_t startSingleConversion(ADS1115_Config_t & configObj);

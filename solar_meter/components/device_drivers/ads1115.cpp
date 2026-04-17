@@ -97,7 +97,7 @@ Status_t ADS1115::cachedRegisterToTransferObj(const ADS1115_Transfer_t & configO
  * these are used to poppulate the local ads1115 object.
  *
  */
-ADS1115::ADS1115(Gpio &_gpio) : alertPin(_gpio)
+ADS1115::ADS1115(I2CBus & bus, Gpio &_gpio) : I2CDevice(bus), alertPin(_gpio)
 {
 
     ESP_LOGI(TAG, "ADS1115 constructor called");
