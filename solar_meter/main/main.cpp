@@ -39,11 +39,7 @@ extern "C" void app_main()
     Gpio ads1115AlertPin(GpioPin::GPIO_14, GpioMode::Input, GpioPullup::Disable, GpioIntrType::FallingEdge);
 
     /* create ads1115 instance */
-    ADS1115 ads1115(ads1115AlertPin);
-
-    /* add ads1115 to list of I2C devices */
-    //!TODO: add status check to see if device was added successfully
-    i2cBus.addDevice(&ads1115);
+    ADS1115 ads1115(i2cBus, ads1115AlertPin);
 
     /* initialize bus voltage module */
     BusVoltage busVoltage(ads1115, ADS1115Mux_t::AIN0_GND);
@@ -51,6 +47,8 @@ extern "C" void app_main()
     // /* initialize bus current module */
     // INA219 ina219;
     // BusCurrent busCurrent(ina219);
+
+    // NetworkingModule networkingModule();
 
     // PowerMonitor pm(networkingModule, busVoltage, busCurrent);
 
