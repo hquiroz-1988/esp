@@ -55,6 +55,11 @@ BusVoltage::BusVoltage(ADS1115 & _ads1115, ADS1115Mux_t _channel)
     : ADS1115Channel(_ads1115, _channel)
 {
     // Constructor implementation
+    if(initialize() != STATUS_OKAY)
+    {
+        /* throw error */
+        ESP_LOGE(TAG, "Failed to initialize Bus Voltage channel");
+    }
 }
 
 BusVoltage::~BusVoltage()

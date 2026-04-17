@@ -7,26 +7,23 @@
    CONDITIONS OF ANY KIND, either express or implied.
 */
 
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 #include "driver/adc.h"
 #include "driver/i2c.h"
 #include "esp_log.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-
-#include "gpio.hpp"
-#include "i2c_bus.hpp"
 #include "ads1115.hpp"
 #include "bus_voltage.hpp"
-
+#include "gpio.hpp"
+#include "i2c_bus.hpp"
 
 /* static variables    */
-// static const char *TAG = "main";
-
+static const char *TAG = "main";
 
 extern "C" void app_main()
 {
@@ -39,13 +36,13 @@ extern "C" void app_main()
     I2CBus i2cBus(sdaPin, sclPin, I2C_NUM_0);
 
     /* create alert pin for ads1115 */
-    Gpio ads1115AlertPin(GpioPin::GPIO_6, GpioMode::Input, GpioPullup::Disable, GpioIntrType::FallingEdge);
+    Gpio ads1115AlertPin(GpioPin::GPIO_14, GpioMode::Input, GpioPullup::Disable, GpioIntrType::FallingEdge);
 
     /* create ads1115 instance */
     ADS1115 ads1115(ads1115AlertPin);
 
     /* add ads1115 to list of I2C devices */
-    //!TODO: add status check to see if device was added successfully 
+    //!TODO: add status check to see if device was added successfully
     i2cBus.addDevice(&ads1115);
 
     /* initialize bus voltage module */
@@ -57,10 +54,9 @@ extern "C" void app_main()
 
     // PowerMonitor pm(networkingModule, busVoltage, busCurrent);
 
-    while (1) 
-    {   
-
-
+    while (1)
+    {
+        ESP_LOGI(TAG, "Main...");
         vTaskDelay(1000 / portTICK_RATE_MS);
     }
 }

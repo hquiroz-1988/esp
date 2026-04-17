@@ -12,6 +12,11 @@
  *******************************************************************************/
 #include "i2c_bus.hpp"
 
+extern "C" 
+{
+    #include "esp_log.h"
+}
+
 /*******************************************************************************
  * EXTERN VARIABLES
  *******************************************************************************/
@@ -19,6 +24,7 @@
 /*******************************************************************************
  * PRIVATE MACROS AND DEFINES
  *******************************************************************************/
+static const char *TAG = "i2c_bus";
 
 /*******************************************************************************
  * PRIVATE TYPEDEFS
@@ -37,7 +43,7 @@
  *******************************************************************************/
 
 /*******************************************************************************
- * STATIC FUNCTIONS
+ * PRIVATE FUNCTIONS
  *******************************************************************************/
 
 Status_t I2CBus::createLink(void)
@@ -98,7 +104,7 @@ Status_t I2CBus::installDriver(void)
 }
 
 /*******************************************************************************
- * GLOBAL FUNCTIONS
+ * PUBLIC FUNCTIONS
  *******************************************************************************/
 I2CBus::I2CBus(Gpio &_sda, Gpio &_scl, i2c_port_t _port) : sda(_sda),
                                                            scl(_scl),
@@ -106,7 +112,17 @@ I2CBus::I2CBus(Gpio &_sda, Gpio &_scl, i2c_port_t _port) : sda(_sda),
                                                            clockStretching(0),
                                                            devItr(0)
 {
+    Status_t status = initialize();
     // Constructor implementation
+    if(status != STATUS_OKAY)
+    {
+        /* throw error */
+        ESP_LOGE(TAG, "Failed to initialize I2C bus, error code: %d", static_cast<int>(status));
+    }
+    else
+    {
+        ESP_LOGI(TAG, "I2C Bus initialization complete");   
+    }
 }
 
 I2CBus::~I2CBus()
