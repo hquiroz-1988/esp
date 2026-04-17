@@ -57,5 +57,7 @@ extern "C" void app_main()
     {
         ESP_LOGI(TAG, "Main...");
         vTaskDelay(1000 / portTICK_RATE_MS);
+        //!TODO: remove this, only for testing
+        xTaskNotify(pm.getTaskHandle(), static_cast<uint32_t>(NotifyBits::GET_POWER), eSetBits);
     }
 }

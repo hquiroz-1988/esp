@@ -42,6 +42,9 @@ public:
                  BusVoltage & busVoltage, 
                  BusCurrent & busCurrent);
     ~PowerMonitor();
+
+    //! TODO: remove this, only for testing
+    TaskHandle_t getTaskHandle() const { return Task::getTaskHandle(); }
     
     /**
      * @brief Notifies the power monitor task from an ISR context.

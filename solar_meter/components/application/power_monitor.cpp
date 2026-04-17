@@ -63,6 +63,8 @@ Status_t PowerMonitor::startAndWaitForVoltage(float & value)
             && (notificationValue & notifyBit) )
     {
         status = busVoltage.getConversion(latestBusVoltage);
+        //!TODO: remove this log, only for testing
+        ESP_LOGI(TAG, "latestBusVoltage: %f", latestBusVoltage);
     }
 
     /* whether or not we received the correct notification, clear the callback */
