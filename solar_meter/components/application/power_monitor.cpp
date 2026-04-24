@@ -50,10 +50,14 @@ Status_t PowerMonitor::startAndWaitForVoltage(float & value)
     uint32_t notifyBit = static_cast<uint32_t>(NotifyBits::GET_VOLTAGE);
 
     /* after starting conversion, set the callback to call our static wrapper */
-    busVoltage.setCallback(PowerMonitor::staticWrapper, this, notifyBit);
+    if (status == STATUS_OKAY)
+    {
+        status = busVoltage.setCallback(PowerMonitor::staticWrapper, this, notifyBit);
+    }
 
     /* start voltage conversion  */
-    if (xTaskNotifyWait(0, static_cast<uint32_t>(NotifyBits::CLEAR_ALL_BITS), &notificationValue, portMAX_DELAY) != pdTRUE)
+    if (    status == STATUS_OKAY
+         && xTaskNotifyWait(0, static_cast<uint32_t>(NotifyBits::CLEAR_ALL_BITS), &notificationValue, portMAX_DELAY) != pdTRUE)
     {
         status = STATUS_OS_ERROR;
     }
@@ -64,7 +68,10 @@ Status_t PowerMonitor::startAndWaitForVoltage(float & value)
     {
         status = busVoltage.getConversion(latestBusVoltage);
         //!TODO: remove this log, only for testing
-        ESP_LOGI(TAG, "latestBusVoltage: %f", latestBusVoltage);
+        if (status == STATUS_OKAY)
+        {
+            ESP_LOGI(TAG, "Voltage conversion complete: %d mV", static_cast<int>(latestBusVoltage * 1000.0f));
+        }
     }
 
     /* whether or not we received the correct notification, clear the callback */

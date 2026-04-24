@@ -18,10 +18,10 @@
 #include <string.h>
 
 #include "ads1115.hpp"
-#include "networking.hpp"
 #include "bus_voltage.hpp"
 #include "gpio.hpp"
 #include "i2c_bus.hpp"
+#include "networking.hpp"
 
 /* static variables    */
 static const char *TAG = "main";
@@ -57,7 +57,7 @@ extern "C" void app_main()
     {
         ESP_LOGI(TAG, "Main...");
         vTaskDelay(1000 / portTICK_RATE_MS);
-        //!TODO: remove this, only for testing
+        //! TODO: remove this, only for testing
         xTaskNotify(pm.getTaskHandle(), static_cast<uint32_t>(NotifyBits::GET_POWER), eSetBits);
     }
 }

@@ -10,6 +10,10 @@
 /*******************************************************************************
  * INCLUDES
  *******************************************************************************/
+// #ifdef DEBUG_LOGS
+    #define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
+// #endif
+
 extern "C"
 {
 #include "esp_log.h"
@@ -175,12 +179,19 @@ Status_t ADS1115::startSingleConversion(ADS1115_Config_t & configObj)
     return retVal;
 }
 
-Status_t ADS1115::getLatestConversion(float &value)
+Status_t ADS1115::getLatestConversion(int16_t &value)
 {
     Status_t retVal = STATUS_OKAY;
+    uint16_t rawValue = 0;
 
-    /* read latest conversion */
-    retVal = readConversionRegister(value);
+    /* read latest conversion register */
+    retVal = getRawConversionRegister(rawValue);
+
+    if (retVal == STATUS_OKAY)
+    {
+        /* convert raw unsigned value to signed two's complement */
+        value = static_cast<int16_t>(rawValue);
+    }
 
     return retVal;
 }
@@ -314,24 +325,42 @@ Status_t ADS1115::getHighThreshold(int16_t &threshold)
     return retVal;
 }
 
-Status_t ADS1115::readConversionRegister(float &value)
+Status_t ADS1115::getRawConversionRegister(uint16_t &rawValue)
 {
     Status_t statusRet = STATUS_OKAY;
 
-    I2CTransfer_t transferObj;
-    transferObj.devAddr = static_cast<uint8_t>(ADS1115_Address::Device1);
-    transferObj.regAddr = static_cast<uint8_t>(ADS1115_Register::Conversion);
-    transferObj.size = static_cast<uint8_t>(ADS1115_RegisterSize::Conversion);
-    transferObj.ackEn = static_cast<bool>(ADS1115_AckCheck::Disable);
-    transferObj.ackType = I2CTransferAckType_t::MASTER_ACK;
-    transferObj.data = new uint8_t[ADS1115_CONVERSION_REGISTER_SIZE];
-
-    statusRet = read(transferObj);
+    statusRet = cachedRegisterToTransferObj(conversionRegisterObj, rxObj);
 
     if (statusRet == STATUS_OKAY)
     {
-        /* convert bytes to float value, this will depend on the gain setting and data rate */
-        //! TODO: implement conversion based on gain and data rate settings
+        statusRet = read(rxObj);
+    }
+
+    if (statusRet == STATUS_OKAY)
+    {
+        rawValue = (static_cast<uint16_t>(rxObj.data[0]) << 8) |
+                   static_cast<uint16_t>(rxObj.data[1]);
+        ESP_LOGI(TAG, "Raw conversion register value: 0x%04X", rawValue);
+    }
+    else
+    {
+        rawValue = 0; // Set rawValue to a default value in case of an error
+        ESP_LOGD(TAG, "Failed to read raw conversion register, status: %d", static_cast<int>(statusRet));
+    }
+
+    return statusRet;
+}
+
+Status_t ADS1115::readConversionRegister(float &value)
+{
+    Status_t statusRet = STATUS_OKAY;
+    uint16_t rawValue = 0;
+
+    statusRet = getRawConversionRegister(rawValue);
+
+    if (statusRet == STATUS_OKAY)
+    {
+        value = static_cast<float>(rawValue);
     }
 
     return statusRet;

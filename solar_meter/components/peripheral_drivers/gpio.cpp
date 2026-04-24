@@ -10,7 +10,7 @@
 /*******************************************************************************
  * INCLUDES
 *******************************************************************************/
-#include "gpio.hpp"
+#include "gpio.hpp" 
 
 extern "C" 
 {
@@ -78,7 +78,8 @@ static const char *TAG = "gpio";
             /* install gpio isr service if it has not been done already  */
             if(!isrHandlerRegistered)
             {
-                if(gpio_install_isr_service(0) != ESP_OK)
+                esp_err_t isrServiceStatus = gpio_install_isr_service(0);
+                if(isrServiceStatus != ESP_OK && isrServiceStatus != ESP_ERR_INVALID_STATE)
                 {
                     ESP_LOGE(TAG, "Failed to install gpio isr service");
                 }
@@ -97,6 +98,11 @@ static const char *TAG = "gpio";
             else
             {
                 ESP_LOGI(TAG, "Gpio isr handler registered for this pin");
+
+                if (!registerCallback(IntType::gpio_isr_handler))
+                {
+                    ESP_LOGE(TAG, "Failed to register GPIO callback dispatcher");
+                }
             }
             
         }
@@ -172,7 +178,7 @@ void Gpio::gpio_isr_handler(void *arg)
         /* if callback exists, call that here */
         if(callback != nullptr
            && callbackContext != nullptr)
-        {
+        {   
             /* call the callback and pass the context and an argument */
             callback(callbackContext, arg);
         }
