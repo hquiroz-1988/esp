@@ -79,9 +79,9 @@ Status_t BusVoltage::initialize(void)
         channelConfig.opStatus = ADS1115_OperationalStatus_t::Write_No_Effect;
         /* busvoltage measurement will be single ended at AIN0  */
         channelConfig.mux = ADS1115Mux_t::AIN0_GND;
-        /*  range 2.048 will be used since device VDD will be 3.3V, 2.048 is the
+        /*  range 4.096 will be used since device VDD will be 3.3V, 4.096 is the
             next largest value    */
-        channelConfig.pga = ADS1115PGA_t::FSR_2_048V;
+        channelConfig.pga = ADS1115PGA_t::FSR_4_096V;
         /* all measurements are requested not automatic, continuous would drain power */
         channelConfig.mode = ADS1115Mode_t::SingleShot;
         /*  sampling rate will be high but actual sampling will be much lower rate

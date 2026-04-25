@@ -38,16 +38,17 @@ public:
     BusVoltage(ADS1115 & _ads1115, ADS1115Mux_t _channel);
     virtual ~BusVoltage();
 
-    /** @brief  Initializes Bus Voltage which is an ADS1115 channel type.
+
+
+    protected:
+
+    private:
+        /** @brief  Initializes Bus Voltage which is an ADS1115 channel type.
      *
      *  @param void 
      *  @return void
      */
     virtual Status_t initialize(void);
-
-    protected:
-
-    private:
 };
 
 /************************************

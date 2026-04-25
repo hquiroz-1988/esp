@@ -67,7 +67,7 @@ public:
     virtual ~ADS1115();
     Status_t configure(const ADS1115_Config_t & configObj);
     Status_t startSingleConversion(ADS1115_Config_t & configObj);
-    Status_t getLatestConversion(float & value);
+    Status_t getLatestConversion(int16_t & value);
     Status_t getAlertPinStatus(bool & pinState);
     void initialize(void);
     
@@ -79,6 +79,7 @@ public:
     Status_t getLowThreshold(int16_t & threshold);
     Status_t setHighThreshold(int16_t threshold);
     Status_t getHighThreshold(int16_t & threshold); 
+    Status_t getRawConversionRegister(uint16_t & rawValue);
     Status_t readConversionRegister(float & value);
 
 

@@ -50,10 +50,14 @@ Status_t PowerMonitor::startAndWaitForVoltage(float & value)
     uint32_t notifyBit = static_cast<uint32_t>(NotifyBits::GET_VOLTAGE);
 
     /* after starting conversion, set the callback to call our static wrapper */
-    busVoltage.setCallback(PowerMonitor::staticWrapper, this, notifyBit);
+    if (status == STATUS_OKAY)
+    {
+        status = busVoltage.setCallback(PowerMonitor::staticWrapper, this, notifyBit);
+    }
 
     /* start voltage conversion  */
-    if (xTaskNotifyWait(0, static_cast<uint32_t>(NotifyBits::CLEAR_ALL_BITS), &notificationValue, portMAX_DELAY) != pdTRUE)
+    if (    status == STATUS_OKAY
+         && xTaskNotifyWait(0, static_cast<uint32_t>(NotifyBits::CLEAR_ALL_BITS), &notificationValue, portMAX_DELAY) != pdTRUE)
     {
         status = STATUS_OS_ERROR;
     }
@@ -63,6 +67,11 @@ Status_t PowerMonitor::startAndWaitForVoltage(float & value)
             && (notificationValue & notifyBit) )
     {
         status = busVoltage.getConversion(latestBusVoltage);
+        //!TODO: remove this log, only for testing
+        if (status == STATUS_OKAY)
+        {
+            ESP_LOGI(TAG, "Voltage conversion complete: %d mV", static_cast<int>(latestBusVoltage * 1000.0f));
+        }
     }
 
     /* whether or not we received the correct notification, clear the callback */
@@ -160,8 +169,13 @@ PowerMonitor::PowerMonitor(NetworkingModule &_networkingModule,
                                                       busCurrent(_busCurrent),
                                                       networkingModule(_networkingModule)
 {
-    // Constructor implementation
-    
+    /*
+        initializing task here, its best to call here since this
+        should be the last constructor called in the construction
+        order, this or even after construction is when init task
+        should be called.
+    */
+    initTask();
 }
 
 PowerMonitor::~PowerMonitor()

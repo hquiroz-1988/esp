@@ -73,7 +73,8 @@ private:
     Status_t createLink(void);
     Status_t deleteLink(void);
     Status_t cmdStart(void);
-    Status_t cmdBuild(I2CTransfer_t &transfer, bool write);
+    Status_t cmdBuildWrite(I2CTransfer_t &transfer);
+    Status_t cmdBuildRead(I2CTransfer_t &transfer);
     Status_t masterRead(I2CTransfer_t &transfer);
     Status_t cmdSend(void);
     Status_t cmdEnd(void);

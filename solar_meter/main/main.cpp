@@ -21,6 +21,7 @@
 #include "bus_voltage.hpp"
 #include "gpio.hpp"
 #include "i2c_bus.hpp"
+#include "networking.hpp"
 
 /* static variables    */
 static const char *TAG = "main";
@@ -45,16 +46,18 @@ extern "C" void app_main()
     BusVoltage busVoltage(ads1115, ADS1115Mux_t::AIN0_GND);
 
     // /* initialize bus current module */
-    // INA219 ina219;
-    // BusCurrent busCurrent(ina219);
+    INA219 ina219;
+    BusCurrent busCurrent(ina219);
 
-    // NetworkingModule networkingModule();
+    NetworkingModule networkingModule;
 
-    // PowerMonitor pm(networkingModule, busVoltage, busCurrent);
+    PowerMonitor pm(networkingModule, busVoltage, busCurrent);
 
     while (1)
     {
         ESP_LOGI(TAG, "Main...");
         vTaskDelay(1000 / portTICK_RATE_MS);
+        //! TODO: remove this, only for testing
+        xTaskNotify(pm.getTaskHandle(), static_cast<uint32_t>(NotifyBits::GET_POWER), eSetBits);
     }
 }

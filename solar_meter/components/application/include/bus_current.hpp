@@ -29,7 +29,7 @@ class PowerMonitor;
 class BusCurrent
 {
     public:
-    BusCurrent(INA219 & _ina219, PowerMonitor * _pm);
+    BusCurrent(INA219 & _ina219);
     virtual ~BusCurrent();
     void init(void);
     Status_t getFilteredCurrent(float * value);

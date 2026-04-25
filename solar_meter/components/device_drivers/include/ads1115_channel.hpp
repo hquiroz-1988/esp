@@ -45,6 +45,7 @@ class ADS1115Channel : public InterruptBase
      *  @return Status_t - returns error type or success
      */
     virtual Status_t getConversion(float & value);
+    float valueToScaledValue(int16_t rawValue);
 
     virtual void alertPinISR(void * arg);
 
@@ -81,7 +82,8 @@ class ADS1115Channel : public InterruptBase
     Status_t getHighThreshold(int16_t & value) const;
 
     /* overload set callback function to pass in more parameters */
-    void setCallback(void (*callback)(void*, uint32_t), void* context, uint32_t value);
+    Status_t setCallback(void (*callback)(void*, uint32_t), void* context, uint32_t value);
+    Status_t clearCallback();
 
     /* static wrapper to be called by interrupt handler from ADS1115 */
     static void staticWrapper(void* context, void * arg);
@@ -95,8 +97,8 @@ class ADS1115Channel : public InterruptBase
     int16_t highThreshold;
 
     //!TODO: there must be a better to create a new callback template....todo
-    void (*callback2)(void*, uint32_t);
-    uint32_t callbackValue;
+    void (*callback2)(void*, uint32_t) = nullptr;
+    uint32_t callbackValue = 0;
 
     private:
 

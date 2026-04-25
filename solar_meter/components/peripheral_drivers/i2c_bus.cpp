@@ -106,15 +106,12 @@ Status_t I2CBus::installDriver(void)
 /*******************************************************************************
  * PUBLIC FUNCTIONS
  *******************************************************************************/
-I2CBus::I2CBus(Gpio &_sda, Gpio &_scl, i2c_port_t _port) : sda(_sda),
-                                                           scl(_scl),
-                                                           port(_port),
-                                                           clockStretching(0),
-                                                           devItr(0)
+I2CBus::I2CBus(Gpio &_sda, Gpio &_scl, i2c_port_t _port)
+    : sda(_sda), scl(_scl), port(_port), clockStretching(0), devItr(0)
 {
     Status_t status = initialize();
     // Constructor implementation
-    if(status != STATUS_OKAY)
+    if (status != STATUS_OKAY)
     {
         /* throw error */
         ESP_LOGE(TAG, "Failed to initialize I2C bus, error code: %d", static_cast<int>(status));
@@ -148,7 +145,6 @@ Status_t I2CBus::initialize(void)
 
     return status;
 }
-
 
 Status_t I2CBus::addDevice(I2CDevice *device)
 {
@@ -250,7 +246,7 @@ Status_t I2CBus::write(I2CTransfer_t &transfer)
     if (status == STATUS_OKAY)
     {
         /*  transmit all data */
-        status = cmdBuild(transfer, true);
+        status = cmdBuildWrite(transfer);
     }
 
     if (status == STATUS_OKAY)
@@ -259,7 +255,7 @@ Status_t I2CBus::write(I2CTransfer_t &transfer)
         status = cmdEnd();
     }
 
-    if(status == STATUS_OKAY)
+    if (status == STATUS_OKAY)
     {
         /*  send i2c command     */
         status = cmdSend();
@@ -287,7 +283,7 @@ Status_t I2CBus::read(I2CTransfer_t &transfer)
     if (status == STATUS_OKAY)
     {
         /*  transmit all data */
-        status = cmdBuild(transfer, false);
+        status = cmdBuildRead(transfer);
     }
 
     if (status == STATUS_OKAY)
@@ -296,7 +292,7 @@ Status_t I2CBus::read(I2CTransfer_t &transfer)
         status = cmdEnd();
     }
 
-    if(status == STATUS_OKAY)
+    if (status == STATUS_OKAY)
     {
         /*  send i2c command     */
         status = cmdSend();
@@ -331,7 +327,7 @@ Status_t I2CBus::cmdStart(void)
     return status;
 }
 
-Status_t I2CBus::cmdBuild(I2CTransfer_t &transfer, bool write)
+Status_t I2CBus::cmdBuildWrite(I2CTransfer_t &transfer)
 {
     Status_t status = STATUS_OKAY;
 
@@ -348,7 +344,8 @@ Status_t I2CBus::cmdBuild(I2CTransfer_t &transfer, bool write)
     if (status == STATUS_OKAY)
     {
         /*  transmit device address*/
-        if (i2c_master_write_byte(cmdHandle, ((transfer.devAddr << 1) & ( (write) ? I2C_MASTER_WRITE : I2C_MASTER_READ) ), transfer.ackEn) != ESP_OK)
+        if (i2c_master_write_byte(cmdHandle, ((transfer.devAddr << 1) | I2C_MASTER_WRITE),
+                                  transfer.ackEn) != ESP_OK)
         {
             status = STATUS_HAL_ERROR;
         }
@@ -370,6 +367,65 @@ Status_t I2CBus::cmdBuild(I2CTransfer_t &transfer, bool write)
         {
             status = STATUS_HAL_ERROR;
         }
+    }
+
+    return status;
+}
+
+Status_t I2CBus::cmdBuildRead(I2CTransfer_t &transfer)
+{
+    Status_t status = STATUS_OKAY;
+
+    if (transfer.data == nullptr || cmdHandle == nullptr)
+    {
+        status = STATUS_NULL_POINTER;
+    }
+
+    if (status == STATUS_OKAY && transfer.size == 0)
+    {
+        status = STATUS_OUT_OF_BOUNDS;
+    }
+
+    if (status == STATUS_OKAY)
+    {
+        /* write slave address with write bit to set register pointer */
+        if (i2c_master_write_byte(cmdHandle, ((transfer.devAddr << 1) | I2C_MASTER_WRITE), transfer.ackEn) != ESP_OK)
+        {
+            status = STATUS_HAL_ERROR;
+        }
+    }
+
+    if (status == STATUS_OKAY)
+    {
+        /* write target register address */
+        if (i2c_master_write_byte(cmdHandle, transfer.regAddr, transfer.ackEn) != ESP_OK)
+        {
+            status = STATUS_HAL_ERROR;
+        }
+    }
+
+    if (status == STATUS_OKAY)
+    {
+        /* repeated start before switching to read */
+        if (i2c_master_start(cmdHandle) != ESP_OK)
+        {
+            status = STATUS_HAL_ERROR;
+        }
+    }
+
+    if (status == STATUS_OKAY)
+    {
+        /* write slave address with read bit */
+        if (i2c_master_write_byte(cmdHandle, ((transfer.devAddr << 1) | I2C_MASTER_READ), transfer.ackEn) != ESP_OK)
+        {
+            status = STATUS_HAL_ERROR;
+        }
+    }
+
+    if (status == STATUS_OKAY)
+    {
+        /* read payload bytes */
+        status = masterRead(transfer);
     }
 
     return status;
