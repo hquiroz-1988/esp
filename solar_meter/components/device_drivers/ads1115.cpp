@@ -103,6 +103,9 @@ Status_t ADS1115::cachedRegisterToTransferObj(const ADS1115_Transfer_t & configO
  */
 ADS1115::ADS1115(I2CBus & bus, Gpio &_gpio) : I2CDevice(bus), alertPin(_gpio)
 {
+    //!TODO: configure this device with default settings, let user
+    //call any device configuration using the configure function. This will also allow us to test the read and write functions to ensure that the class is communicating properly with the device.
+    //also add address as a parameter to the constructor, default to 0x48 if not provided. This will allow us to support multiple devices on the same bus if needed.
 
     ESP_LOGI(TAG, "ADS1115 constructor called");
     /* constructor implementation*/
