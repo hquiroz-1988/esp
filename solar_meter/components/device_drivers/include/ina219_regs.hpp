@@ -59,14 +59,14 @@ constexpr bool     INA219_ACK_CHECK_STATUS              = false;
 // Device address is set by A1 and A0 pins (GND, VS, SDA, or SCL)
 enum class INA219_Address : uint8_t
 {
-    A1_GND_A0_GND = 0x40, // A1 = GND, A0 = GND (default)
-    A1_GND_A0_VS  = 0x41, // A1 = GND, A0 = VS
-    A1_GND_A0_SDA = 0x42, // A1 = GND, A0 = SDA
-    A1_GND_A0_SCL = 0x43, // A1 = GND, A0 = SCL
-    A1_VS_A0_GND  = 0x44, // A1 = VS,  A0 = GND
-    A1_VS_A0_VS   = 0x45, // A1 = VS,  A0 = VS
-    A1_VS_A0_SDA  = 0x46, // A1 = VS,  A0 = SDA
-    A1_VS_A0_SCL  = 0x47  // A1 = VS,  A0 = SCL
+    Device1 = 0x40, // A1 = GND, A0 = GND (default)
+    Device2 = 0x41, // A1 = GND, A0 = VS
+    Device3 = 0x42, // A1 = GND, A0 = SDA
+    Device4 = 0x43, // A1 = GND, A0 = SCL
+    Device5 = 0x44, // A1 = VS,  A0 = GND
+    Device6 = 0x45, // A1 = VS,  A0 = VS
+    Device7 = 0x46, // A1 = VS,  A0 = SDA
+    Device8 = 0x47  // A1 = VS,  A0 = SCL
 };
 
 enum class INA219_Register : uint8_t
