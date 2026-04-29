@@ -13,6 +13,8 @@
 /*******************************************************************************
  * INCLUDES
 *******************************************************************************/
+#include "ina219_regs.hpp"
+#include "i2c_device.hpp"
 
 /*******************************************************************************
  * MACROS AND DEFINES
@@ -21,14 +23,21 @@
 /*******************************************************************************
  * TYPEDEFS
 *******************************************************************************/
-class INA219
+class INA219 : public I2CDevice
 {
 public:
-    INA219();
+    INA219(I2CBus & bus, INA219_Address address = INA219_Address::Device1);
     ~INA219();
 
+    Status_t configure(const INA219_Config_t & config);
+
+
+
 private:
-    // Add any private members or methods if necessary
+    Status_t configObjToBytes(const INA219_Config_t & configObj, uint8_t * bytes);
+
+    INA219_Address address;
+    INA219_Config_t config; // To store the current configuration of the INA219
 };
 
 /*******************************************************************************
