@@ -125,14 +125,14 @@ enum class INA219_ADCResolution_t : uint8_t
 // Operating Mode (MODE, bits 2:0)
 enum class INA219_OperatingMode_t : uint8_t
 {
-    PowerDown              = 0b000, // Power-down
-    ShuntVoltage_Triggered = 0b001, // Shunt voltage, triggered
-    BusVoltage_Triggered   = 0b010, // Bus voltage, triggered
-    ShuntBus_Triggered     = 0b011, // Shunt and bus, triggered
-    ADC_Off                = 0b100, // ADC off (disabled)
-    ShuntVoltage_Cont      = 0b101, // Shunt voltage, continuous
-    BusVoltage_Cont        = 0b110, // Bus voltage, continuous
-    ShuntBus_Cont          = 0b111  // Shunt and bus, continuous (default)
+    PowerDown             = 0b000, // Power-down
+    ShuntVoltageSingle   = 0b001, // Shunt voltage, single conversion
+    BusVoltageSingle     = 0b010, // Bus voltage, single conversion
+    ShuntAndBusSingle       = 0b011, // Shunt and bus, single conversion
+    ADCOff               = 0b100, // ADC off (disabled)
+    ShuntVoltageContinuous = 0b101, // Shunt voltage, continuous conversion
+    BusVoltageContinuous = 0b110, // Bus voltage, continuous conversion
+    ShuntBusContinuous   = 0b111  // Shunt and bus, continuous conversion (default)
 };
 
 struct INA219_Config

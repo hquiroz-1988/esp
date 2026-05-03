@@ -31,11 +31,14 @@ class BusCurrent
     public:
     BusCurrent(INA219 & _ina219);
     virtual ~BusCurrent();
-    void init(void);
-    Status_t getFilteredCurrent(float * value);
+    Status_t getCurrentAndBusVoltage(float & current, float & busVoltage);
 
     private:
-    // Add any private members or methods if necessary
+    INA219 & ina219;
+    void init(void);
+    Status_t getFilteredCurrent(float * value);
+    Status_t getLatestConversion(float & value);
+    Status_t startConversion(void);
 };
 
 /*******************************************************************************

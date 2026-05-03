@@ -83,28 +83,13 @@ Status_t PowerMonitor::startAndWaitForVoltage(float & value)
 Status_t PowerMonitor::startAndWaitForCurrent(float & value)
 {
     Status_t status = STATUS_OKAY;
-    //!TODO: uncomment this once bus current is implemented
-    // status = busCurrent.startConversion();
-    // uint32_t notifyBit = static_cast<uint32_t>(NotifyBits::GET_CURRENT);
 
-    // /* after starting conversion, set the callback to call our static wrapper */
-    // busCurrent.setCallback(PowerMonitor::staticWrapper, this, notifyBit);
+    status = busCurrent.getCurrentAndBusVoltage(latestBusCurrent, latestBusVoltage);
 
-    // /* start current conversion  */
-    // if (xTaskNotifyWait(0, static_cast<uint32_t>(NotifyBits::CLEAR_ALL_BITS), &notificationValue, portMAX_DELAY) != pdTRUE)
-    // {
-    //     status = STATUS_OS_ERROR;
-    // }
-
-    // /* make sure we have the correct notification value */
-    // if (    status == STATUS_OKAY 
-    //         && (notificationValue & notifyBit) )
-    // {
-    //     status = busCurrent.getConversion(latestBusCurrent);
-    // }
-
-    // /* whether or not we received the correct notification, clear the callback */
-    // busCurrent.clearCallback();
+    if (status == STATUS_OKAY)
+    {
+        ESP_LOGI(TAG, "Current conversion complete: %d mA", static_cast<int>(latestBusCurrent * 1000.0f));
+    }
 
     return status;
 }
@@ -115,14 +100,14 @@ Status_t PowerMonitor::startAndWaitForCurrent(float & value)
 Status_t PowerMonitor::queueBusVoltageMessage()
 {
 
-    Status_t status = startAndWaitForVoltage(latestBusVoltage);
+    Status_t status = startAndWaitForVoltage(latestBatteryBusVoltage);
 
     if (status == STATUS_OKAY)
     {
         busVoltageMessage.name = "BusVoltage";
         busVoltageMessage.timestamp = xTaskGetTickCount();
         busVoltageMessage.size = sizeof(float);
-        busVoltageMessage.dataPtr = &latestBusVoltage;
+        busVoltageMessage.dataPtr = &latestBatteryBusVoltage;
         status = networkingModule.queueNetworkingMessage(&busVoltageMessage);
     }
 
@@ -131,14 +116,14 @@ Status_t PowerMonitor::queueBusVoltageMessage()
 
 Status_t PowerMonitor::queueBusCurrentMessage()
 {
-    Status_t status = startAndWaitForCurrent(latestBusCurrent);
+    Status_t status = busCurrent.getCurrentAndBusVoltage(latestPanelBusCurrent, latestPanelBusVoltage);
 
     if (status == STATUS_OKAY)
     {
         busCurrentMessage.name = "BusCurrent";
         busCurrentMessage.timestamp = xTaskGetTickCount();
         busCurrentMessage.size = sizeof(float);
-        busCurrentMessage.dataPtr = &latestBusCurrent;
+        busCurrentMessage.dataPtr = &latestPanelBusCurrent;
         status = networkingModule.queueNetworkingMessage(&busCurrentMessage);
     }
 
@@ -147,7 +132,7 @@ Status_t PowerMonitor::queueBusCurrentMessage()
 
 Status_t PowerMonitor::queuePowerMessage()
 {
-    latestPower = latestBusVoltage * latestBusCurrent;
+    latestPower = latestPanelBusVoltage * latestPanelBusCurrent;
 
     powerMessage.name = "Power";
     powerMessage.timestamp = xTaskGetTickCount();

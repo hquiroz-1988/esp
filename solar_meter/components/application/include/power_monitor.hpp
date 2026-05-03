@@ -58,14 +58,17 @@ public:
     virtual void taskRun();
 
 private:
-    /**
-     * @brief Stores the latest measured bus voltage value.
-     */
-    float latestBusVoltage;
-    /**
-     * @brief Stores the latest measured bus current value.
-     */
-    float latestBusCurrent;
+    /*
+        Battery Bus Voltage and Current
+    */
+    float latestBatteryBusVoltage;
+
+    /*
+        Solar Panel Bus Voltage and Current
+    */
+    float latestPanelBusVoltage;
+    float latestPanelBusCurrent;
+
     /** * @brief Stores the latest measured power value.
      */
     float latestPower;
