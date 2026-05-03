@@ -35,15 +35,15 @@ enum class I2CTransferAckType_t
     MASTER_ACK_MAX   = I2C_MASTER_ACK_MAX,
 };
 
-typedef struct
+struct I2CTransfer_t
 {
-    uint8_t *data;
-    size_t size;
-    uint8_t devAddr;
-    uint8_t regAddr;
-    bool ackEn;
-    I2CTransferAckType_t ackType;
-} I2CTransfer_t;
+    uint8_t *data = nullptr;
+    size_t size = 0;
+    uint8_t devAddr = 0;
+    uint8_t regAddr = 0;
+    bool ackEn = false;
+    I2CTransferAckType_t ackType = I2CTransferAckType_t::MASTER_NACK;
+};
 
 /*******************************************************************************
  * EXPORTED VARIABLES

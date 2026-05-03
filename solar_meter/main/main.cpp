@@ -46,7 +46,9 @@ extern "C" void app_main()
     BusVoltage busVoltage(ads1115, ADS1115Mux_t::AIN0_GND);
 
     // /* initialize bus current module */
-    INA219 ina219;
+    INA219 ina219(i2cBus, INA219_Address::Device1);
+
+    /* initialize bus current module */
     BusCurrent busCurrent(ina219);
 
     NetworkingModule networkingModule;
