@@ -45,6 +45,8 @@ private:
 
     INA219_Address address;
     INA219_Config_t config; // To store the current configuration of the INA219
+    I2CTransfer_t txObj;
+    I2CTransfer_t rxObj;
 };
 
 /*******************************************************************************

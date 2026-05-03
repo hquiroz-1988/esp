@@ -51,7 +51,20 @@ Status_t BusCurrent::getCurrentAndBusVoltage(float & current, float & busVoltage
 {
     Status_t status = STATUS_OKAY;
 
-    status = ina219.readCurrentAndBusVoltage(current, busVoltage);
+    /* start a single bus voltage and shunt voltage conversion */
+    status = ina219.triggerSingleMeasurement(INA219_OperatingMode_t::ShuntAndBusSingle);
+
+    if(status == STATUS_OKAY)
+    {
+        /*
+            wait for conversion to complete, this is because ina219 has no interrupt
+            to notify of conversion complete.
+        */
+        vTaskDelay(BUS_CURRENT_CONVERSION_DELAY_TICKS);
+
+        /* read the current and bus voltage values */
+        status = ina219.readCurrentAndBusVoltage(current, busVoltage);
+    }
 
     return status;
 }
@@ -65,20 +78,6 @@ Status_t BusCurrent::startConversion(void)
 
     /* start a single bus voltage and shunt voltage conversion */
     status = ina219.triggerSingleMeasurement(INA219_OperatingMode_t::ShuntAndBusSingle);
-
-    return status;
-}
-
-Status_t BusCurrent::startAndWaitForConversion(float & value)
-{
-    Status_t status = startConversion();
-
-    /* make sure we have the correct notification value */
-    if (status == STATUS_OKAY)
-    {
-        vTaskDelay(BUS_CURRENT_CONVERSION_DELAY_TICKS);
-        status = getLatestConversion(value);
-    }
 
     return status;
 }

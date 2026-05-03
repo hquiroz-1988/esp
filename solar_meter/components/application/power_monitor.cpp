@@ -66,11 +66,11 @@ Status_t PowerMonitor::startAndWaitForVoltage(float & value)
     if (    status == STATUS_OKAY 
             && (notificationValue & notifyBit) )
     {
-        status = busVoltage.getConversion(latestBusVoltage);
+        status = busVoltage.getConversion(latestBatteryBusVoltage);
         //!TODO: remove this log, only for testing
         if (status == STATUS_OKAY)
         {
-            ESP_LOGI(TAG, "Voltage conversion complete: %d mV", static_cast<int>(latestBusVoltage * 1000.0f));
+            ESP_LOGI(TAG, "Voltage conversion complete: %d mV", static_cast<int>(latestBatteryBusVoltage * 1000.0f));
         }
     }
 
@@ -84,11 +84,11 @@ Status_t PowerMonitor::startAndWaitForCurrent(float & value)
 {
     Status_t status = STATUS_OKAY;
 
-    status = busCurrent.getCurrentAndBusVoltage(latestBusCurrent, latestBusVoltage);
+    status = busCurrent.getCurrentAndBusVoltage(latestPanelBusCurrent, latestPanelBusVoltage);
 
     if (status == STATUS_OKAY)
     {
-        ESP_LOGI(TAG, "Current conversion complete: %d mA", static_cast<int>(latestBusCurrent * 1000.0f));
+        ESP_LOGI(TAG, "Current conversion complete: %d mA, %d mV", static_cast<int>(latestPanelBusCurrent * 1000.0f), static_cast<int>(latestPanelBusVoltage * 1000.0f));
     }
 
     return status;

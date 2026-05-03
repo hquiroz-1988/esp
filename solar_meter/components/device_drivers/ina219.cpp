@@ -11,6 +11,7 @@
  * INCLUDES
  *******************************************************************************/
 #include "ina219.hpp"
+#include "i2c_typedefs.hpp"
 
 /*******************************************************************************
  * EXTERN VARIABLES
@@ -70,16 +71,13 @@ Status_t INA219::configObjToBytes(const INA219_Config_t &configObj, uint8_t *byt
 INA219::INA219(I2CBus & bus, INA219_Address address)
     : I2CDevice(bus), address(address)
 {
-    const INA219_Config_t defaultConfig =
-    {
-        .busVoltageRange = INA219_BusVoltageRange_t::FSR_32V,
-        .pgaGain = INA219_PGAGain_t::Gain_8_320mV,
-        .busADC = INA219_ADCResolution_t::Res_12bit,
-        .shuntADC = INA219_ADCResolution_t::Res_12bit,
-        .mode = INA219_OperatingMode_t::ADCOff
-    };
+    config.busVoltageRange = INA219_BusVoltageRange_t::FSR_32V;
+    config.pgaGain = INA219_PGAGain_t::Gain_8_320mV;
+    config.busADC = INA219_ADCResolution_t::Res_12bit;
+    config.shuntADC = INA219_ADCResolution_t::Res_12bit;
+    config.mode = INA219_OperatingMode_t::ADCOff;
 
-    (void)configure(defaultConfig);
+    (void)configure(config);
 }
 
 INA219::~INA219()
@@ -91,7 +89,6 @@ Status_t INA219::configure(const INA219_Config_t &config)
 {
     Status_t statusRet = STATUS_OKAY;
     uint8_t configBytes[static_cast<uint8_t>(INA219_RegisterSize::Config)] = {0};
-    I2CTransfer_t txObj = {0};
 
     statusRet = configObjToBytes(config, configBytes);
 
@@ -119,7 +116,6 @@ Status_t INA219::triggerSingleMeasurement(INA219_OperatingMode_t mode)
 {
     Status_t statusRet = STATUS_OKAY;
     uint8_t configBytes[static_cast<uint8_t>(INA219_RegisterSize::Config)] = {0};
-    I2CTransfer_t txObj = {0};
 
     // Create a temporary config object with the new mode
     this->config.mode = mode;
@@ -145,7 +141,6 @@ Status_t INA219::readShuntVoltage(float &shuntVoltage_mV)
 {
     Status_t statusRet = STATUS_OKAY;
     uint8_t shuntBytes[static_cast<uint8_t>(INA219_RegisterSize::ShuntVoltage)] = {0};
-    I2CTransfer_t rxObj = {0};
 
     rxObj.data    = shuntBytes;
     rxObj.size    = static_cast<size_t>(INA219_RegisterSize::ShuntVoltage);
@@ -171,7 +166,6 @@ Status_t INA219::readCurrent(float &current_mA)
 {
     Status_t statusRet = STATUS_OKAY;
     uint8_t currentBytes[static_cast<uint8_t>(INA219_RegisterSize::Current)] = {0};
-    I2CTransfer_t rxObj = {0};
 
     rxObj.data    = currentBytes;
     rxObj.size    = static_cast<size_t>(INA219_RegisterSize::Current);
@@ -197,7 +191,6 @@ Status_t INA219::readBusVoltage(float &busVoltage_V)
 {
     Status_t statusRet = STATUS_OKAY;
     uint8_t busBytes[static_cast<uint8_t>(INA219_RegisterSize::BusVoltage)] = {0};
-    I2CTransfer_t rxObj = {0};
 
     rxObj.data    = busBytes;
     rxObj.size    = static_cast<size_t>(INA219_RegisterSize::BusVoltage);
